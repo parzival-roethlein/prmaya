@@ -1,0 +1,9 @@
+# compiled source
+*.pyc
+
+# maya / template
+incrementalSave
+.mayaSwatches
+
+# pycharm
+/.idea

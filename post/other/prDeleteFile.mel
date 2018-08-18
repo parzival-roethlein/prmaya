@@ -1,0 +1,20 @@
+//  user requested on cgtalk / cgsociety: delete folder using MEL
+//
+global proc prDeleteFolder( string $folderPath )
+//  deletes given folder
+//    usage: prDeleteFolder( "C:/temp/folderToDelete/" );
+//    note: do not forget "/" at the end of folder-string
+{
+    // search for files in given folder
+    string $subFiles[] = `getFileList -folder $folderPath`;
+    // delete $eachFile or call prDeleteFolder if $eachFile is a folder
+    for( $eachFile in $subFiles )
+    {
+        if( `filetest -d ($folderPath+$eachFile)` )
+            prDeleteFolder( $folderPath+$eachFile+"/" );
+        else
+            sysFile -delete ($folderPath+$eachFile);
+    }
+    // delete folder (it should be empty now)
+    sysFile -removeEmptyDir $folderPath;
+}
