@@ -1,8 +1,6 @@
-'''
-D E S C R I P T I O N:
-in prHeatDeformer.h
+"""
+this is the python prototype of the cpp implementation
 
-T E S T:
 ####################
 def prHeatDeformerTest():
     import maya.cmds as mc
@@ -20,7 +18,7 @@ def prHeatDeformerTest():
     mc.setAttr( 'prHeatDeformer1.deformationType', 2 )
 prHeatDeformerTest()
 ####################
-'''
+"""
 
 import maya.OpenMaya as om
 import maya.OpenMayaMPx as OpenMayaMPx
