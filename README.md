@@ -1,17 +1,18 @@
 ### DESCRIPTION
-* prmaya (structured like the default maya user folder) 
+Scripts, plugins and posts (tutorials, notes) for Autodesk Maya. 
+* prmaya (structured like the default Maya user folder) 
   * scripts
-    * prSelectionUi: production proven
-    * prObjectSetUi: production proven
-    * manip_drag_panel_show: production proven
+    * prSelectionUi: used in production
+    * prObjectSetUi: used in production
+    * manip_drag_panel_show: used in production
   * plugins
-    * prAttractNode: production proven, the last time in Maya 2015. Does probably not work in the latest Maya version.
-    * prHeatDeformer: not production proven. fStretch is better and open source by now, so I would recommend using that.
-    * prPyMath: not production proven. Could be fine. I just wrote it.
-    * prSlideNode: not production proven. ClosestPoint algorithm should be fine. The paper algorithm is not complete.
+    * prAttractNode: used in production until Maya 2015. Probably not working in latest Maya versions
+    * prHeatDeformer: not used in production. fStretch is better and open source by now, so I would recommend using that: http://www.cgaddict.com/
+    * prPyMath: not used in production. Could be fine but was just written recently
+    * prSlideNode: not used in production. Paper algorithm incomplete.
 * post
-   * from my blog: http://pazrot3d.blogspot.com/
-   * other websites
+   * from my __blog__: http://pazrot3d.blogspot.com/
+   * __other__ websites
 
 ### Demo videos
 * prSelectionUi: https://vimeo.com/37670989
