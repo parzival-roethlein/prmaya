@@ -110,16 +110,16 @@ class UI(pm.uitypes.Window):
             return
         object_set = object_set[-1]
         self.active_set.setText(object_set)
-        for each_func, each_textScrollList in [[data.get_dag_members, self.dag_member_list],
-                                               [data.get_dn_members, self.dn_member_list]]:
-            each_active = self.get_active_members_as_dict(each_textScrollList)
-            each_textScrollList.removeAll()
-            each_members = each_func(object_set)
-            if not each_members:
+        for func, text_scroll_list in [[data.get_dag_members, self.dag_member_list],
+                                       [data.get_dn_members, self.dn_member_list]]:
+            active_members = self.get_active_members_as_dict(text_scroll_list)
+            text_scroll_list.removeAll()
+            members = func(object_set)
+            if not members:
                 continue
-            for each_index, each_item in each_members.items():
-                each_textScrollList.append('%s: %s' % (each_index, each_item))
-            self.set_active_members_from_dict(each_textScrollList, each_active)
+            for index, item in members.items():
+                text_scroll_list.append('%s: %s' % (index, item))
+            self.set_active_members_from_dict(text_scroll_list, active_members)
 
     # ####################################
     # SET
@@ -131,16 +131,16 @@ class UI(pm.uitypes.Window):
         self.dn_member_list.removeAll()
         if not object_sets:
             return
-        for each in object_sets:
-            self.sets_list.append(each)
+        for set_ in object_sets:
+            self.sets_list.append(set_)
         self.load_members()
         # pymel bug
         # TextScrollList.selectIndexedItems broken
         # also used by TextScrollList.selectAll()
         # self.sets_list.selectAll() # pymel command bugged
         # self.sets_list.selectIndexedItems(range(self.sets_list.getNumberOfItems()))
-        for each in self.sets_list.getAllItems():
-            self.sets_list.setSelectItem(each)
+        for item in self.sets_list.getAllItems():
+            self.sets_list.setSelectItem(item)
 
     @refresh_ui
     def load_sets_from_selection(self):
@@ -182,8 +182,7 @@ class UI(pm.uitypes.Window):
 
     @refresh_ui
     def import_members(self):
-        file_path = file_utils.file_dialog_2(startingDirectory=DEFAULTS['config_folder'],
-                                             fileMode=1)
+        file_path = file_utils.file_dialog_2(startingDirectory=DEFAULTS['config_folder'], fileMode=1)
         if not file_path:
             return
         new_members = file_utils.read_file(file_path)
@@ -234,8 +233,8 @@ class UI(pm.uitypes.Window):
     @staticmethod
     def get_member_names(text_scroll_list):
         names = []
-        for each in text_scroll_list.getAllItems():
-            names.append(each[each.rfind(' ') + 1:])
+        for item in text_scroll_list.getAllItems():
+            names.append(item[item.rfind(' ') + 1:])
         return names
 
     def get_active_member_names(self, member_text_scroll_list):
@@ -243,7 +242,7 @@ class UI(pm.uitypes.Window):
         if not active_indices:
             return []
         all_names = self.get_member_names(member_text_scroll_list)
-        active_names = [all_names[each - 1] for each in active_indices]
+        active_names = [all_names[index - 1] for index in active_indices]
         return active_names
 
     def get_active_dag_member_names(self):
@@ -256,8 +255,8 @@ class UI(pm.uitypes.Window):
         active_indices = text_scroll_list.getSelectIndexedItem()
         active_names = self.get_active_member_names(text_scroll_list)
         active_dict = {}
-        for x, each in enumerate(active_names):
-            active_dict[each] = active_indices[x]
+        for x, name in enumerate(active_names):
+            active_dict[name] = active_indices[x]
         return active_dict
 
     def set_active_members_from_dict(self, text_scroll_list, member_dict):
@@ -265,10 +264,10 @@ class UI(pm.uitypes.Window):
         if not all_members:
             return
         to_activate_indices = set()
-        for each_name, each_index in member_dict.items():
-            select_index = each_index
-            if each_name in all_members:
-                select_index = all_members.index(each_name) + 1
+        for name, index in member_dict.items():
+            select_index = index
+            if name in all_members:
+                select_index = all_members.index(name) + 1
             elif select_index > len(all_members):
                 select_index = len(all_members)
             to_activate_indices.add(select_index)

@@ -1,6 +1,6 @@
 ### DESCRIPTION
 Scripts, plugins and posts (tutorials, notes) for Autodesk Maya. 
-* prmaya (structured like the default Maya user folder) 
+* prmaya (structured like the default maya user folder) 
   * scripts
     * __prSelectionUi__: used in production. demo: https://vimeo.com/37670989
     * __prObjectSetUi__: used in production

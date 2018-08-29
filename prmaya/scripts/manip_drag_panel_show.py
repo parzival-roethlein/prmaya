@@ -1,10 +1,10 @@
 """
-# INFO
-Temporarily set (Panel > Show > types) when dragging the move/rotate/scale tool.
-The purpose is to have a clear view of the geometry during animation/posing.
+# DESCRIPTION
+- Temporarily set (Panel > Show > types) when dragging the move/rotate/scale tool
+- The purpose is to have a clear view of the geometry during animation/posing
 
 # USAGE
-from prmtools import manip_drag_panel_show
+from prmaya.scripts import manip_drag_panel_show
 # enable (feel free to change the arguments/flags)
 manip_drag_panel_show.set_commands_from_flags(nurbsCurves=False, manipulators=False)
 # disable
@@ -16,9 +16,9 @@ manip_drag_panel_show.set_commands()
 - Universal Manipulator support: Doesn't seem to have a command, als tried mc.draggerContext('xformManipContext', ..)
 
 # DEV
-from prmtools import manip_drag_panel_show
+from prmaya.scripts import manip_drag_panel_show
 reload(manip_drag_panel_show)
-manip_drag_panel_show.log.setLevel(10)
+manip_drag_panel_show.logger.setLevel(10)
 manip_drag_panel_show.set_commands_from_flags(with_focus=True, nurbsCurves=False, manipulators=False)
 manip_drag_panel_show.set_commands_from_flags(nurbsCurves=False, manipulators=False)
 manip_drag_panel_show.set_commands_from_flags(nurbsCurves=False)
@@ -35,24 +35,24 @@ import maya.cmds as mc
 
 
 logging.basicConfig()
-log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 SCENE_PANEL_VALUES = defaultdict(dict)
 
 
-def debug(func):
+def log(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        log.debug('{0}(args: {1}, kwargs: {2})'.format(func.__name__, args, kwargs))
+        logger.debug('{0}(args: {1}, kwargs: {2})'.format(func.__name__, args, kwargs))
         result = func(*args, **kwargs)
-        log.debug('result: {0}'.format(result))
-        log.debug('SCENE_PANEL_VALUES: {0}'.format(SCENE_PANEL_VALUES))
+        logger.debug('result: {0}'.format(result))
+        logger.debug('SCENE_PANEL_VALUES: {0}'.format(SCENE_PANEL_VALUES))
         return result
     return wrapper
 
 
-@debug
+@log
 def set_commands(node_type='transform', pre_func=str, post_func=str):
     mc.manipMoveContext('Move', e=True, preDragCommand=[pre_func, node_type])
     mc.manipMoveContext('Move', e=True, postDragCommand=[post_func, node_type])
@@ -64,7 +64,7 @@ def set_commands(node_type='transform', pre_func=str, post_func=str):
     mc.setToolTo(mc.currentCtx())
 
 
-@debug
+@log
 def pre_command(with_focus=False, **flags):
     """
     :param with_focus: only affect the panel with focus
@@ -79,7 +79,7 @@ def pre_command(with_focus=False, **flags):
         focused_panel = mc.getPanel(withFocus=True)
         if focused_panel not in panels:
             # is this even possible?
-            log.debug('focused_panel: "{0}" not a modelPanel: [{1}]'.format(focused_panel, panels))
+            logger.debug('focused_panel: "{0}" not a modelPanel: [{1}]'.format(focused_panel, panels))
             return []
         panels = [focused_panel]
     for panel in panels:
@@ -91,14 +91,14 @@ def pre_command(with_focus=False, **flags):
     return panels
 
 
-@debug
+@log
 def post_command():
     for panel, flags in SCENE_PANEL_VALUES.iteritems():
         for flag, value in flags.iteritems():
             mc.modelEditor(panel, e=True, **{flag: value})
 
 
-@debug
+@log
 def set_commands_from_flags(node_type='transform', with_focus=False, **flags):
     set_commands(node_type=node_type, pre_func=lambda: pre_command(with_focus=with_focus, **flags), post_func=post_command)
 
