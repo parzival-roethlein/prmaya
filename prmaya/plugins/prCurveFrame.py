@@ -147,7 +147,6 @@ def createFromCurve(curve=None):
 
 def createDecomposeMatrixFromOutputMatrix(curveFrame=None, createTransformType='locator', toggleLocalAxis=True):
     mc.getAttr('{0}.outputMatrix[0]'.format(curveFrame))
-    # mc.attributeQuery('outputMatrix', numberOfChildren=True, node=curveFrame)
     sel_list = om.MSelectionList()
     sel_list.add('{0}.outputMatrix'.format(curveFrame))
     transforms = []
@@ -159,9 +158,9 @@ def createDecomposeMatrixFromOutputMatrix(curveFrame=None, createTransformType='
             node = mc.createNode(createTransformType)
             if mc.ls(node, type='shape'):
                 node = mc.listRelatives(node, parent=True)[0]
-                mc.connectAttr('{0}.outputTranslate'.format(decomposeMatrix), '{0}.translate'.format(node))
-                mc.connectAttr('{0}.outputRotate'.format(decomposeMatrix), '{0}.rotate'.format(node))
-                transforms.append(node)
+            mc.connectAttr('{0}.outputTranslate'.format(decomposeMatrix), '{0}.translate'.format(node))
+            mc.connectAttr('{0}.outputRotate'.format(decomposeMatrix), '{0}.rotate'.format(node))
+            transforms.append(node)
     if toggleLocalAxis:
         mc.toggle(transforms, localAxis=True)
     return transforms
