@@ -25,7 +25,6 @@ ignoreErrors : if enabled will ignore ValueErrors on function calls
 - check why maya result attribute value is so inaccurate round(x, 6) or round(x, 5) needed to match math module results
 - aetemplate iterable: detect new index when pressing "Delete item:" and index does not exist set to closest existing index (higher one if same distance to two indices)
   this always happens, also when deleting existing item, so it will not require double click every time
-- "iterable > node name" should not be shown in attribute editor. save node name as global variable or hidden ui element?
 - create docstring: copy from math module (?) + new maya utility
 - generalized AEtemplate array attribute build / delete / update functions, the textfield names have to be built from nodetype and attr name
 """
