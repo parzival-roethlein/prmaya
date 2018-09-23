@@ -8,23 +8,26 @@ math.pi = prPyMath1.pi
 2. FUNCTIONS
 functions = prPyMath1.func : which function should evaluate
 arguments = prPyMath1.x, prPyMath1.y, prPyMath1.i, prPyMath1.base, prPyMath1.iterable
-return = prPyMath1.result, prPyMath1.result1 (used for second element of tuple return values of functions math.modf, math.frexp)
+return = prPyMath1.result, prPyMath1.result1 (result1 is only used for second element of the tuple returned by the functions math.modf and math.frexp)
+
+3. EXTRA MAYA UTILITY
+xDegreesToRadians : will convert argument.x value from degrees (maya rotation value for example) to radians (what the math module uses)
+ignoreErrors : if enabled will ignore ValueErrors on function calls
+
 
 # TODO
-- make DEFAULT_RESULT_VALUE and DEFAULT_RESULT_VALUE1 maya attributes
-- detect new index when pressing "Delete item:" and index does not exist set to closest existing index (higher one if same distance to two indices)
-  this always happens, also when deleting existing item, so it will not require double click every time
-- option to convert input arguments from degrees to radians (maybe only relevant for x arg for all trig functions?)
-- "iterable > node name" should not be shown in attribute editor. save node name as global variable?
+- remove AEprPyMathTemplate_iterableNodeTextField and replace it with something like global mel variable
 
 # TODO MAYBE
-- pi / e should not be settable and not be affected by other attributes but still show up as output (possible?)
-- create docstring: copy from math module help?
-- check why maya result attribute value is so inaccurate round(x, 6) or round(x, 5) needed to match math module
-- generalized AEtemplate array build and update function, the textfield names have to be built from nodetype and attr name
-- generalized MPxNode wrapper to easily make any python class a maya node?
-  maybe better to just use an eval node http://around-the-corner.typepad.com/adn/2012/08/a-mathematical-dg-node.html
-
+- is the argument compound attribute maya style?
+- check other arguments than x if they could use degreesToRadians option (check functions)
+- arguments of MFnUnitAttribute type
+- check why maya result attribute value is so inaccurate round(x, 6) or round(x, 5) needed to match math module results
+- aetemplate iterable: detect new index when pressing "Delete item:" and index does not exist set to closest existing index (higher one if same distance to two indices)
+  this always happens, also when deleting existing item, so it will not require double click every time
+- "iterable > node name" should not be shown in attribute editor. save node name as global variable or hidden ui element?
+- create docstring: copy from math module (?) + new maya utility
+- generalized AEtemplate array attribute build / delete / update functions, the textfield names have to be built from nodetype and attr name
 """
 
 import math
@@ -32,89 +35,102 @@ import sys
 
 import maya.api.OpenMaya as om
 
-DEFAULT_RESULT_VALUE = 0.0
-DEFAULT_RESULT1_VALUE = 0.0
 FUNCTION_DATA = None
 
 
 class prPyMath(om.MPxNode):
-    kPluginNodeTypeName = "prPyMath"
-    prPyMathId = om.MTypeId(0x0010A51A)  # not save
+    nodeTypeName = "prPyMath"
+    nodeTypeId = om.MTypeId(0x0004C260)  # local, not save
 
     @staticmethod
     def initialize():
-        numeric_attribute = om.MFnNumericAttribute()
-        enum_attribute = om.MFnEnumAttribute()
-        compound_attribute = om.MFnCompoundAttribute()
+        numericAttr = om.MFnNumericAttribute()
+        enumAttr = om.MFnEnumAttribute()
+        compoundAttr = om.MFnCompoundAttribute()
 
         # OUTPUT
-        prPyMath.result = numeric_attribute.create("result", "result", om.MFnNumericData.kFloat, 0.0)
-        numeric_attribute.writable = False
+        prPyMath.result = numericAttr.create('result', 'result', om.MFnNumericData.kFloat, 0.0)
+        numericAttr.storable = False
+        numericAttr.writable = False
         prPyMath.addAttribute(prPyMath.result)
 
-        prPyMath.result1 = numeric_attribute.create("result1", "result1", om.MFnNumericData.kFloat, 0.0)
-        numeric_attribute.writable = False
+        prPyMath.result1 = numericAttr.create('result1', 'result1', om.MFnNumericData.kFloat, 0.0)
+        numericAttr.storable = False
+        numericAttr.writable = False
         prPyMath.addAttribute(prPyMath.result1)
 
         # DATA
-        prPyMath.e = numeric_attribute.create('e', 'e', om.MFnNumericData.kFloat, math.e)
-        numeric_attribute.keyable = False
+        prPyMath.e = numericAttr.create('e', 'e', om.MFnNumericData.kFloat, math.e)
+        numericAttr.storable = False
+        numericAttr.writable = False
         prPyMath.addAttribute(prPyMath.e)
 
-        prPyMath.pi = numeric_attribute.create('pi', 'pi', om.MFnNumericData.kFloat, math.pi)
-        numeric_attribute.keyable = False
+        prPyMath.pi = numericAttr.create('pi', 'pi', om.MFnNumericData.kFloat, math.pi)
+        numericAttr.storable = False
+        numericAttr.writable = False
         prPyMath.addAttribute(prPyMath.pi)
 
         # FUNCTIONS
-        prPyMath.func = enum_attribute.create("function", "function", 0)
-        for index, data in get_math_function_data().iteritems():
-            enum_attribute.addField(data['name'], index)
-        enum_attribute.keyable = True
+        prPyMath.func = enumAttr.create('function', 'function', 0)
+        for index, data in getMathFunctionData().iteritems():
+            enumAttr.addField(data['name'], index)
+        enumAttr.keyable = True
         prPyMath.addAttribute(prPyMath.func)
         prPyMath.attributeAffects(prPyMath.func, prPyMath.result)
         prPyMath.attributeAffects(prPyMath.func, prPyMath.result1)
 
         # ARGUMENTS
-        prPyMath.x = numeric_attribute.create('x', 'x', om.MFnNumericData.kFloat, 0.0)
-        numeric_attribute.keyable = True
+        prPyMath.x = numericAttr.create('x', 'x', om.MFnNumericData.kFloat, 0.0)
+        numericAttr.keyable = True
         prPyMath.addAttribute(prPyMath.x)
         prPyMath.attributeAffects(prPyMath.x, prPyMath.result)
         prPyMath.attributeAffects(prPyMath.x, prPyMath.result1)
 
-        prPyMath.y = numeric_attribute.create('y', 'y', om.MFnNumericData.kFloat, 0.0)
-        numeric_attribute.keyable = True
+        prPyMath.y = numericAttr.create('y', 'y', om.MFnNumericData.kFloat, 0.0)
+        numericAttr.keyable = True
         prPyMath.addAttribute(prPyMath.y)
         prPyMath.attributeAffects(prPyMath.y, prPyMath.result)
 
-        prPyMath.i = numeric_attribute.create('i', 'i', om.MFnNumericData.kInt, 0.0)
-        numeric_attribute.keyable = True
+        prPyMath.i = numericAttr.create('i', 'i', om.MFnNumericData.kInt, 0.0)
+        numericAttr.keyable = True
         prPyMath.addAttribute(prPyMath.i)
         prPyMath.attributeAffects(prPyMath.i, prPyMath.result)
 
-        prPyMath.base = numeric_attribute.create('base', 'base', om.MFnNumericData.kFloat, math.e)
-        numeric_attribute.keyable = True
+        prPyMath.base = numericAttr.create('base', 'base', om.MFnNumericData.kFloat, math.e)
+        numericAttr.keyable = True
         prPyMath.addAttribute(prPyMath.base)
         prPyMath.attributeAffects(prPyMath.base, prPyMath.result)
 
-        prPyMath.iterable = numeric_attribute.create('iterable', 'iterable', om.MFnNumericData.kFloat)
-        numeric_attribute.array = True
-        numeric_attribute.keyable = True
+        prPyMath.iterable = numericAttr.create('iterable', 'iterable', om.MFnNumericData.kFloat)
+        numericAttr.array = True
         prPyMath.addAttribute(prPyMath.iterable)
         prPyMath.attributeAffects(prPyMath.iterable, prPyMath.result)
 
-        prPyMath.arguments = compound_attribute.create('arguments', 'arguments')
-        compound_attribute.addChild(prPyMath.x)
-        compound_attribute.addChild(prPyMath.y)
-        compound_attribute.addChild(prPyMath.i)
-        compound_attribute.addChild(prPyMath.base)
-        compound_attribute.addChild(prPyMath.iterable)
+        prPyMath.arguments = compoundAttr.create('arguments', 'arguments')
+        compoundAttr.addChild(prPyMath.x)
+        compoundAttr.addChild(prPyMath.y)
+        compoundAttr.addChild(prPyMath.i)
+        compoundAttr.addChild(prPyMath.base)
+        compoundAttr.addChild(prPyMath.iterable)
         prPyMath.addAttribute(prPyMath.arguments)
 
         # UTILITY
-        prPyMath.ignore_errors = numeric_attribute.create('ignore_errors', 'ignore_errors', om.MFnNumericData.kBoolean, False)
-        numeric_attribute.keyable = True
-        prPyMath.addAttribute(prPyMath.ignore_errors)
+        prPyMath.xDegreesToRadians = numericAttr.create('xDegreesToRadians', 'xDegreesToRadians', om.MFnNumericData.kBoolean, False)
+        prPyMath.addAttribute(prPyMath.xDegreesToRadians)
+        prPyMath.attributeAffects(prPyMath.xDegreesToRadians, prPyMath.result)
+        prPyMath.attributeAffects(prPyMath.xDegreesToRadians, prPyMath.result1)
+        
+        prPyMath.ignoreErrors = numericAttr.create('ignoreErrors', 'ignoreErrors', om.MFnNumericData.kBoolean, False)
+        prPyMath.addAttribute(prPyMath.ignoreErrors)
 
+        prPyMath.resultDefault = numericAttr.create('resultDefault', 'resultDefault', om.MFnNumericData.kFloat, 0.0)
+        prPyMath.addAttribute(prPyMath.resultDefault)
+        prPyMath.attributeAffects(prPyMath.resultDefault, prPyMath.result)
+
+        prPyMath.result1Default = numericAttr.create('result1Default', 'result1Default', om.MFnNumericData.kFloat, 0.0)
+        prPyMath.addAttribute(prPyMath.result1Default)
+        prPyMath.attributeAffects(prPyMath.result1Default, prPyMath.result1)
+        
     @staticmethod
     def creator():
         return prPyMath()
@@ -122,41 +138,45 @@ class prPyMath(om.MPxNode):
     def __init__(self):
         om.MPxNode.__init__(self)
 
-    def compute(self, plug, data_block):
+    def compute(self, plug, data):
         if plug == prPyMath.e:
-            e_handle = data_block.outputValue(prPyMath.e)
-            e_handle.setFloat(math.e)
-            data_block.setClean(plug)
+            data.outputValue(prPyMath.e).setFloat(math.e)
+            data.setClean(plug)
             return
         elif plug == prPyMath.pi:
-            pi_handle = data_block.outputValue(prPyMath.pi)
-            pi_handle.setFloat(math.pi)
-            data_block.setClean(plug)
+            data.outputValue(prPyMath.pi).setFloat(math.pi)
+            data.setClean(plug)
             return
         elif plug != prPyMath.result and plug != prPyMath.result1:
-            raise ValueError('Unknown plug request : {0}'.format(plug))
-
-        ignore_errors = data_block.inputValue(prPyMath.ignore_errors).asBool()
-
-        func_index = data_block.inputValue(prPyMath.func).asChar()
-        func = get_math_function_data()[func_index]
-
+            return None
+        
+        resultDefault = data.inputValue(prPyMath.resultDefault).asFloat()
+        result1Default = data.inputValue(prPyMath.result1Default).asFloat()
+        
+        ignoreErrors = data.inputValue(prPyMath.ignoreErrors).asBool()
+        
+        funcIndex = data.inputValue(prPyMath.func).asChar()
+        func = getMathFunctionData()[funcIndex]
+        
         args = []
         for kwarg in func['kwargs']:
             if kwarg == 'x':
-                args.append(data_block.inputValue(prPyMath.x).asFloat())
+                x = data.inputValue(prPyMath.x).asFloat()
+                if data.inputValue(prPyMath.xDegreesToRadians).asBool():
+                    x = math.radians(x)
+                args.append(x)
             elif kwarg == 'y':
-                args.append(data_block.inputValue(prPyMath.y).asFloat())
+                args.append(data.inputValue(prPyMath.y).asFloat())
             elif kwarg == 'i':
-                args.append(data_block.inputValue(prPyMath.i).asInt())
+                args.append(data.inputValue(prPyMath.i).asInt())
             elif kwarg == 'base':
-                args.append(data_block.inputValue(prPyMath.base).asFloat())
+                args.append(data.inputValue(prPyMath.base).asFloat())
             elif kwarg == 'iterable':
                 arg = []
-                array_data_handle = data_block.inputArrayValue(prPyMath.iterable)
-                while not array_data_handle.isDone():
-                    arg.append(array_data_handle.inputValue().asFloat())
-                    array_data_handle.next()
+                iterableHandle = data.inputArrayValue(prPyMath.iterable)
+                while not iterableHandle.isDone():
+                    arg.append(iterableHandle.inputValue().asFloat())
+                    iterableHandle.next()
                 args.append(arg)
             else:
                 raise ValueError('Unknown argument: {0}'.format(kwarg))
@@ -166,40 +186,40 @@ class prPyMath(om.MPxNode):
             if isinstance(result, tuple):
                 result, result1 = result
             else:
-                result1 = DEFAULT_RESULT1_VALUE
+                result1 = result1Default
         except ValueError as error:
-            result = DEFAULT_RESULT_VALUE
-            result1 = DEFAULT_RESULT1_VALUE
+            result = resultDefault
+            result1 = result1Default
         else:
             error = None
         if plug == prPyMath.result:
-            result_handle = data_block.outputValue(prPyMath.result)
-            result_handle.setFloat(result)
+            resultHandle = data.outputValue(prPyMath.result)
+            resultHandle.setFloat(result)
         elif plug == prPyMath.result1:
-            result1_handle = data_block.outputValue(prPyMath.result1)
-            result1_handle.setFloat(result1)
-        data_block.setClean(plug)
+            result1Handle = data.outputValue(prPyMath.result1)
+            result1Handle.setFloat(result1)
+        data.setClean(plug)
 
-        if error and not ignore_errors:
+        if error and not ignoreErrors:
             raise ValueError('{0} : {1}({2})'.format(error, func['name'], dict(zip(func['kwargs'], args))))
 
 
-def initializePlugin(mobject):
-    mplugin = om.MFnPlugin(mobject)
+def initializePlugin(obj):
+    pluginFn = om.MFnPlugin(obj)
     try:
-        mplugin.registerNode(prPyMath.kPluginNodeTypeName, prPyMath.prPyMathId, prPyMath.creator, prPyMath.initialize)
+        pluginFn.registerNode(prPyMath.nodeTypeName, prPyMath.nodeTypeId, prPyMath.creator, prPyMath.initialize)
     except:
-        sys.stderr.write("Failed to register node: %s" % prPyMath.kPluginNodeTypeName)
+        sys.stderr.write('Failed to register node: %s' % prPyMath.nodeTypeName)
         raise
-    eval_AE_template()
+    evalAETemplate()
 
 
-def uninitializePlugin(mobject):
-    mplugin = om.MFnPlugin(mobject)
+def uninitializePlugin(obj):
+    pluginFn = om.MFnPlugin(obj)
     try:
-        mplugin.deregisterNode(prPyMath.prPyMathId)
+        pluginFn.deregisterNode(prPyMath.nodeTypeId)
     except:
-        sys.stderr.write("Failed to deregister node: %s" % prPyMath.kPluginNodeTypeName)
+        sys.stderr.write('Failed to deregister node: %s' % prPyMath.nodeTypeName)
         raise
 
 
@@ -207,7 +227,7 @@ def maya_useNewAPI():
     pass
 
 
-def get_math_function_data():
+def getMathFunctionData():
     global FUNCTION_DATA
     if not FUNCTION_DATA:
         FUNCTION_DATA = {}
@@ -226,47 +246,47 @@ def get_math_function_data():
     return FUNCTION_DATA
 
 
-def eval_AE_template():
+def evalAETemplate():
     import maya.mel as mm
     mm.eval('''
-    global proc AEprPyMathTemplate_iterable_create_element()
+    global proc AEprPyMathTemplate_iterableCreateElement()
     {
-        string $node = `textField -q -text "AEprPyMathTemplate_iterable_node_textField"`;
+        string $node = `textField -q -text "AEprPyMathTemplate_iterableNodeTextField"`;
         string $attribute = $node+".iterable";
         int $indices[] = `getAttr -multiIndices $attribute`;
-        int $index_size = size($indices);
-        int $new_index = 0;
-        if ($index_size != 0){
-            $new_index = $indices[$index_size-1]+1;
+        int $indexSize = size($indices);
+        int $newIndex = 0;
+        if ($indexSize != 0){
+            $newIndex = $indices[$indexSize-1]+1;
         }
-        setAttr ($attribute+"["+$new_index+"]") 0;
+        setAttr ($attribute+"["+$newIndex+"]") 0;
     };
     
-    global proc AEprPyMathTemplate_iterable_delete_element()
+    global proc AEprPyMathTemplate_iterableDeleteElement()
     {
-        string $node = `textField -q -text "AEprPyMathTemplate_iterable_node_textField"`;
-        int $index = `intField -q -value "AEprPyMathTemplate_iterable_delete_item_intField"`;
+        string $node = `textField -q -text "AEprPyMathTemplate_iterableNodeTextField"`;
+        int $index = `intField -q -value "AEprPyMathTemplate_iterableDeleteItemIntField"`;
         string $attribute = $node+".iterable";
         removeMultiInstance ($attribute+"["+$index+"]");
 
     };
     
-    global proc AEprPyMathTemplate_iterable_build(string $plug)
+    global proc AEprPyMathTemplate_iterableBuild(string $plug)
     {
-        rowLayout -numberOfColumns 4 -columnWidth4 100 100 100 100;
-        textField -editable 0 "AEprPyMathTemplate_iterable_node_textField";
-        button -l "Create new item" -c "AEprPyMathTemplate_iterable_create_element";
-        button -l "Delete item:" -c "AEprPyMathTemplate_iterable_delete_element";
-        intField -minValue 0 -value 0 "AEprPyMathTemplate_iterable_delete_item_intField";
+        rowLayout -numberOfColumns 4 -columnWidth4 1 100 100 100;
+        textField -editable 0 "AEprPyMathTemplate_iterableNodeTextField";
+        button -l "Create element" -c "AEprPyMathTemplate_iterableCreateElement";
+        button -l "Delete element:" -c "AEprPyMathTemplate_iterableDeleteElement";
+        intField -minValue 0 -value 0 "AEprPyMathTemplate_iterableDeleteItemIntField";
         setParent ..;
-        AEprPyMathTemplate_iterable_update($plug);
+        AEprPyMathTemplate_iterableUpdate($plug);
     };
     
-    global proc AEprPyMathTemplate_iterable_update(string $plug)
+    global proc AEprPyMathTemplate_iterableUpdate(string $plug)
     {
-        string $node_attr[];
-        tokenize($plug, ".", $node_attr);
-        textField -e -text $node_attr[0] "AEprPyMathTemplate_iterable_node_textField";
+        string $nodeAttr[];
+        tokenize($plug, ".", $nodeAttr);
+        textField -e -text $nodeAttr[0] "AEprPyMathTemplate_iterableNodeTextField";
     };
     
     global proc AEprPyMathTemplate(string $nodeName)
@@ -281,10 +301,16 @@ def eval_AE_template():
                     editorTemplate -label "y" -addControl "y";
                     editorTemplate -label "i" -addControl "i";
                     editorTemplate -label "base" -addControl "base";
-                    editorTemplate -beginLayout "iterable" -collapse 1;
-                        editorTemplate -callCustom "AEprPyMathTemplate_iterable_build" "AEprPyMathTemplate_iterable_update" "iterable";
-                        editorTemplate -addControl "iterable";
+                    editorTemplate -beginLayout "iterable" -collapse 0;
+                        editorTemplate -callCustom "AEprPyMathTemplate_iterableBuild" "AEprPyMathTemplate_iterableUpdate" "iterable";
+                        editorTemplate -label "iterable items" -addControl "iterable";
                     editorTemplate -endLayout;
+                editorTemplate -endLayout;
+                editorTemplate -beginLayout "maya utility" -collapse 0;
+                    editorTemplate -label "xDegreesToRadians" -addControl "xDegreesToRadians";
+                    editorTemplate -label "ignoreErrors" -addControl "ignoreErrors";
+                    editorTemplate -label "resultDefault" -addControl "resultDefault";
+                    editorTemplate -label "result1Default" -addControl "result1Default";
                 editorTemplate -endLayout;
             editorTemplate -endLayout;
         AEdependNodeTemplate $nodeName;
