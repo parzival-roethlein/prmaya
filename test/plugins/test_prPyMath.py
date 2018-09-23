@@ -30,7 +30,7 @@ def is_equal(a, b):
 
 
 def full_node_test():
-    FUNCTION_DATA = prPyMath.get_math_function_data()
+    FUNCTION_DATA = prPyMath.getMathFunctionData()
     node = pm.createNode('prPyMath')
 
     errors = 0
@@ -90,7 +90,9 @@ def manual_node_test():
              ['sin', {'x': 1.57075}, 1.0],
              ['sin', {'x': -1.57075}, -1.0],
              ['cos', {'x': 0}, 1.0],
-             ['cos', {'x': 3.1415}, -1.0],
+             ['cos', {'x': 180}, -0.59846],
+             ['cos', {'x': 180, 'xDegreesToRadians': True}, -1.0],
+             ['cos', {'x': 3.1415, 'xDegreesToRadians': False}, -1.0],
              ['pow', {'x': 3, 'y': 0}, 1],
              ['pow', {'x': 4, 'y': 1}, 4],
              ['pow', {'x': 2, 'y': 5}, 32],
@@ -100,7 +102,7 @@ def manual_node_test():
              ['ldexp', {'x': 5, 'i': 2}, 20],
              ['fsum', {'iterable[0]': 1.1, 'iterable[2]': 2.2, 'iterable[3]': 3.3}, 6.6],
              # ERROR TEST
-             ['acos', {'x': 2}, prPyMath.DEFAULT_RESULT_VALUE],
+             ['acos', {'x': 2, 'resultDefault': 3.33}, 3.33],
              # FINISH
              ['sin', {'x': 1.57075}, 1.0],
              ]
