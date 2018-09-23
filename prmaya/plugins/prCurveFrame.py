@@ -1,5 +1,5 @@
 """
-prototype stage
+prototype
 
 Parallel Transport Approach to Curve Framing
 
@@ -18,8 +18,8 @@ import maya.cmds as mc
 
 
 class prCurveFrame(om.MPxNode):
-    kPluginNodeTypeName = "prCurveFrame"
-    prCurveFrameId = om.MTypeId(0x0010A51B)  # not save
+    nodeTypeName = "prCurveFrame"
+    nodeTypeId = om.MTypeId(0x0004C261)  # local, not save
 
     @staticmethod
     def initialize():
@@ -56,18 +56,18 @@ class prCurveFrame(om.MPxNode):
     def __init__(self):
         om.MPxNode.__init__(self)
 
-    def compute(self, plug, dataBlock):
+    def compute(self, plug, data):
         if plug != prCurveFrame.outputMatrix:
-            raise ValueError('unexpected plug: {0}'.format(plug))
-        inputCurve = om.MFnNurbsCurve(dataBlock.inputValue(prCurveFrame.inputCurve).asNurbsCurve())
-        points = dataBlock.inputValue(prCurveFrame.points).asInt()
-        worldUpMatrix = dataBlock.inputValue(prCurveFrame.worldUpMatrix).asMatrix()
+            return None
+        inputCurve = om.MFnNurbsCurve(data.inputValue(prCurveFrame.inputCurve).asNurbsCurve())
+        points = data.inputValue(prCurveFrame.points).asInt()
+        worldUpMatrix = data.inputValue(prCurveFrame.worldUpMatrix).asMatrix()
 
-        step_length = inputCurve.length() / (points-1)
+        stepLength = inputCurve.length() / (points-1)
         positions = []
         tangents = []
         for x in range(points):
-            parameter = inputCurve.findParamFromLength(x*step_length)
+            parameter = inputCurve.findParamFromLength(x*stepLength)
             positions.append(inputCurve.getPointAtParam(parameter, space=om.MSpace.kWorld))
             tangents.append(inputCurve.tangent(parameter, space=om.MSpace.kWorld))
 
@@ -81,11 +81,11 @@ class prCurveFrame(om.MPxNode):
                 bitangent.normalize()
                 angle = math.radians(math.acos(tangents[x] * tangents[x+1]))
                 normal = normals[x].rotateBy(om.MQuaternion(angle, bitangent))
-                #normal = normal[x] * getRotationMatrix(angle, bitangent)
+                # normal = normal[x] * getRotationMatrix(angle, bitangent)
             normals.append(normal)
             bitangents.append(bitangent)
 
-        outputMatrixArrayHandle = dataBlock.outputArrayValue(prCurveFrame.outputMatrix)
+        outputMatrixArrayHandle = data.outputArrayValue(prCurveFrame.outputMatrix)
         outputMatrixBuilder = outputMatrixArrayHandle.builder()
         for x in range(points):
             matrix = om.MMatrix((list(tangents[x]) + [0], list(normals[x]) + [0], list(bitangents[x]) + [0], list(positions[x])))
@@ -93,25 +93,25 @@ class prCurveFrame(om.MPxNode):
             outputMatrixHandle.setMMatrix(matrix)
         outputMatrixArrayHandle.set(outputMatrixBuilder)
 
-        dataBlock.setClean(plug)
+        data.setClean(plug)
 
 
-def initializePlugin(mobject):
-    mplugin = om.MFnPlugin(mobject)
+def initializePlugin(obj):
+    pluginFn = om.MFnPlugin(obj)
     try:
-        mplugin.registerNode(prCurveFrame.kPluginNodeTypeName, prCurveFrame.prCurveFrameId, prCurveFrame.creator, prCurveFrame.initialize)
+        pluginFn.registerNode(prCurveFrame.nodeTypeName, prCurveFrame.nodeTypeId, prCurveFrame.creator, prCurveFrame.initialize)
     except:
-        sys.stderr.write('Failed to register node: {0}'.format(prCurveFrame.kPluginNodeTypeName))
+        sys.stderr.write('Failed to register node: {0}'.format(prCurveFrame.nodeTypeName))
         raise
-    eval_AE_template()
+    evalAETemplate()
 
 
-def uninitializePlugin(mobject):
-    mplugin = om.MFnPlugin(mobject)
+def uninitializePlugin(obj):
+    pluginFn = om.MFnPlugin(obj)
     try:
-        mplugin.deregisterNode(prCurveFrame.prCurveFrameId)
+        pluginFn.deregisterNode(prCurveFrame.nodeTypeId)
     except:
-        sys.stderr.write('Failed to deregister node: {0}'.format(prCurveFrame.kPluginNodeTypeName))
+        sys.stderr.write('Failed to deregister node: {0}'.format(prCurveFrame.nodeTypeName))
         raise
 
 
@@ -119,7 +119,7 @@ def maya_useNewAPI():
     pass
 
 
-def eval_AE_template():
+def evalAETemplate():
     import maya.mel as mm
     mm.eval('''
     global proc AEprCurveFrameTemplate(string $nodeName)
@@ -147,10 +147,10 @@ def createFromCurve(curve=None):
 
 def createDecomposeMatrixFromOutputMatrix(curveFrame=None, createTransformType='locator', toggleLocalAxis=True):
     mc.getAttr('{0}.outputMatrix[0]'.format(curveFrame))
-    sel_list = om.MSelectionList()
-    sel_list.add('{0}.outputMatrix'.format(curveFrame))
+    selectionList = om.MSelectionList()
+    selectionList.add('{0}.outputMatrix'.format(curveFrame))
     transforms = []
-    for x in range(sel_list.getPlug(0).numElements()):
+    for x in range(selectionList.getPlug(0).numElements()):
         decomposeMatrix = mc.createNode('decomposeMatrix')
         decomposeMatrix = mc.rename(decomposeMatrix, '{0}_{1}_decomposeMatrix'.format(curveFrame, x))
         mc.connectAttr('{0}.outputMatrix[{1}]'.format(curveFrame, x), '{0}.inputMatrix'.format(decomposeMatrix))
