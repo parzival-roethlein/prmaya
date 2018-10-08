@@ -88,12 +88,8 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
     def initialize():
         typedAttr = om.MFnTypedAttribute()
         numericAttr = om.MFnNumericAttribute()
-        matrixAttr = om.MFnMatrixAttribute()
         rampAttr = om.MRampAttribute()
         compoundAttr = om.MFnCompoundAttribute()
-        
-        prClosestPoint.displayWarnings = numericAttr.create('displayWarnings', 'displayWarnings', om.MFnNumericData.kBoolean, True)
-        prClosestPoint.addAttribute(prClosestPoint.displayWarnings)
         
         # maxDistance
         prClosestPoint.maxDistance = numericAttr.create('maxDistance', 'maxDistance', om.MFnNumericData.kFloat, 1.0)
@@ -162,27 +158,16 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
         prClosestPoint.addAttribute(prClosestPoint.inputMeshEnabled)
         prClosestPoint.attributeAffects(prClosestPoint.inputMeshEnabled, prClosestPoint.outputGeometry)
         
-        prClosestPoint.inputMeshShape = typedAttr.create('inputMeshShape', 'inputMeshShape', om.MFnMeshData.kMesh)
-        prClosestPoint.addAttribute(prClosestPoint.inputMeshShape)
-        prClosestPoint.attributeAffects(prClosestPoint.inputMeshShape, prClosestPoint.outputGeometry)
-        '''
-        prClosestPoint.inputMeshWorldMatrix = matrixAttr.create('inputMeshWorldMatrix', 'inputMeshWorldMatrix')
-        prClosestPoint.addAttribute(prClosestPoint.inputMeshWorldMatrix)
-        prClosestPoint.attributeAffects(prClosestPoint.inputMeshWorldMatrix, prClosestPoint.outputGeometry)
-        '''
         prClosestPoint.inputMeshClosestVertex = numericAttr.create('inputMeshClosestVertex', 'inputMeshClosestVertex', om.MFnNumericData.kFloat, 0.0)
         numericAttr.setKeyable(True)
         numericAttr.setMin(0.0)
         numericAttr.setMax(1.0)
         prClosestPoint.addAttribute(prClosestPoint.inputMeshClosestVertex)
         prClosestPoint.attributeAffects(prClosestPoint.inputMeshClosestVertex, prClosestPoint.outputGeometry)
-        
-        prClosestPoint.inputMesh = compoundAttr.create('inputMesh', 'inputMesh')
-        compoundAttr.addChild(prClosestPoint.inputMeshShape)
-        #compoundAttr.addChild(prClosestPoint.inputMeshWorldMatrix)
-        compoundAttr.addChild(prClosestPoint.inputMeshClosestVertex)
-        prClosestPoint.addAttribute(prClosestPoint.inputMesh)
-        prClosestPoint.attributeAffects(prClosestPoint.inputMesh, prClosestPoint.outputGeometry)
+
+        prClosestPoint.inputMeshShape = typedAttr.create('inputMeshShape', 'inputMeshShape', om.MFnMeshData.kMesh)
+        prClosestPoint.addAttribute(prClosestPoint.inputMeshShape)
+        prClosestPoint.attributeAffects(prClosestPoint.inputMeshShape, prClosestPoint.outputGeometry)
         
         # inputCurve
         prClosestPoint.inputCurveEnabled = numericAttr.create('inputCurveEnabled', 'inputCurveEnabled', om.MFnNumericData.kBoolean, True)
@@ -256,12 +241,14 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
         maxDistanceUScaleEnabled = block.inputValue(self.maxDistanceUScaleEnabled).asBool()
         maxDistanceVScaleEnabled = block.inputValue(self.maxDistanceVScaleEnabled).asBool()
         if maxDistanceUScaleEnabled or maxDistanceVScaleEnabled:
-            float2Util = om.MScriptUtil()
-            float2Util.createFromList([0.0, 0.0], 2)
-            float2Ptr = float2Util.asFloat2Ptr()
+            float2PtrUtil = om.MScriptUtil()
+            float2PtrUtil.createFromList([0.0, 0.0], 2)
+            float2Ptr = float2PtrUtil.asFloat2Ptr()
         if maxDistanceUScaleEnabled:
+            maxDistanceUScaleAttr = om.MRampAttribute(thisNode, self.maxDistanceUScale)
             uValues = {}
         if maxDistanceVScaleEnabled:
+            maxDistanceVScaleAttr = om.MRampAttribute(thisNode, self.maxDistanceVScale)
             vValues = {}
         
         positionEnabled = block.inputValue(self.inputPositionEnabled).asBool()
@@ -270,17 +257,23 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
         surfaceEnabled = block.inputValue(self.inputSurfaceEnabled).asBool()
         if not positionEnabled and not meshEnabled and not curveEnabled and not surfaceEnabled:
             return
+        if meshEnabled:
+            intUtil = om.MScriptUtil()
+            intUtil.createFromInt(0)
+            intPtr = intUtil.asIntPtr()
         if curveEnabled or surfaceEnabled:
-            doubleUtil = om.MScriptUtil()
-            doubleUtil.createFromDouble(0.0)
-            doublePtr = doubleUtil.asDoublePtr()
-            doubleUtil2 = om.MScriptUtil()
-            doubleUtil2.createFromDouble(0.0)
-            doublePtr2 = doubleUtil2.asDoublePtr()
+            doublePtrUtil = om.MScriptUtil()
+            doublePtrUtil.createFromDouble(0.0)
+            doublePtr = doublePtrUtil.asDoublePtr()
+        if surfaceEnabled:
+            doublePtrUtil2 = om.MScriptUtil()
+            doublePtrUtil2.createFromDouble(0.0)
+            doublePtr2 = doublePtrUtil2.asDoublePtr()
         
         falloffEnabled = block.inputValue(self.falloffEnabled).asBool()
         if falloffEnabled:
             falloffRampAttr = om.MRampAttribute(thisNode, self.falloff)
+        if falloffEnabled or maxDistanceUScaleEnabled or maxDistanceVScaleEnabled:
             floatPtrUtil = om.MScriptUtil()
             floatPtrUtil.createFromDouble(0.0)
             floatPtr = floatPtrUtil.asFloatPtr()
@@ -315,8 +308,8 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
         
         if positionEnabled:
             inputPositionsHandle = block.inputArrayValue(self.inputPosition)
-            for x in range(inputPositionsHandle.elementCount()):
-                inputPositionsHandle.jumpToArrayElement(x)
+            for i in range(inputPositionsHandle.elementCount()):
+                inputPositionsHandle.jumpToArrayElement(i)
                 position = om.MPoint(*inputPositionsHandle.inputValue().asFloat3())
                 for index, weight, point in izip(indices, weights, pointsWorldSpace):
                     if not weight:
@@ -327,26 +320,12 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
                     deltas[index] = delta
         
         if meshEnabled:
-            # inputMeshWorldMatrix = block.inputValue(self.inputMeshWorldMatrix).asMatrix()
-            # inputMeshWorldMatrixPlug = om.MPlug(thisNode, self.inputMeshWorldMatrix)
-            # if displayWarnings and not inputMeshWorldMatrixPlug.isConnected():
-            #     om.MGlobal.displayWarning('Missing input : {}'.format(inputMeshWorldMatrixPlug.name()))
             meshHandle = block.inputValue(self.inputMeshShape)
             meshData = meshHandle.data()
             if not meshData.isNull():
-                intUtil = om.MScriptUtil()
-                intUtil.createFromInt(0)
-                intPtr = intUtil.asIntPtr()
-                # TODO: something is wrong with the matrix arg
-                # meshIntersector = om.MMeshIntersector()
-                # meshIntersector.create(meshData, inputMeshWorldMatrix)
-                # closestPointOnMesh = om.MPointOnMesh()
-                # meshIntersector.getClosestPoint(point, closestPointOnMesh)
-                # faceId = closestPointOnMesh.faceIndex()
-                # targetPoint = om.MPoint(closestPointOnMesh.getPoint())
                 meshFn = om.MFnMesh(meshData)
                 closestVertex = block.inputValue(self.inputMeshClosestVertex).asFloat()
-                if closestVertex or maxDistanceUScaleEnabled or maxDistanceVScaleEnabled:
+                if closestVertex:
                     tempPoint = om.MPoint()
                 for index, weight, point in izip(indices, weights, pointsWorldSpace):
                     if not weight:
@@ -371,9 +350,9 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
                     if maxDistanceUScaleEnabled or maxDistanceVScaleEnabled:
                         meshFn.getUVAtPoint(targetPoint, float2Ptr, om.MSpace.kWorld)
                         if maxDistanceUScaleEnabled:
-                            uValues[index] = float2Util.getFloat2ArrayItem(float2Ptr, 0, 0)
+                            uValues[index] = float2PtrUtil.getFloat2ArrayItem(float2Ptr, 0, 0)
                         if maxDistanceVScaleEnabled:
-                            vValues[index] = float2Util.getFloat2ArrayItem(float2Ptr, 0, 1)
+                            vValues[index] = float2PtrUtil.getFloat2ArrayItem(float2Ptr, 0, 1)
         
         if curveEnabled:
             curveShapeData = block.inputValue(self.inputCurveShape).data()
@@ -405,32 +384,33 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
                         continue
                     deltas[index] = delta
                     if maxDistanceUScaleEnabled:
-                        uValues[index] = om.MScriptUtil.getDouble(doublePtr)
+                        uValues[index] = om.MScriptUtil.getDouble(doublePtr) / surfaceShapeFn.numSpansInU()
                     if maxDistanceVScaleEnabled:
-                        vValues[index] = om.MScriptUtil.getDouble(doublePtr2)
-        
-        if maxDistanceUScaleEnabled:
-            print 'u : ', uValues
-        if maxDistanceVScaleEnabled:
-            print 'v : ', vValues
+                        vValues[index] = om.MScriptUtil.getDouble(doublePtr2) / surfaceShapeFn.numSpansInV()
         
         # maxDistance / falloff
         for vertexId, delta in deltas.iteritems():
             if maxDistance:
                 deltaLength = delta.length()
-                if deltaLength > maxDistance:
+                vertexMaxDistance = maxDistance
+                if maxDistanceUScaleEnabled and vertexId in uValues:
+                    maxDistanceUScaleAttr.getValueAtPosition(uValues[vertexId], floatPtr)
+                    vertexMaxDistance *= om.MScriptUtil.getFloat(floatPtr)
+                if maxDistanceVScaleEnabled and vertexId in vValues:
+                    maxDistanceVScaleAttr.getValueAtPosition(vValues[vertexId], floatPtr)
+                    vertexMaxDistance *= om.MScriptUtil.getFloat(floatPtr)
+                if deltaLength > vertexMaxDistance:
                     continue
                 elif falloffEnabled:
-                    lengthMaxDistancePercent = deltaLength / maxDistance
+                    lengthMaxDistancePercent = deltaLength / vertexMaxDistance
                     falloffRampAttr.getValueAtPosition(float(1.0 - lengthMaxDistancePercent), floatPtr)
                     falloff = om.MScriptUtil.getFloat(floatPtr)
                     delta *= falloff
             listIndex = indices.index(vertexId)
             pointsWorldSpace[listIndex] += delta * weights[listIndex] * envelope
         
-        # final positions
-        worldToLocalMatrix = localToWorldMatrix.inverse()
         pointsObjectSpace = om.MPointArray()
+        worldToLocalMatrix = localToWorldMatrix.inverse()
         for point in pointsWorldSpace:
             pointsObjectSpace.append(point * worldToLocalMatrix)
         iterator.setAllPositions(pointsObjectSpace)
@@ -478,7 +458,7 @@ def evalAETemplate():
                 editorTemplate -endLayout;
                 editorTemplate -beginLayout "inputMesh Attributes" -collapse 1;
                     editorTemplate -label "inputMeshEnabled" -addControl "inputMeshEnabled";
-                    editorTemplate -label "inputMesh" -addControl "inputMesh";
+                    editorTemplate -label "inputMeshShape" -addControl "inputMeshShape";
                 editorTemplate -endLayout;
                 editorTemplate -beginLayout "inputCurve Attributes" -collapse 1;
                     editorTemplate -label "inputCurveEnabled" -addControl "inputCurveEnabled";
@@ -499,19 +479,22 @@ def evalAETemplate():
 
 
 def fromSelection(nodes=None):
+    """
+    :param nodes: [driver1, ... driverN, driven]
+    :return:
+    """
     nodes = nodes or mc.ls(sl=True)
     if not nodes:
         return
     nodes = [mc.listRelatives(n, type='shape')[0] if mc.ls(n, type='transform') else n for n in nodes]
     driven = nodes.pop()
-    deformer = mc.deformer(driven, type='prClosestPoint')[0]
+    deformer = mc.deformer(driven, type=prClosestPoint.nodeTypeName)[0]
     
     for driver in nodes:
         print driver
         driverType = mc.ls(driver, showType=True)[1]
         if driverType == 'mesh':
-            mc.connectAttr('{}.worldMesh'.format(driver), '{}.inputMesh.inputMeshShape'.format(deformer))
-            # mc.connectAttr('{}.worldMatrix'.format(driver), '{}.inputMesh.inputMeshWorldMatrix'.format(deformer))
+            mc.connectAttr('{}.worldMesh'.format(driver), '{}.inputMeshShape'.format(deformer))
         elif driverType == 'nurbsCurve':
             mc.connectAttr('{}.worldSpace'.format(driver), '{}.inputCurveShape'.format(deformer))
         elif driverType == 'nurbsSurface':
@@ -528,4 +511,3 @@ def test():
     mc.select(['driverMesh', 'driverCurve', 'driverSurface', 'driven'])
     fromSelection()
     mc.select('driven')
-
