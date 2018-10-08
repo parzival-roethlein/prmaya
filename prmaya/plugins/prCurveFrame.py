@@ -1,6 +1,4 @@
 """
-prototype
-
 Parallel Transport Approach to Curve Framing
 
 paper:
@@ -8,6 +6,19 @@ https://pdfs.semanticscholar.org/7e65/2313c1f8183a0f43acce58ae8d8caf370a6b.pdf
 
 algorithm explanation and houdini implementation tutorial:
 https://vimeo.com/251091418
+
+
+TODO:
+- outTranslate array
+- make upMatrix upVector perpendicular to first tangent
+- fix unstable twist when rotations are zero
+- user defined up vector
+- maybe user defined aim vector
+
+TODO LATER:
+- check outputMatrix to MFnData.kMatrixArray ?
+- createDecomposeMatrixFromOutputMatrix split off transform creation in separate function
+- aetemplate outputMatrix scroll layout
 """
 
 import sys
@@ -26,7 +37,7 @@ class prCurveFrame(om.MPxNode):
         typedAttr = om.MFnTypedAttribute()
         matrixAttr = om.MFnMatrixAttribute()
         numericAttr = om.MFnNumericAttribute()
-
+        
         # OUTPUT
         prCurveFrame.outputMatrix = matrixAttr.create("outputMatrix", "outputMatrix", matrixAttr.kDouble)
         matrixAttr.array = True
@@ -40,14 +51,14 @@ class prCurveFrame(om.MPxNode):
         prCurveFrame.addAttribute(prCurveFrame.inputCurve)
         prCurveFrame.attributeAffects(prCurveFrame.inputCurve, prCurveFrame.outputMatrix)
 
-        prCurveFrame.worldUpMatrix = matrixAttr.create("worldUpMatrix", "worldUpMatrix", matrixAttr.kDouble)
-        prCurveFrame.addAttribute(prCurveFrame.worldUpMatrix)
-        prCurveFrame.attributeAffects(prCurveFrame.worldUpMatrix, prCurveFrame.outputMatrix)
-
         prCurveFrame.points = numericAttr.create("points", "points", om.MFnNumericData.kInt, 5)
         numericAttr.keyable = True
         prCurveFrame.addAttribute(prCurveFrame.points)
         prCurveFrame.attributeAffects(prCurveFrame.points, prCurveFrame.outputMatrix)
+        
+        prCurveFrame.worldUpMatrix = matrixAttr.create("worldUpMatrix", "worldUpMatrix", matrixAttr.kDouble)
+        prCurveFrame.addAttribute(prCurveFrame.worldUpMatrix)
+        prCurveFrame.attributeAffects(prCurveFrame.worldUpMatrix, prCurveFrame.outputMatrix)
 
     @staticmethod
     def creator():
@@ -97,7 +108,7 @@ class prCurveFrame(om.MPxNode):
 
 
 def initializePlugin(obj):
-    pluginFn = om.MFnPlugin(obj)
+    pluginFn = om.MFnPlugin(obj, 'Parzival Roethlein', '0.0.1')
     try:
         pluginFn.registerNode(prCurveFrame.nodeTypeName, prCurveFrame.nodeTypeId, prCurveFrame.creator, prCurveFrame.initialize)
     except:
@@ -128,7 +139,6 @@ def evalAETemplate():
             editorTemplate -beginLayout "prPyMath Attributes" -collapse 0;
                 editorTemplate -label "points" -addControl "points";
                 editorTemplate -label "worldUpMatrix" -addControl "worldUpMatrix";
-                editorTemplate -label "inputCurve" -addControl "inputCurve";
                 editorTemplate -label "outputMatrix" -addControl "outputMatrix";
             editorTemplate -endLayout;
             AEdependNodeTemplate $nodeName;
@@ -139,7 +149,7 @@ def evalAETemplate():
 
 
 def createFromCurve(curve=None):
-    curve = curve or mc.ls(sl=True, type='transform', typ='nurbsCurve')[0]
+    curve = curve or mc.ls(sl=True, type=['transform', 'nurbsCurve'])[0]
     curveFrame = mc.createNode('prCurveFrame')
     mc.connectAttr('{0}.worldSpace'.format(curve), '{0}.inputCurve'.format(curveFrame))
     return curveFrame
@@ -155,12 +165,12 @@ def createDecomposeMatrixFromOutputMatrix(curveFrame=None, createTransformType='
         decomposeMatrix = mc.rename(decomposeMatrix, '{0}_{1}_decomposeMatrix'.format(curveFrame, x))
         mc.connectAttr('{0}.outputMatrix[{1}]'.format(curveFrame, x), '{0}.inputMatrix'.format(decomposeMatrix))
         if createTransformType:
-            node = mc.createNode(createTransformType)
-            if mc.ls(node, type='shape'):
-                node = mc.listRelatives(node, parent=True)[0]
-            mc.connectAttr('{0}.outputTranslate'.format(decomposeMatrix), '{0}.translate'.format(node))
-            mc.connectAttr('{0}.outputRotate'.format(decomposeMatrix), '{0}.rotate'.format(node))
-            transforms.append(node)
+            transform = mc.createNode(createTransformType)
+            if mc.ls(transform, type='shape'):
+                transform = mc.listRelatives(transform, parent=True)[0]
+            mc.connectAttr('{0}.outputTranslate'.format(decomposeMatrix), '{0}.translate'.format(transform))
+            mc.connectAttr('{0}.outputRotate'.format(decomposeMatrix), '{0}.rotate'.format(transform))
+            transforms.append(transform)
     if toggleLocalAxis:
         mc.toggle(transforms, localAxis=True)
     return transforms

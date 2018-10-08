@@ -320,7 +320,6 @@ class prAttractNode(OpenMayaMPx.MPxDeformerNode):
                     closestVector = None
                     closestLength = None
                     for eachVertex in faceVertices:
-                        eachPoint = om.MPoint()
                         meshInputPoly.getPoint(eachVertex, loopPoint, om.MSpace.kWorld)
                         loopVec = loopPoint - closePt
                         loopVecLength = loopVec.length()

@@ -204,7 +204,7 @@ class prPyMath(om.MPxNode):
 
 
 def initializePlugin(obj):
-    pluginFn = om.MFnPlugin(obj)
+    pluginFn = om.MFnPlugin(obj, 'Parzival Roethlein', '0.0.1')
     try:
         pluginFn.registerNode(prPyMath.nodeTypeName, prPyMath.nodeTypeId, prPyMath.creator, prPyMath.initialize)
     except:
