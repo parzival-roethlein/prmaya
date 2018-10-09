@@ -1,0 +1,248 @@
+/*
+// -----------------------------------------------------------
+// testcode (path strings have to be updated, only use last line for continous usage)
+// 	load plugin and script
+loadPlugin "L:/eclipse_workspace/proethlein/prSlideNode/prSlideNode.py";
+source "L:/eclipse_workspace/proethlein/prSlideNode/prSlidePaint.mel";
+rehash;
+// 	example scene
+file -new -f; 
+polyTorus;
+// 	to call context
+prSlidePaint_Initialize();
+// -----------------------------------------------------------
+*/
+
+// code
+global int $debugPrSlide = 0;
+//
+global int $initOne;
+global int $initTwo;
+// DG
+global string $currentCtx;
+global string $currentMesh;
+global string $currentMeshParent;
+global string $slideOne;
+global string $handleOne;
+global int $vertexIdPrSlide;
+// ctx attributes
+global vector $stampPos;
+global float $prRadius;
+global int $reflection;
+global int $reflectionOneTwo;
+global int $algorithm = 0;// 0=closest, 1=paper
+//
+// This procedure should be set as the "Tool Setup Cmd" in the 
+// Setup tab of the Maya Artisan Script Paint tool's tool settings
+// window. The tool context is supplied as an argument.
+global proc prSlidePaint( string $context )
+{
+	// initialize all the other commands in this scriptable 
+	// paint tool context.
+	// 
+	artUserPaintCtx -e
+		-ic "initPrSlidePaint"	-fc "finalizePrSlidePaint"
+		-svc "setValuePrSlidePaint" -gvc ""
+		-gsc ""
+		-cc ""
+		-tcc ""
+		-gac ""
+		-duringStrokeCmd ""
+		$context;
+	global string $currentCtx;
+	$currentCtx = $context;
+	global int $debugPrSlide;
+	if( $debugPrSlide )
+		print ("\n$currentCtx: "+$currentCtx);
+}
+
+// initialize the deformer (reflection), radius, ramp
+global proc string initPrSlidePaint( string $name )
+{
+	// save selection
+	string $sel[] = `ls -sl`;
+	// reset initialize
+	global int $initOne;
+	$initOne = 1;
+	global int $initTwo;
+	$initTwo = 0;
+	// get DG infos
+	global string $currentCtx;
+	global string $currentMesh;
+	$currentMesh = $name;
+	global string $currentMeshParent;
+	string $parents[] = `listRelatives -p $currentMesh`;
+	$currentMeshParent = $parents[0];
+	// get radius
+	global float $prRadius;
+	$prRadius = `artUserPaintCtx -q -r $currentCtx`;
+	// get reflection
+	global int $reflection;
+	$reflection = `artUserPaintCtx -q -reflection $currentCtx`;
+	if( $reflection == 1 )
+		$initTwo = 1;
+	global string $reflectionAxis;
+	$reflectionAxis = `artUserPaintCtx -q -reflectionaxis $currentCtx`;
+	// set reflectionSide
+	global int $reflectionOneTwo;
+	$reflectionOneTwo = 1;
+	//
+	// recreate selection
+	select $sel;
+	//
+	// debug
+	global int $debugPrSlide;
+	if( $debugPrSlide )
+	{
+		print "\n\n---- ini start ----";
+		print ("\n$name: "+$name);
+		print ("\n$prRadius: "+(string)$prRadius);
+		print ("\n$reflection: "+(string)$reflection);
+		print ("\n$reflectionAxis: "+(string)$reflectionAxis);
+		print "\n---- ini end ----";
+	}
+	//
+	return ("-p world -sp world");
+}
+
+global proc finalizePrSlidePaint( int $surfaceID )
+{
+	// delete history on selection (wip.. todo use ids and option in UI)
+	delete -ch;
+}
+
+global proc setValuePrSlidePaint( int $slot, int $index, float $val, float $x, float $y, float $z, float $spX, float $spY, float $spZ )
+{
+	// global
+	global int $debugPrSlide;
+	global string $handleOne;
+	global string $handleTwo;
+	// arg stamp position
+	vector $sp = <<$spX, $spY, $spZ>>;
+	// initialize deformer
+	global int $initOne;
+	if( $initOne )
+	{
+		$handleOne = createDeformerPrSlidePaint( $sp, "none" );
+		$initOne = 0;
+	}
+	global int $initTwo;
+	if( $initTwo )
+	{
+		global int $reflection;
+		if( $reflection )
+		{
+			string $reflectionAxis = `artUserPaintCtx -q -ra artUserPaintContext`;
+			$handleTwo = createDeformerPrSlidePaint( $sp, $reflectionAxis );
+		}
+		$initTwo = 0;
+	}
+	//
+	// move handle
+	global vector $stampPos;
+	if( $stampPos != $sp )
+	{
+		string $moveHandle = $handleOne;
+		// check if it is reflected side
+		global int $reflection;
+		global int $reflectionOneTwo;
+		if( $reflection==1 )
+		{
+			if( $reflectionOneTwo==2 )
+			{
+				global string $handleTwo;
+				$moveHandle = $handleTwo;
+				$reflectionOneTwo = 1;
+			}
+			else
+			{
+				$reflectionOneTwo = 2;
+			}
+		}
+		// set new handle position
+		$stampPos = <<$spX, $spY, $spZ >>;
+		xform -t ($stampPos.x) ($stampPos.y) ($stampPos.z) -ws $moveHandle;
+		//
+		if( $debugPrSlide )
+			print ("\nset "+$spX+" "+$spY+" "+$spZ );
+	}
+}
+
+global proc string createDeformerPrSlidePaint( vector $sp, string $reflectionAxis )
+{
+	// save selection
+	string $sel[] = `ls -sl`;
+	//
+	// get closest point for initialize vertex
+	string $close = `createNode closestPointOnMesh`;
+	setAttr ($close+".ipx", ($sp.x));
+	setAttr ($close+".ipy", ($sp.y));
+	setAttr ($close+".ipz", ($sp.z));
+	// change if reflection
+	if( $reflectionAxis != "none" )
+	{
+		if( $reflectionAxis == "x" )
+			setAttr ($close+".ipx", -($sp.x));
+		if( $reflectionAxis == "y" )
+			setAttr ($close+".ipy", -($sp.y));
+		if( $reflectionAxis == "z" )
+			setAttr ($close+".ipz", -($sp.z));
+	}
+	global string $currentMesh;
+	connectAttr ($currentMesh+".outMesh", $close+".inMesh");
+	global int $vertexIdPrSlide;
+	$vertexIdPrSlide = `getAttr ($close+".closestVertexIndex" )`;
+	delete $close;
+	//
+	// create deformer
+	global string $currentMeshParent;
+	select $currentMeshParent;
+	string $def[] = `deformer -type prSlideNode`;
+	// node
+	global string $slideOne;
+	$slideOne = $def[0];
+	setAttr ($slideOne+".handleVisibility") 0;
+	setAttr ($slideOne+".position") $vertexIdPrSlide;
+	global int $algorithm;
+	setAttr ($slideOne+".algorithm") $algorithm;
+	global float $prRadius;
+	setAttr ($slideOne+".radius") $prRadius;
+	// handle
+	string $handleArray[] = `listRelatives -c -type "transform" $def[1]`;
+	string $handle = $handleArray[0];
+	//
+	// recreate selection
+	select $sel;
+	// debug
+	global int $debugPrSlide;
+	if( $debugPrSlide )
+		print ("\nvertexid: "+(string)$vertexIdPrSlide);
+	// return handle
+	return $handle;
+}
+
+// toggle reflection attribute twice 
+// 	that way setValueCommand gets called whenever mouse moves >> more often >> else it can not really be used for modeling
+global proc toggleReflectionPrSlidePaint()
+{
+	global string $currentCtx;
+	int $startReflection = `artUserPaintCtx -q -reflection $currentCtx`;
+	if( $startReflection == 0 )
+		artUserPaintCtx -e -reflection 1 $currentCtx;
+	else
+		artUserPaintCtx -e -reflection 0 $currentCtx;
+}
+
+// initialize paint tool
+global proc prSlidePaint_Initialize()
+{
+	global string $currentCtx;
+	// context
+	ScriptPaintTool;
+	artUserPaintCtx -e -tsc "prSlidePaint" `currentCtx`;
+	// toggle for bug exploit
+	toggleReflectionPrSlidePaint();
+	toggleReflectionPrSlidePaint();
+	// activate accumulate opacity for continous updating
+	artUserPaintCtx -e -accopacity 1 $currentCtx;
+}
