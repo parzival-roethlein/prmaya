@@ -40,14 +40,15 @@ inherited:
 
 LINKS
 - Demo:
-# TODO
+TODO
 - Making-off:
 https://pazrot3d.blogspot.com/2018/10/prclosestpointpy-making-of.html
-- This was written in my spare time. If you found it useful in Maya or for coding, consider supporting the author:
+- Donate: (This was written in my spare time. If you found it useful in Maya or for coding, consider supporting the author)
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
 - should maxDistance be a maya unit attribute?
+- now after removing matrix input for mesh shapes, maybe switch back to a single inputShape array attribute and each shape has its own on/off switch, closestVertex global or per shape?
 - creation script should work with vertex selection
 """
 

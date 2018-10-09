@@ -1,30 +1,33 @@
 """
 the python math module as maya node
 
-1. DATA
+ATTRIBUTES
+1. data
 math.e = prPyMath1.e
 math.pi = prPyMath1.pi
-
-2. FUNCTIONS
+2. functions
 functions = prPyMath1.func : which function should evaluate
 arguments = prPyMath1.x, prPyMath1.y, prPyMath1.i, prPyMath1.base, prPyMath1.iterable
 return = prPyMath1.result, prPyMath1.result1 (result1 is only used for second element of the tuple returned by the functions math.modf and math.frexp)
-
-3. EXTRA MAYA UTILITY
+3. extra maya utility
 xDegreesToRadians : will convert argument.x value from degrees (maya rotation value for example) to radians (what the math module uses)
 ignoreErrors : if enabled will ignore ValueErrors on function calls
 
+LINKS
+- Demo:
+TODO
+- Making-of:
+https://pazrot3d.blogspot.com/2018/10/prpymathpy-making-of.html
+- Donate: (This was written in my spare time. If you found it useful in Maya or for coding, consider supporting the author)
+https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
-# TODO
+TODO
 - remove AEprPyMathTemplate_iterableNodeTextField and replace it with something like global mel variable
-
-# TODO MAYBE
+TODO MAYBE
 - is the argument compound attribute maya style?
 - check other arguments than x if they could use degreesToRadians option (check functions)
 - arguments of MFnUnitAttribute type
-- check why maya result attribute value is so inaccurate round(x, 6) or round(x, 5) needed to match math module results
-- aetemplate iterable: detect new index when pressing "Delete item:" and index does not exist set to closest existing index (higher one if same distance to two indices)
-  this always happens, also when deleting existing item, so it will not require double click every time
+- check why maya result attribute value is so inaccurate: round(x, 6) or round(x, 5) is needed to match math module results
 - create docstring: copy from math module (?) + new maya utility
 - generalized AEtemplate array attribute build / delete / update functions, the textfield names have to be built from nodetype and attr name
 """
