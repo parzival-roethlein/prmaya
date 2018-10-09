@@ -9,7 +9,8 @@ Scripts, plugins and posts (tutorials, notes) for Autodesk Maya.
     * __prClosestPoint__: new, untested 
     * __prCurveFrame__: new, early prototype
     * __prPyMath__: new, untested
-  * archive (not usable, old, unsupported, only for code/algorithm reference)
+* archive (not usable, old, unsupported, only for code/algorithm reference)
+  * plugins
     * __prAttractNode__: Demo: https://vimeo.com/20002149
     * __prSlideNode__: Paper algorithm incomplete. Demo: https://vimeo.com/28079528
 * post
