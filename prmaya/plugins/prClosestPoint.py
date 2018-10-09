@@ -471,6 +471,7 @@ def evalAETemplate():
                 editorTemplate -endLayout;
                 editorTemplate -beginLayout "inputMesh Attributes" -collapse 1;
                     editorTemplate -label "inputMeshEnabled" -addControl "inputMeshEnabled";
+                    editorTemplate -label "inputMeshClosestVertex" -addControl "inputMeshClosestVertex";
                     editorTemplate -label "inputMeshShape" -addControl "inputMeshShape";
                 editorTemplate -endLayout;
                 editorTemplate -beginLayout "inputCurve Attributes" -collapse 1;
@@ -516,5 +517,4 @@ def fromSelection(nodes=None):
             mc.connectAttr('{}.worldSpace'.format(driver), '{0}[{1}]'.format(attr, mc.getAttr(attr, size=True)))
         else:
             raise ValueError('Invalid nodeType : {0} : {1}'.format(driverType, driver))
-
 
