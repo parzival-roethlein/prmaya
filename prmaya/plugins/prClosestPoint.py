@@ -16,12 +16,12 @@ import prClosestPoint;prClosestPoint.fromSelection()
 
 ATTRIBUTES
 setup:
-- inputPosition : float3, array : expects worldSpace position (inputPositionX, inputPositionY, inputPositionZ)
+- inputPosition : distance3 (double3), array : expects worldSpace position (inputPositionX, inputPositionY, inputPositionZ)
 - inputMeshShape : mesh, array : expects myMeshNode.worldMesh
 - inputCurveShape : curve, array : expects myCurveNode.worldSpace
 - inputSurfaceShape: surface, array : expects mySurfaceNode.worldSpace
 control:
-- maxDistance : float (min 0.0) : Only deltas shorter than maxDistance are affected. Value of 0.0 will disable maxDistance and falloff
+- maxDistance : distance (double) (min 0.0) : Only deltas shorter than maxDistance are considered. Value of 0.0 will disable maxDistance and falloff
 - maxDistanceWeights : float (min 0.0, max 1.0) : Paintable per vertex maxDistance
 - falloff : ramp : Scale deltas within maxDistance
 - maxDistanceUScale : ramp : Scale maxDistance depending on U value of closest point on input target (Ramp maps U value from 0.0 to 1.0)
@@ -42,7 +42,7 @@ inherited:
 LINKS
 - Demo:
 TODO
-- Making-off:
+- Making-of:
 https://pazrot3d.blogspot.com/2018/10/prclosestpointpy-making-of.html
 - Donate: (This was written in my spare time. If you found it useful in Maya or for coding, consider supporting the author)
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
@@ -85,11 +85,12 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
         numericAttr = om.MFnNumericAttribute()
         rampAttr = om.MRampAttribute()
         compoundAttr = om.MFnCompoundAttribute()
+        unitAttr = om.MFnUnitAttribute()
         
         # maxDistance
-        prClosestPoint.maxDistance = numericAttr.create('maxDistance', 'maxDistance', om.MFnNumericData.kFloat, 1.0)
-        numericAttr.setKeyable(True)
-        numericAttr.setMin(0.0)
+        prClosestPoint.maxDistance = unitAttr.create('maxDistance', 'maxDistance', om.MFnUnitAttribute.kDistance, 1.0)
+        unitAttr.setKeyable(True)
+        unitAttr.setMin(0.0)
         prClosestPoint.addAttribute(prClosestPoint.maxDistance)
         prClosestPoint.attributeAffects(prClosestPoint.maxDistance, prClosestPoint.outputGeometry)
 
@@ -139,16 +140,16 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
         numericAttr.setKeyable(True)
         prClosestPoint.addAttribute(prClosestPoint.inputPositionEnabled)
         prClosestPoint.attributeAffects(prClosestPoint.inputPositionEnabled, prClosestPoint.outputGeometry)
-        
-        prClosestPoint.inputPositionX = numericAttr.create('inputPositionX', 'inputPositionX', om.MFnNumericData.kFloat, 0.0)
+        #
+        prClosestPoint.inputPositionX = unitAttr.create('inputPositionX', 'inputPositionX', om.MFnUnitAttribute.kDistance, 0.0)
         prClosestPoint.addAttribute(prClosestPoint.inputPositionX)
         prClosestPoint.attributeAffects(prClosestPoint.inputPositionX, prClosestPoint.outputGeometry)
         
-        prClosestPoint.inputPositionY = numericAttr.create('inputPositionY', 'inputPositionY', om.MFnNumericData.kFloat, 0.0)
+        prClosestPoint.inputPositionY = unitAttr.create('inputPositionY', 'inputPositionY', om.MFnUnitAttribute.kDistance, 0.0)
         prClosestPoint.addAttribute(prClosestPoint.inputPositionY)
         prClosestPoint.attributeAffects(prClosestPoint.inputPositionY, prClosestPoint.outputGeometry)
         
-        prClosestPoint.inputPositionZ = numericAttr.create('inputPositionZ', 'inputPositionZ', om.MFnNumericData.kFloat, 0.0)
+        prClosestPoint.inputPositionZ = unitAttr.create('inputPositionZ', 'inputPositionZ', om.MFnUnitAttribute.kDistance, 0.0)
         prClosestPoint.addAttribute(prClosestPoint.inputPositionZ)
         prClosestPoint.attributeAffects(prClosestPoint.inputPositionZ, prClosestPoint.outputGeometry)
         
@@ -264,7 +265,7 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
         if envelope == 0.0:
             return
         
-        maxDistance = block.inputValue(self.maxDistance).asFloat()
+        maxDistance = block.inputValue(self.maxDistance).asDistance().value()
         maxDistanceUScaleEnabled = block.inputValue(self.maxDistanceUScaleEnabled).asBool()
         maxDistanceVScaleEnabled = block.inputValue(self.maxDistanceVScaleEnabled).asBool()
         if maxDistanceUScaleEnabled or maxDistanceVScaleEnabled:
@@ -346,10 +347,14 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
         deltas = {}
         
         if positionEnabled:
-            inputPositionsHandle = block.inputArrayValue(self.inputPosition)
-            for i in range(inputPositionsHandle.elementCount()):
-                inputPositionsHandle.jumpToArrayElement(i)
-                position = om.MPoint(*inputPositionsHandle.inputValue().asFloat3())
+            inputPositionsArrayHandle = block.inputArrayValue(self.inputPosition)
+            for i in range(inputPositionsArrayHandle.elementCount()):
+                inputPositionsArrayHandle.jumpToArrayElement(i)
+                inputPositionsHandle = inputPositionsArrayHandle.inputValue()
+                positionX = inputPositionsHandle.child(self.inputPositionX).asDistance().value()
+                positionY = inputPositionsHandle.child(self.inputPositionY).asDistance().value()
+                positionZ = inputPositionsHandle.child(self.inputPositionZ).asDistance().value()
+                position = om.MPoint(positionX, positionY, positionZ)
                 for index, weight, point in izip(indices, weights, pointsWorldSpace):
                     if not weight:
                         continue
