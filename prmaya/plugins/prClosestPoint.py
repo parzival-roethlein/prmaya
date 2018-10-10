@@ -22,6 +22,7 @@ setup:
 - inputSurfaceShape: surface, array : expects mySurfaceNode.worldSpace
 control:
 - maxDistance : float (min 0.0) : Only deltas shorter than maxDistance are affected. Value of 0.0 will disable maxDistance and falloff
+- maxDistanceWeights : float (min 0.0, max 1.0) : Paintable per vertex maxDistance
 - falloff : ramp : Scale deltas within maxDistance
 - maxDistanceUScale : ramp : Scale maxDistance depending on U value of closest point on input target (Ramp maps U value from 0.0 to 1.0)
 - maxDistanceVScale : ramp : Scale maxDistance depending on V value of closest point on input target (Ramp maps V value from 0.0 to 1.0)
@@ -48,8 +49,11 @@ https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUS
 
 TODO
 - should maxDistance be a maya unit attribute?
-- now after removing matrix input for mesh shapes, maybe switch back to a single inputShape array attribute and each shape has its own on/off switch, closestVertex global or per shape?
+- maybe one shape input attribute for all types again (now that matrix is not needed for mesh and they all work simultaneously)
+  each shape has its own on/off switch
+  closestVertex global or per shape?
 - creation script should work with vertex selection
+- input shape texture based maxDistance?
 """
 
 import sys
@@ -88,6 +92,19 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
         numericAttr.setMin(0.0)
         prClosestPoint.addAttribute(prClosestPoint.maxDistance)
         prClosestPoint.attributeAffects(prClosestPoint.maxDistance, prClosestPoint.outputGeometry)
+
+        prClosestPoint.maxDistanceWeights = numericAttr.create('maxDistanceWeights', 'maxDistanceWeights', om.MFnNumericData.kFloat, 1.0)
+        numericAttr.setMin(0.0)
+        numericAttr.setMax(1.0)
+        numericAttr.setArray(True)
+        numericAttr.setUsesArrayDataBuilder(True)
+        
+        prClosestPoint.weightMaps = compoundAttr.create('weightMaps', 'weightMaps')
+        compoundAttr.setArray(True)
+        compoundAttr.setUsesArrayDataBuilder(True)
+        compoundAttr.addChild(prClosestPoint.maxDistanceWeights)
+        prClosestPoint.addAttribute(prClosestPoint.weightMaps)
+        prClosestPoint.attributeAffects(prClosestPoint.maxDistanceWeights, prClosestPoint.outputGeometry)
         
         prClosestPoint.maxDistanceUScaleEnabled = numericAttr.create('maxDistanceUScaleEnabled', 'maxDistanceUScaleEnabled', om.MFnNumericData.kBoolean, False)
         numericAttr.setKeyable(True)
@@ -185,6 +202,7 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
         
         # paintable
         mc.makePaintable('prClosestPoint', 'weights', attrType='multiFloat', shapeMode='deformer')
+        mc.makePaintable('prClosestPoint', 'maxDistanceWeights', attrType='multiFloat', shapeMode='deformer')
     
     @staticmethod
     def creator():
@@ -195,10 +213,14 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
         self.__membership__ = defaultdict(list)
         self.__weights__ = {}
         self.__weightsDirty__ = defaultdict(lambda: True)
+        self.__maxDistanceWeights__ = {}
+        self.__maxDistanceWeightsDirty__ = defaultdict(lambda: True)
 
     def setDependentsDirty(self, plug, plugArray):
         if plug == self.weights:
             self.__weightsDirty__[plug.parent().logicalIndex()] = True
+        elif plug == self.maxDistanceWeights:
+            self.__maxDistanceWeightsDirty__[plug.parent().logicalIndex()] = True
     
     def accessoryNodeSetup(self, cmd):
         thisNode = self.thisMObject()
@@ -229,8 +251,8 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
         """
         implemented because of bug(?) if lower index of two ramp elements is (0, 0, linear) it will not get saved. debug:
         - does not happen with maya node remapValue
-        - documentation is wrong: This method (shouldSave) is not called for ramp attributes since they should always be written.
-        - the only devkit python example in pyApiMeshShape.py is misleading: return True, False, None does not make a difference
+        - documentation is wrong: "This method is not called for ramp attributes since they should always be written." (shouldSave)
+        - the only devkit python example in pyApiMeshShape.py is misleading: return values True, False, None all seem to force save
         """
         if plug == self.falloff or plug == self.maxDistanceUScale or plug == self.maxDistanceVScale:
             return True
@@ -303,6 +325,18 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
             self.__weightsDirty__[multiIndex] = False
         weights = self.__weights__[multiIndex]
         
+        if self.__maxDistanceWeightsDirty__[multiIndex]:
+            weightMapsArrayHandle = block.inputArrayValue(self.weightMaps)
+            JumpToElement(weightMapsArrayHandle, multiIndex)
+            weightMapsHandle = weightMapsArrayHandle.inputValue()
+            maxDistanceWeightsArrayHandle = om.MArrayDataHandle(weightMapsHandle.child(self.maxDistanceWeights))
+            self.__maxDistanceWeights__[multiIndex] = []
+            for index in self.__membership__[multiIndex]:
+                JumpToElement(maxDistanceWeightsArrayHandle, index)
+                self.__maxDistanceWeights__[multiIndex].append(maxDistanceWeightsArrayHandle.inputValue().asFloat())
+            self.__maxDistanceWeightsDirty__[multiIndex] = False
+        maxDistanceWeights = self.__maxDistanceWeights__[multiIndex]
+        
         pointsWorldSpace = []
         while not iterator.isDone():
             pointsWorldSpace.append(iterator.position() * localToWorldMatrix)
@@ -331,82 +365,86 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
                 meshArrayHandle.jumpToArrayElement(i)
                 meshHandle = meshArrayHandle.inputValue()
                 meshData = meshHandle.data()
-                if not meshData.isNull():
-                    meshFn = om.MFnMesh(meshData)
+                if meshData.isNull():
+                    continue
+                meshFn = om.MFnMesh(meshData)
+                if closestVertex:
+                    tempPoint = om.MPoint()
+                for index, weight, point in izip(indices, weights, pointsWorldSpace):
+                    if not weight:
+                        continue
+                    targetPoint = om.MPoint()
+                    meshFn.getClosestPoint(point, targetPoint, om.MSpace.kWorld, intPtr)
                     if closestVertex:
-                        tempPoint = om.MPoint()
-                    for index, weight, point in izip(indices, weights, pointsWorldSpace):
-                        if not weight:
-                            continue
-                        targetPoint = om.MPoint()
-                        meshFn.getClosestPoint(point, targetPoint, om.MSpace.kWorld, intPtr)
-                        if closestVertex:
-                            faceVertices = om.MIntArray()
-                            meshFn.getPolygonVertices(om.MScriptUtil(intPtr).asInt(), faceVertices)
-                            shortestDistance = None
-                            for vertexId in faceVertices:
-                                meshFn.getPoint(vertexId, tempPoint, om.MSpace.kWorld)
-                                vertexDistance = (point - tempPoint).length()
-                                if shortestDistance is None or vertexDistance < shortestDistance:
-                                    shortestDistance = vertexDistance
-                                    closestVertexPoint = om.MPoint(tempPoint)
-                            targetPoint = targetPoint * (1.0-closestVertex) + om.MVector(closestVertexPoint * closestVertex)
-                        delta = targetPoint - point
-                        if index in deltas and deltas[index].length() < delta.length():
-                            continue
-                        deltas[index] = targetPoint - point
-                        if maxDistanceUScaleEnabled or maxDistanceVScaleEnabled:
-                            meshFn.getUVAtPoint(targetPoint, float2Ptr, om.MSpace.kWorld)
-                            if maxDistanceUScaleEnabled:
-                                uValues[index] = float2PtrUtil.getFloat2ArrayItem(float2Ptr, 0, 0)
-                            if maxDistanceVScaleEnabled:
-                                vValues[index] = float2PtrUtil.getFloat2ArrayItem(float2Ptr, 0, 1)
+                        faceVertices = om.MIntArray()
+                        meshFn.getPolygonVertices(om.MScriptUtil(intPtr).asInt(), faceVertices)
+                        shortestDistance = None
+                        for vertexId in faceVertices:
+                            meshFn.getPoint(vertexId, tempPoint, om.MSpace.kWorld)
+                            vertexDistance = (point - tempPoint).length()
+                            if shortestDistance is None or vertexDistance < shortestDistance:
+                                shortestDistance = vertexDistance
+                                closestVertexPoint = om.MPoint(tempPoint)
+                        targetPoint = targetPoint * (1.0-closestVertex) + om.MVector(closestVertexPoint * closestVertex)
+                    delta = targetPoint - point
+                    if index in deltas and deltas[index].length() < delta.length():
+                        continue
+                    deltas[index] = targetPoint - point
+                    if maxDistanceUScaleEnabled or maxDistanceVScaleEnabled:
+                        meshFn.getUVAtPoint(targetPoint, float2Ptr, om.MSpace.kWorld)
+                        if maxDistanceUScaleEnabled:
+                            uValues[index] = float2PtrUtil.getFloat2ArrayItem(float2Ptr, 0, 0)
+                        if maxDistanceVScaleEnabled:
+                            vValues[index] = float2PtrUtil.getFloat2ArrayItem(float2Ptr, 0, 1)
         
         if curveEnabled:
             curveArrayHandle = block.inputArrayValue(self.inputCurveShape)
             for i in range(curveArrayHandle.elementCount()):
                 curveArrayHandle.jumpToArrayElement(i)
                 curveShapeData = curveArrayHandle.inputValue().data()
-                if not curveShapeData.isNull():
-                    curveShapeFn = om.MFnNurbsCurve(curveShapeData)
-                    for index, weight, point in izip(indices, weights, pointsWorldSpace):
-                        if not weight:
-                            continue
-                        closestPoint = curveShapeFn.closestPoint(point, doublePtr, 0.00001, om.MSpace.kWorld)
-                        delta = closestPoint - point
-                        if index in deltas and deltas[index].length() < delta.length():
-                            continue
-                        deltas[index] = delta
-                        if maxDistanceUScaleEnabled:
-                            uValues[index] = om.MScriptUtil.getDouble(doublePtr) / curveShapeFn.numSpans()
-                        if maxDistanceVScaleEnabled and index in vValues:
-                            del(vValues[index])
+                if curveShapeData.isNull():
+                    continue
+                curveShapeFn = om.MFnNurbsCurve(curveShapeData)
+                for index, weight, point in izip(indices, weights, pointsWorldSpace):
+                    if not weight:
+                        continue
+                    closestPoint = curveShapeFn.closestPoint(point, doublePtr, 0.00001, om.MSpace.kWorld)
+                    delta = closestPoint - point
+                    if index in deltas and deltas[index].length() < delta.length():
+                        continue
+                    deltas[index] = delta
+                    if maxDistanceUScaleEnabled:
+                        uValues[index] = om.MScriptUtil.getDouble(doublePtr) / curveShapeFn.numSpans()
+                    if maxDistanceVScaleEnabled and index in vValues:
+                        del(vValues[index])
         
         if surfaceEnabled:
             surfaceArrayHandle = block.inputArrayValue(self.inputSurfaceShape)
             for i in range(surfaceArrayHandle.elementCount()):
                 surfaceArrayHandle.jumpToArrayElement(i)
                 surfaceShapeData = surfaceArrayHandle.inputValue().data()
-                if not surfaceShapeData.isNull():
-                    surfaceShapeFn = om.MFnNurbsSurface(surfaceShapeData)
-                    for index, weight, point in izip(indices, weights, pointsWorldSpace):
-                        if not weight:
-                            continue
-                        closestPoint = surfaceShapeFn.closestPoint(point, doublePtr, doublePtr2, False, 0.00001, om.MSpace.kWorld)
-                        delta = closestPoint - point
-                        if index in deltas and deltas[index].length() < delta.length():
-                            continue
-                        deltas[index] = delta
-                        if maxDistanceUScaleEnabled:
-                            uValues[index] = om.MScriptUtil.getDouble(doublePtr) / surfaceShapeFn.numSpansInU()
-                        if maxDistanceVScaleEnabled:
-                            vValues[index] = om.MScriptUtil.getDouble(doublePtr2) / surfaceShapeFn.numSpansInV()
+                if surfaceShapeData.isNull():
+                    continue
+                surfaceShapeFn = om.MFnNurbsSurface(surfaceShapeData)
+                for index, weight, point in izip(indices, weights, pointsWorldSpace):
+                    if not weight:
+                        continue
+                    closestPoint = surfaceShapeFn.closestPoint(point, doublePtr, doublePtr2, False, 0.00001, om.MSpace.kWorld)
+                    delta = closestPoint - point
+                    if index in deltas and deltas[index].length() < delta.length():
+                        continue
+                    deltas[index] = delta
+                    if maxDistanceUScaleEnabled:
+                        uValues[index] = om.MScriptUtil.getDouble(doublePtr) / surfaceShapeFn.numSpansInU()
+                    if maxDistanceVScaleEnabled:
+                        vValues[index] = om.MScriptUtil.getDouble(doublePtr2) / surfaceShapeFn.numSpansInV()
         
         # maxDistance / falloff
         for vertexId, delta in deltas.iteritems():
+            listIndex = indices.index(vertexId)
             if maxDistance:
                 deltaLength = delta.length()
-                vertexMaxDistance = maxDistance
+                vertexMaxDistance = maxDistance * maxDistanceWeights[listIndex]
                 if maxDistanceUScaleEnabled and vertexId in uValues:
                     maxDistanceUScaleAttr.getValueAtPosition(uValues[vertexId], floatPtr)
                     vertexMaxDistance *= om.MScriptUtil.getFloat(floatPtr)
@@ -420,7 +458,7 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
                     falloffRampAttr.getValueAtPosition(float(1.0 - lengthMaxDistancePercent), floatPtr)
                     falloff = om.MScriptUtil.getFloat(floatPtr)
                     delta *= falloff
-            listIndex = indices.index(vertexId)
+            
             pointsWorldSpace[listIndex] += delta * weights[listIndex] * envelope
         
         pointsObjectSpace = om.MPointArray()
@@ -519,3 +557,12 @@ def fromSelection(nodes=None):
         else:
             raise ValueError('Invalid nodeType : {0} : {1}'.format(driverType, driver))
 
+
+def JumpToElement(arrayHandle, index):
+    try:
+        arrayHandle.jumpToElement(index)
+    except RuntimeError:
+        builder = arrayHandle.builder()
+        builder.addElement(index)
+        arrayHandle.set(builder)
+        arrayHandle.jumpToElement(index)
