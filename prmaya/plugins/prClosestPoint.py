@@ -44,7 +44,6 @@ https://pazrot3d.blogspot.com/2018/10/prclosestpointpy-making-of.html
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
-- update doc images
 - can maxDistanceWeight be a child of weightList?
 - weightMap and inputPositions should show up in node editor
 - caching, frozen, nodeState should not show up twice in connection editor
@@ -388,7 +387,7 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
                             return targetPoint * (1.0 - closestVertex) + om.MVector(closestVertexPoint * closestVertex)
                         return targetPoint
                     
-                    def setUvScaleValues(uvPoint):
+                    def setMaxDistanceUvScaleValues(uvPoint):
                         if maxDistanceUScaleEnabled or maxDistanceVScaleEnabled:
                             shapeFn.getUVAtPoint(uvPoint, float2Ptr, om.MSpace.kWorld)
                             if maxDistanceUScaleEnabled:
@@ -402,7 +401,7 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
                     def getClosestPoint(startPoint):
                         return shapeFn.closestPoint(startPoint, doublePtr, 0.00001, om.MSpace.kWorld)
                     
-                    def setUvScaleValues(*args):
+                    def setMaxDistanceUvScaleValues(*args):
                         if maxDistanceUScaleEnabled:
                             uValues[index] = om.MScriptUtil.getDouble(doublePtr) / shapeFn.numSpans()
                         if maxDistanceVScaleEnabled and index in vValues:
@@ -414,7 +413,7 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
                     def getClosestPoint(startPoint):
                         return shapeFn.closestPoint(startPoint, doublePtr, doublePtr2, False, 0.00001, om.MSpace.kWorld)
                     
-                    def setUvScaleValues(*args):
+                    def setMaxDistanceUvScaleValues(*args):
                         if maxDistanceUScaleEnabled:
                             uValues[index] = om.MScriptUtil.getDouble(doublePtr) / shapeFn.numSpansInU()
                         if maxDistanceVScaleEnabled:
@@ -431,7 +430,7 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
                     if index in deltas and deltas[index].length() < delta.length():
                         continue
                     deltas[index] = targetPoint - point
-                    setUvScaleValues(targetPoint)
+                    setMaxDistanceUvScaleValues(targetPoint)
         
         # maxDistance / falloff
         for vertexId, delta in deltas.iteritems():
@@ -499,13 +498,13 @@ def evalAETemplate():
                     editorTemplate -label "falloffEnabled" -addControl "falloffEnabled";
                     AEaddRampControl ($nodeName+".falloff");
                 editorTemplate -endLayout;
-                editorTemplate -beginLayout "inputTarget Attributes" -collapse 1;
-                    editorTemplate -label "inputTargetEnabled" -addControl "inputTargetEnabled";
-                    editorTemplate -label "inputTarget" -addControl "inputTarget";
-                editorTemplate -endLayout;
                 editorTemplate -beginLayout "inputPosition Attributes" -collapse 1;
                     editorTemplate -label "inputPositionEnabled" -addControl "inputPositionEnabled";
                     editorTemplate -label "inputPosition" -addControl "inputPosition";
+                editorTemplate -endLayout;
+                editorTemplate -beginLayout "inputTarget Attributes" -collapse 1;
+                    editorTemplate -label "inputTargetEnabled" -addControl "inputTargetEnabled";
+                    editorTemplate -label "inputTarget" -addControl "inputTarget";
                 editorTemplate -endLayout;
             editorTemplate -endLayout;
             AEgeometryFilterCommon $nodeName;
