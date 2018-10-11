@@ -44,6 +44,7 @@ https://pazrot3d.blogspot.com/2018/10/prclosestpointpy-making-of.html
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
+- delete maxDistanceU/VScale?
 - extract maxDistance/falloff functionality into separate "scaleDeltas" deformer?
 - delete inputPosition and make it a new possible input for inputTarget? (maybe matrix instead of position, or both?)
 - can maxDistanceWeight be a child of weightList?
