@@ -1,6 +1,6 @@
 """
 DESCRIPTION
-Deformer that moves points to closest: position / mesh shape or vertex / curve shape / nurbs-surface shape.
+Deformer that moves points to closest: position / mesh shape or mesh vertex / nurbs-curve shape / nurbs-surface shape.
 
 USE CASES
 - Modeling: Interactively snap vertices between meshes (inputTargetMeshClosestVertex attribute)
@@ -44,7 +44,6 @@ https://pazrot3d.blogspot.com/2018/10/prclosestpointpy-making-of.html
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
-- main deformation loop refactor
 - update doc images
 - can maxDistanceWeight be a child of weightList?
 - weightMap and inputPositions should show up in node editor
@@ -177,7 +176,6 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
         
         prClosestPoint.inputTargetShapeEnabled = numericAttr.create('inputTargetShapeEnabled', 'inputTargetShapeEnabled', om.MFnNumericData.kBoolean, True)
         numericAttr.setKeyable(True)
-        prClosestPoint.addAttribute(prClosestPoint.inputTargetShapeEnabled)
         
         prClosestPoint.inputTargetShape = genericAttr.create("inputTargetShape", "inputTargetShape")
         # genericAttr.setReadable(False)
@@ -367,66 +365,73 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
                 if shapeData.isNull():
                     continue
                 shapeType = targetShapeHandle.type()
-                # TODO define objects here: lambda def getClosestPoint(), lambda def getUvValues()
+                targetPoint = om.MPoint()
+                
                 if shapeType == om.MFnMeshData.kMesh:
                     shapeFn = om.MFnMesh(shapeData)
                     closestVertex = inputTargetHandle.child(self.inputTargetMeshClosestVertex).asFloat()
                     if closestVertex:
                         tempPoint = om.MPoint()
-                elif shapeType == om.MFnNurbsCurveData.kNurbsCurve:
-                    shapeFn = om.MFnNurbsCurve(shapeData)
-                elif shapeType == om.MFnNurbsSurfaceData.kNurbsSurface:
-                    shapeFn = om.MFnNurbsSurface(shapeData)
-                
-                for index, weight, point in izip(indices, weights, pointsWorldSpace):
-                    if not weight:
-                        continue
-                    # TODO targetPoint = getClosestPoint(); uValue, vValue = getUvValues()
-                    targetPoint = om.MPoint()
+                        faceVertices = om.MIntArray()
                     
-                    if shapeType == om.MFnMeshData.kMesh:
-                        shapeFn.getClosestPoint(point, targetPoint, om.MSpace.kWorld, intPtr)
+                    def getClosestPoint(startPoint):
+                        shapeFn.getClosestPoint(startPoint, targetPoint, om.MSpace.kWorld, intPtr)
                         if closestVertex:
-                            faceVertices = om.MIntArray()
                             shapeFn.getPolygonVertices(om.MScriptUtil(intPtr).asInt(), faceVertices)
                             shortestDistance = None
                             for vertexId in faceVertices:
                                 shapeFn.getPoint(vertexId, tempPoint, om.MSpace.kWorld)
-                                vertexDistance = (point - tempPoint).length()
+                                vertexDistance = (startPoint - tempPoint).length()
                                 if shortestDistance is None or vertexDistance < shortestDistance:
                                     shortestDistance = vertexDistance
                                     closestVertexPoint = om.MPoint(tempPoint)
-                            targetPoint = targetPoint * (1.0 - closestVertex) + om.MVector(closestVertexPoint * closestVertex)
-                    elif shapeType == om.MFnNurbsCurveData.kNurbsCurve:
-                        targetPoint = shapeFn.closestPoint(point, doublePtr, 0.00001, om.MSpace.kWorld)
-                    elif shapeType == om.MFnNurbsSurfaceData.kNurbsSurface:
-                        targetPoint = shapeFn.closestPoint(point, doublePtr, doublePtr2, False, 0.00001, om.MSpace.kWorld)
-                    else:
-                        # raise ValueError?
-                        continue
+                            return targetPoint * (1.0 - closestVertex) + om.MVector(closestVertexPoint * closestVertex)
+                        return targetPoint
                     
-                    delta = targetPoint - point
-                    if index in deltas and deltas[index].length() < delta.length():
-                        continue
-                    deltas[index] = targetPoint - point
-                    
-                    if maxDistanceUScaleEnabled or maxDistanceVScaleEnabled:
-                        if shapeType == om.MFnMeshData.kMesh:
-                            shapeFn.getUVAtPoint(targetPoint, float2Ptr, om.MSpace.kWorld)
+                    def setUvScaleValues(uvPoint):
+                        if maxDistanceUScaleEnabled or maxDistanceVScaleEnabled:
+                            shapeFn.getUVAtPoint(uvPoint, float2Ptr, om.MSpace.kWorld)
                             if maxDistanceUScaleEnabled:
                                 uValues[index] = float2PtrUtil.getFloat2ArrayItem(float2Ptr, 0, 0)
                             if maxDistanceVScaleEnabled:
                                 vValues[index] = float2PtrUtil.getFloat2ArrayItem(float2Ptr, 0, 1)
-                        elif shapeType == om.MFnNurbsCurveData.kNurbsCurve:
-                            if maxDistanceUScaleEnabled:
-                                uValues[index] = om.MScriptUtil.getDouble(doublePtr) / shapeFn.numSpans()
-                            if maxDistanceVScaleEnabled and index in vValues:
-                                del(vValues[index])
-                        elif shapeType == om.MFnNurbsSurfaceData.kNurbsSurface:
-                            if maxDistanceUScaleEnabled:
-                                uValues[index] = om.MScriptUtil.getDouble(doublePtr) / shapeFn.numSpansInU()
-                            if maxDistanceVScaleEnabled:
-                                vValues[index] = om.MScriptUtil.getDouble(doublePtr2) / shapeFn.numSpansInV()
+                    
+                elif shapeType == om.MFnNurbsCurveData.kNurbsCurve:
+                    shapeFn = om.MFnNurbsCurve(shapeData)
+                    
+                    def getClosestPoint(startPoint):
+                        return shapeFn.closestPoint(startPoint, doublePtr, 0.00001, om.MSpace.kWorld)
+                    
+                    def setUvScaleValues(*args):
+                        if maxDistanceUScaleEnabled:
+                            uValues[index] = om.MScriptUtil.getDouble(doublePtr) / shapeFn.numSpans()
+                        if maxDistanceVScaleEnabled and index in vValues:
+                            del vValues[index]
+                
+                elif shapeType == om.MFnNurbsSurfaceData.kNurbsSurface:
+                    shapeFn = om.MFnNurbsSurface(shapeData)
+                    
+                    def getClosestPoint(startPoint):
+                        return shapeFn.closestPoint(startPoint, doublePtr, doublePtr2, False, 0.00001, om.MSpace.kWorld)
+                    
+                    def setUvScaleValues(*args):
+                        if maxDistanceUScaleEnabled:
+                            uValues[index] = om.MScriptUtil.getDouble(doublePtr) / shapeFn.numSpansInU()
+                        if maxDistanceVScaleEnabled:
+                            vValues[index] = om.MScriptUtil.getDouble(doublePtr2) / shapeFn.numSpansInV()
+                    
+                else:
+                    raise ValueError('can never happen?')
+                
+                for index, weight, point in izip(indices, weights, pointsWorldSpace):
+                    if not weight:
+                        continue
+                    targetPoint = getClosestPoint(point)
+                    delta = targetPoint - point
+                    if index in deltas and deltas[index].length() < delta.length():
+                        continue
+                    deltas[index] = targetPoint - point
+                    setUvScaleValues(targetPoint)
         
         # maxDistance / falloff
         for vertexId, delta in deltas.iteritems():
