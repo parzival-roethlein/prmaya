@@ -1,7 +1,7 @@
 """
 Python in Maya #3 context manager
 
-Starting with a decorator from "Python in Maya #1: Decorators"
+Starting with a decorator from 'Python in Maya #1: Decorators'
 we build a contextmanager version and then generalize it to work
 with most (?) Maya commands.
 
