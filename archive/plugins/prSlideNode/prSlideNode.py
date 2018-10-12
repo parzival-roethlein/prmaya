@@ -1,21 +1,4 @@
-'''
-########################################################################
-#             prSlideNode.py                                           #
-#             Copyright (C) 2012  Parzival Roethlein                   #
-#             Email: pa.roethlein@gmail.com                            #
-#                                                                      #
-# This program is free software: you can redistribute it and/or modify #
-# it under the terms of the GNU General Public License as published by #
-# the Free Software Foundation, either version 3 of the License, or    #
-# (at your option) any later version.                                  #
-# This program is distributed in the hope that it will be useful,      #
-# but WITHOUT ANY WARRANTY; without even the implied warranty of       #
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        #
-# GNU General Public License for more details.                         #
-# See http://www.gnu.org/licenses/gpl.html for a copy of the GNU       #
-# General Public License.                                              #
-########################################################################
-
+"""
 D E S C R I P T I O N:
 This is an open source Maya plug-in (deformer) written in Python.
 It is based on an Eurographics paper written by Dmitriy Pinskiy:
@@ -38,7 +21,7 @@ U S A G E:
   (With a polygon mesh selected) execute (MEL): deformer -type "prSlideNode"
 
 V E R S I O N S:
-2012-xx-xx / 0.9.1: paper algorithm, new attributes, new handle setup, error fixes
+2012-02-xx / 0.9.1: new attributes, new handle setup, error fixes, paper algorithm WIP
 2011-08-21 / 0.9.0: closestPoint algorithm done
 
 T O D O:
@@ -81,39 +64,33 @@ input internal:
 output:
 - nullTranslate (3double): translate value for null-group 
 
-F E E D B A C K:
-Bugs, questions and suggestions to pa.roethlein@gmail.com
-
 T E S T:
-- To test the plug-in, execute the following code in the script editor (Python tab):
-# #########################
 def prTestSlide():
     import maya.cmds as mc
     import maya.mel as mm
     mc.file(new=True, f=True)
     mm.eval( 'setWireframeOnShadedOption true modelPanel4;' )
     mc.unloadPlugin( "prSlideNode.py" )
-    mc.loadPlugin( "prSlideNode.py" )# mc.loadPlugin( "L:/eclipse_workspace/proethlein/prSlideNode/prSlideNode.py" )
+    mc.loadPlugin( "prSlideNode.py" )
     mc.polySphere()
     myNode = mc.deformer( type='prSlideNode' )[0]
     # setup
     mc.setAttr( myNode+".algorithm", 0 )
     mc.setAttr( myNode+".position", 200 )
 prTestSlide()
-# #########################
-'''
+
+"""
 
 import sys
 import maya.OpenMaya as om
 import maya.OpenMayaMPx as OpenMayaMPx
 import maya.mel as mm
 
-# node definition
+
 class prSlideNode(OpenMayaMPx.MPxDeformerNode):
-    # plug-in
     pluginName = "prSlideNode"
     pluginId = om.MTypeId(0x0010A51B)
-    #
+    
     # attributes
     #     input user
     aPosition = om.MObject()
@@ -136,7 +113,7 @@ class prSlideNode(OpenMayaMPx.MPxDeformerNode):
     aNullTranslateX = om.MObject()
     aNullTranslateY = om.MObject()
     aNullTranslateZ = om.MObject()
-    #
+    
     # code variable
     algorithmLastCall = None
     # algorithm variables
@@ -146,20 +123,19 @@ class prSlideNode(OpenMayaMPx.MPxDeformerNode):
     intersector = om.MMeshIntersector()
     ptOM = om.MPointOnMesh()
     #     paper algorithm
-    vertexEdges = None # vertex id order: connected edges
-    vertexFaces = None# vertex id order: faces connected to vertex
-    vertexNeighborVertices = None # vertex id order: all vertices that build connected faces
-    vertexFacesBorderEdges = None # vertex id order: border edges of connected faces
-    #
-    edgeVertices = None # edge id order: vertices that build edge
-    edgeFaces = None # edge id order: connected faces
-    #
-    faceVertices = None # face id order: vertices that build face
-    faceEdges = None # face id order: edges that build face
-    faceUs = None # face id order: U values of vertices of face
-    faceVs = None # face id order: V values of vertices of face
+    vertexEdges = None  # vertex id order: connected edges
+    vertexFaces = None  # vertex id order: faces connected to vertex
+    vertexNeighborVertices = None  # vertex id order: all vertices that build connected faces
+    vertexFacesBorderEdges = None  # vertex id order: border edges of connected faces
     
-    # constructor
+    edgeVertices = None  # edge id order: vertices that build edge
+    edgeFaces = None  # edge id order: connected faces
+    
+    faceVertices = None  # face id order: vertices that build face
+    faceEdges = None  # face id order: edges that build face
+    faceUs = None  # face id order: U values of vertices of face
+    faceVs = None  # face id order: V values of vertices of face
+    
     def __init__(self):
         OpenMayaMPx.MPxDeformerNode.__init__(self)
     
@@ -168,18 +144,17 @@ class prSlideNode(OpenMayaMPx.MPxDeformerNode):
     # create deformer handles (hierarchy): 
     # - null (sphere): constrained to surface, with sphereShape to display radius
     #   - handle (locator): for slide, has annotation to show start position
-    def accessoryNodeSetup( self, cmd ):
+    def accessoryNodeSetup(self, cmd):
         oThis = self.thisMObject()
-        fnThis = om.MFnDependencyNode( oThis )
+        fnThis = om.MFnDependencyNode(oThis)
         nameThis = fnThis.name()
         
-        # ###############################
         # initialize radiusFalloff ramp
-        hRadiusFalloff = om.MRampAttribute( oThis, self.aRadiusFalloff )
+        hRadiusFalloff = om.MRampAttribute(oThis, self.aRadiusFalloff)
         
-        a1 = om.MFloatArray()# positions
-        b1 = om.MFloatArray()# values
-        c1 = om.MIntArray()# interpolations
+        a1 = om.MFloatArray()  # positions
+        b1 = om.MFloatArray()  # values
+        c1 = om.MIntArray()  # interpolations
         
         a1.append(float(0.0))
         a1.append(float(1.0))
@@ -190,201 +165,190 @@ class prSlideNode(OpenMayaMPx.MPxDeformerNode):
         c1.append(om.MRampAttribute.kSmooth)
         c1.append(om.MRampAttribute.kSmooth)
         
-        hRadiusFalloff.addEntries(a1,b1,c1)
+        hRadiusFalloff.addEntries(a1, b1, c1)
         
-        # ###############################
         # create handles
         #     null-group to be constrained to surface 
         #         implicitSphere shape to show radius
         #         locatorShape (hidden) required for annotation
-        oGroup = cmd.createNode( 'transform', om.MObject().kNullObj )
-        oGroupSphere = cmd.createNode( 'implicitSphere', oGroup )
-        oGroupLoc = cmd.createNode( 'locator', oGroup)
+        oGroup = cmd.createNode('transform', om.MObject().kNullObj)
+        oGroupSphere = cmd.createNode('implicitSphere', oGroup)
+        oGroupLoc = cmd.createNode('locator', oGroup)
         #     locator controlling sliding direction and magnitude, to be translated by user
         #         annotationShape to show start position
-        oLocator = cmd.createNode( 'locator' )
-        oLocatorAnno = cmd.createNode( 'annotationShape', oLocator )
-        cmd.reparentNode( oLocator, oGroup )# cmd.reparentNode to get extra transform
+        oLocator = cmd.createNode('locator')
+        oLocatorAnno = cmd.createNode('annotationShape', oLocator)
+        cmd.reparentNode(oLocator, oGroup)  # cmd.reparentNode to get extra transform
         #     create nodes
         cmd.doIt()
-        #
         # function sets and shape objects
         #     group
-        fnGroup = om.MFnDagNode( oGroup )
-        fnGroupSphere = om.MFnDagNode( oGroupSphere )
-        fnGroupLoc = om.MFnDagNode( oGroupLoc )
+        fnGroup = om.MFnDagNode(oGroup)
+        fnGroupSphere = om.MFnDagNode(oGroupSphere)
+        fnGroupLoc = om.MFnDagNode(oGroupLoc)
         #     locator
-        fnLocator = om.MFnDagNode( oLocator )
+        fnLocator = om.MFnDagNode(oLocator)
         oLocatorShape = fnLocator.child(0)
-        fnLocatorShape = om.MFnDagNode( oLocatorShape )
-        fnLocatorAnno = om.MFnDagNode( oLocatorAnno )
-        #
+        fnLocatorShape = om.MFnDagNode(oLocatorShape)
+        fnLocatorAnno = om.MFnDagNode(oLocatorAnno)
         # connections
         #     group
         #         aHandleVisibility >> oGroupSphere.v
-        aGroupSphereV = fnGroupSphere.attribute( 'visibility' )
-        cmd.connect( oThis, self.aHandleVisibility, oGroupSphere, aGroupSphereV )
+        aGroupSphereV = fnGroupSphere.attribute('visibility')
+        cmd.connect(oThis, self.aHandleVisibility, oGroupSphere, aGroupSphereV)
         #         group.inverseParentMatrix >> aNullParentInverse
-        aGroupIPM = fnGroup.attribute( 'parentInverseMatrix' )
-        cmd.connect( oGroup, aGroupIPM, oThis, self.aNullParentInverse )
+        aGroupIPM = fnGroup.attribute('parentInverseMatrix')
+        cmd.connect(oGroup, aGroupIPM, oThis, self.aNullParentInverse)
         #         aNullTranslate >> group.t
-        aGroupT = fnGroup.attribute( 'translate' )
-        cmd.connect( oThis, self.aNullTranslate, oGroup, aGroupT )
+        aGroupT = fnGroup.attribute('translate')
+        cmd.connect(oThis, self.aNullTranslate, oGroup, aGroupT)
         #         aRadius >> sphereShape.radius
-        aGroupSphereR = fnGroupSphere.attribute( 'radius' )
-        cmd.connect( oThis, self.aRadius, oGroupSphere, aGroupSphereR )
+        aGroupSphereR = fnGroupSphere.attribute('radius')
+        cmd.connect(oThis, self.aRadius, oGroupSphere, aGroupSphereR)
         #         aFalloffType >> sphereShape.lodVisibility
-        aGroupSphereLV = fnGroupSphere.attribute( 'lodVisibility' )
-        cmd.connect( oThis, self.aFalloffType, oGroupSphere, aGroupSphereLV )
+        aGroupSphereLV = fnGroupSphere.attribute('lodVisibility')
+        cmd.connect(oThis, self.aFalloffType, oGroupSphere, aGroupSphereLV)
         #         groupLoc >> locAnno 
-        aGroupLocWM = fnGroupLoc.attribute( 'worldMatrix' )
-        aLocatorAnnoDOM = fnLocatorAnno.attribute( 'dagObjectMatrix' )
-        cmd.connect( oGroupLoc, aGroupLocWM, oLocatorAnno, aLocatorAnnoDOM )
+        aGroupLocWM = fnGroupLoc.attribute('worldMatrix')
+        aLocatorAnnoDOM = fnLocatorAnno.attribute('dagObjectMatrix')
+        cmd.connect(oGroupLoc, aGroupLocWM, oLocatorAnno, aLocatorAnnoDOM)
         #     locator
         #         aHandleVisibility >> oLocatorShape.v
-        aLocatorShapeV = fnLocatorShape.attribute( 'visibility' )
-        cmd.connect( oThis, self.aHandleVisibility, oLocatorShape, aLocatorShapeV )
+        aLocatorShapeV = fnLocatorShape.attribute('visibility')
+        cmd.connect(oThis, self.aHandleVisibility, oLocatorShape, aLocatorShapeV)
         #         aHandleVisibility >> oLocatorAnno.v
-        aLocatorAnnoV = fnLocatorAnno.attribute( 'visibility' )
-        cmd.connect( oThis, self.aHandleVisibility, oLocatorAnno, aLocatorAnnoV )
+        aLocatorAnnoV = fnLocatorAnno.attribute('visibility')
+        cmd.connect(oThis, self.aHandleVisibility, oLocatorAnno, aLocatorAnnoV)
         #         locatorShape.worldPosition >> aDisplace
-        aLocatorShapeWP = fnLocatorShape.attribute( 'worldPosition' )
-        cmd.connect( oLocatorShape, aLocatorShapeWP, oThis, self.aDisplace )
+        aLocatorShapeWP = fnLocatorShape.attribute('worldPosition')
+        cmd.connect(oLocatorShape, aLocatorShapeWP, oThis, self.aDisplace)
         #         aRadius >> locatorShape.localScaleXYZ
-        for each in [ 'localScaleX', 'localScaleY', 'localScaleZ']:
-            aLocatorShapeEach = fnLocatorShape.attribute( each )
-            cmd.connect( oThis, self.aRadius, oLocatorShape, aLocatorShapeEach )
-        #
+        for each in ['localScaleX', 'localScaleY', 'localScaleZ']:
+            aLocatorShapeEach = fnLocatorShape.attribute(each)
+            cmd.connect(oThis, self.aRadius, oLocatorShape, aLocatorShapeEach)
         # set attributes
         #     group
         #         template groupSphereShape
-        cmd.commandToExecute( 'setAttr '+fnGroupSphere.name()+'.overrideEnabled 1' )
-        cmd.commandToExecute( 'setAttr '+fnGroupSphere.name()+'.overrideDisplayType 1' )
+        cmd.commandToExecute('setAttr ' + fnGroupSphere.name() + '.overrideEnabled 1')
+        cmd.commandToExecute('setAttr ' + fnGroupSphere.name() + '.overrideDisplayType 1')
         #         hide group locator (was just made for annotation)
-        cmd.commandToExecute( 'setAttr '+fnGroupLoc.name()+'.overrideEnabled 1' )
-        cmd.commandToExecute( 'setAttr '+fnGroupLoc.name()+'.overrideVisibility 0' )
+        cmd.commandToExecute('setAttr ' + fnGroupLoc.name() + '.overrideEnabled 1')
+        cmd.commandToExecute('setAttr ' + fnGroupLoc.name() + '.overrideVisibility 0')
         #     locator
         #         lock locator scale
         for each in ['.sx', '.sy', '.sz']:
-            cmd.commandToExecute( 'setAttr '+fnLocator.name()+each+' -lock 1 -keyable 0 -channelBox 0' )
+            cmd.commandToExecute('setAttr ' + fnLocator.name() + each + ' -lock 1 -keyable 0 -channelBox 0')
         #         template locAnno
-        cmd.commandToExecute( 'setAttr '+fnLocatorAnno.name()+'.overrideEnabled 1' )
-        cmd.commandToExecute( 'setAttr '+fnLocatorAnno.name()+'.overrideDisplayType 1' )
+        cmd.commandToExecute('setAttr ' + fnLocatorAnno.name() + '.overrideEnabled 1')
+        cmd.commandToExecute('setAttr ' + fnLocatorAnno.name() + '.overrideDisplayType 1')
         #         locatorShape.localPosition keyable
         for each in ['.localPositionX', '.localPositionY', '.localPositionZ']:
-            cmd.commandToExecute( 'setAttr -k 1 '+fnLocatorShape.name()+each )
-        #
+            cmd.commandToExecute('setAttr -k 1 ' + fnLocatorShape.name() + each)
         # rename nodes
         #     group
-        cmd.renameNode( oGroup, nameThis+'Null' )
-        cmd.renameNode( oGroupSphere, nameThis+'NullShape' )
-        cmd.renameNode( oGroupLoc, nameThis+'NullShape' )
+        cmd.renameNode(oGroup, nameThis + 'Null')
+        cmd.renameNode(oGroupSphere, nameThis + 'NullShape')
+        cmd.renameNode(oGroupLoc, nameThis + 'NullShape')
         #     locator
-        cmd.renameNode( oLocator, nameThis+'Handle' )
-        cmd.renameNode( oLocatorShape, nameThis+'HandleShape' )
-        cmd.renameNode( oLocatorAnno, nameThis+'HandleShape' )
-        #
-    # def
+        cmd.renameNode(oLocator, nameThis + 'Handle')
+        cmd.renameNode(oLocatorShape, nameThis + 'HandleShape')
+        cmd.renameNode(oLocatorAnno, nameThis + 'HandleShape')
     
-    # deletes deformer if node that is connected to self.aDisplace is deleted
-    def accessoryAttribute( self ):
+    def accessoryAttribute(self):
         return self.aNullParentInverse
     
-    # functionality
-    def deform(self,block,iter,matrix,multiIndex):
+    def deform(self, block, inputIter, matrix, multiIndex):
         thisNode = self.thisMObject()
-        # -------------------------
-        # get attributes
-        #     envelope
-        hEnvelope = block.inputValue( OpenMayaMPx.cvar.MPxDeformerNode_envelope )
+        
+        hEnvelope = block.inputValue(OpenMayaMPx.cvar.MPxDeformerNode_envelope)
         env = hEnvelope.asFloat()
-        if( env == 0.0 ):
+        if env == 0.0:
             return
-        #     position
-        hPosition = block.inputValue( self.aPosition )
+        
+        hPosition = block.inputValue(self.aPosition)
         nPosition = hPosition.asInt()
-        #     flipOpposingSide
-        hFlip = block.inputValue( self.aFlipOpposingSide )
+        
+        hFlip = block.inputValue(self.aFlipOpposingSide)
         bFlip = hFlip.asBool()
-        #     algorithm
-        hAlgorithm = block.inputValue( self.aAlgorithm )
+        
+        hAlgorithm = block.inputValue(self.aAlgorithm)
         sAlgorithm = hAlgorithm.asShort()
-        #     inverse parent constraint
-        hInverse = block.inputValue( self.aNullParentInverse )
+        
+        hInverse = block.inputValue(self.aNullParentInverse)
         mInverse = hInverse.asMatrix()
-        #     calculate translation constraint
-        #         get mesh
-        hInput = block.outputArrayValue( self.input )
-        hInput.jumpToElement( multiIndex )
-        hInputGeom = hInput.outputValue().child( self.inputGeom )
+        
+        # calculate translation constraint
+        #   get mesh
+        hInput = block.outputArrayValue(self.input)
+        hInput.jumpToElement(multiIndex)
+        hInputGeom = hInput.outputValue().child(self.inputGeom)
         oInputGeom = hInputGeom.asMesh()
-        fnMesh = om.MFnMesh( oInputGeom )
-        #         get world-space of position
+        fnMesh = om.MFnMesh(oInputGeom)
+        #   get world-space of position
         pPosition = om.MPoint()
-        fnMesh.getPoint(nPosition, pPosition, om.MSpace.kWorld )
-        #         adjust with inverse parent matrix
+        fnMesh.getPoint(nPosition, pPosition, om.MSpace.kWorld)
+        #   adjust with inverse parent matrix
         nullPosition = pPosition * mInverse
-        #         set constrain translate attribute
-        hNullTranslate = block.outputValue( self.aNullTranslate )
-        hNullTranslate.set3Double( nullPosition.x, nullPosition.y, nullPosition.z )
-        #     displace (has to come after nullTranslate)
-        hDisplace = block.inputValue( self.aDisplace )
+        #   set constrain translate attribute
+        hNullTranslate = block.outputValue(self.aNullTranslate)
+        hNullTranslate.set3Double(nullPosition.x, nullPosition.y, nullPosition.z)
+        #   displace (has to come after nullTranslate)
+        hDisplace = block.inputValue(self.aDisplace)
         d3Displace = hDisplace.asDouble3()
-        pDisplace = om.MPoint( d3Displace[0], d3Displace[1], d3Displace[2], 1.0 )
-        #         create displace vector
-        fnMesh.getVertexNormal( nPosition, True, self.vector, om.MSpace.kWorld )
-        vecDisplace = prProjectVectorOnPlane( (pPosition-pDisplace), self.vector, self.plane )
+        pDisplace = om.MPoint(d3Displace[0], d3Displace[1], d3Displace[2], 1.0)
+        #   create displace vector
+        fnMesh.getVertexNormal(nPosition, True, self.vector, om.MSpace.kWorld)
+        vecDisplace = prProjectVectorOnPlane((pPosition - pDisplace), self.vector, self.plane)
         vecDisplaceLength = vecDisplace.length()
-        if( vecDisplaceLength == 0.0 ):
+        if vecDisplaceLength == 0.0:
             return
-        #     falloff type
-        hFalloffType = block.inputValue( self.aFalloffType )
+        
+        hFalloffType = block.inputValue(self.aFalloffType)
         sFalloffType = hFalloffType.asShort()
-        #     falloff weight
-        ahFalloffWeightsList = block.inputArrayValue( self.aFalloffWeightList )
+        
+        ahFalloffWeightsList = block.inputArrayValue(self.aFalloffWeightList)
         arrayFalloffWeights = []
-        if( multiIndex < ahFalloffWeightsList.elementCount() ):
-            ahFalloffWeightsList.jumpToArrayElement( multiIndex )
+        if multiIndex < ahFalloffWeightsList.elementCount():
+            ahFalloffWeightsList.jumpToArrayElement(multiIndex)
             # get array values
             hFalloffWeightsList = ahFalloffWeightsList.inputValue()
-            hFalloffWeights = hFalloffWeightsList.child( self.aFalloffWeights )
+            hFalloffWeights = hFalloffWeightsList.child(self.aFalloffWeights)
             oFalloffWeights = hFalloffWeights.data()
-            fnFalloffWeights = om.MFnDoubleArrayData( oFalloffWeights )
+            fnFalloffWeights = om.MFnDoubleArrayData(oFalloffWeights)
             arrayFalloffWeights = fnFalloffWeights.array()
             # adjust array size depending on vertex count (first call or user changed input geom)
             lenFalloffWeights = arrayFalloffWeights.length()
             vtxCount = fnMesh.numVertices()
-            if( lenFalloffWeights != vtxCount ):
-                if( lenFalloffWeights < vtxCount ):
+            if lenFalloffWeights != vtxCount:
+                if lenFalloffWeights < vtxCount:
                     # expand array, to match vertex count
                     fillValue = 1.0
-                    if( lenFalloffWeights ):
+                    if lenFalloffWeights:
                         fillValue = arrayFalloffWeights[-1]
-                    for x in range( vtxCount-lenFalloffWeights ):
-                        arrayFalloffWeights.append( fillValue )
-                elif( lenFalloffWeights > vtxCount ):
+                    for x in range(vtxCount - lenFalloffWeights):
+                        arrayFalloffWeights.append(fillValue)
+                elif lenFalloffWeights > vtxCount:
                     # reduce array size to match vertex count
-                    arrayFalloffWeights.setLength( vtxCount )
+                    arrayFalloffWeights.setLength(vtxCount)
                 # extra query, just so the weights are displayed correctly in the viewport
                 #  on first usage of paint tool. todo: better method?
-                block.inputArrayValue( self.aFalloffWeightList )
+                block.inputArrayValue(self.aFalloffWeightList)
         #     falloff radius
-        hRadius = block.inputValue( self.aRadius )
+        hRadius = block.inputValue(self.aRadius)
         fRadius = hRadius.asFloat()
         #     aRadiusFalloff attribute
         f_util = om.MScriptUtil()
         fPtrRadiusFalloff = f_util.asFloatPtr()
-        hRadiusFalloff = om.MRampAttribute( thisNode, self.aRadiusFalloff )
-        # -------------------------
+        hRadiusFalloff = om.MRampAttribute(thisNode, self.aRadiusFalloff)
         # pre-loop variables and operations (to improve performance)
         matrixInverse = matrix.inverse()
         vecNormal = om.MVector()
         paAllPoints = om.MPointArray()
         # algorithm specific
-        if( sAlgorithm == 0 ):
+        if sAlgorithm == 0:
             # mesh intersector: is faster than MFnMesh
-            self.intersector.create( oInputGeom, matrix )
-        elif( sAlgorithm == 1 ):
+            self.intersector.create(oInputGeom, matrix)
+        elif sAlgorithm == 1:
             # code
             ptTarget = om.MPoint()
             f2_util = om.MScriptUtil()
@@ -394,220 +358,219 @@ class prSlideNode(OpenMayaMPx.MPxDeformerNode):
             # per vertex information (position, normal)
             #     maybe todo: to improve performance only use the indices from iter. the points that are 
             #                 used for param have to be included as well, so give good error msg for user 
-            iterVertex = om.MItMeshVertex( oInputGeom )
+            iterVertex = om.MItMeshVertex(oInputGeom)
             allPositions = []
-            #allNormals = [] # removed, because it is required for both algorithms, and will be done per iter element anyways
+            # allNormals = [] # removed, because it is required for both algorithms, and will be done per iter element anyways
             handlePlane = None
             while not iterVertex.isDone():
                 # position
-                allPositions.append( iterVertex.position( om.MSpace.kWorld ) )
+                allPositions.append(iterVertex.position(om.MSpace.kWorld))
                 # normal
-                #iterVertex.getNormal( vecNormal, om.MSpace.kWorld )
-                #allNormals.append( om.MVector( vecNormal ) )
+                # iterVertex.getNormal( vecNormal, om.MSpace.kWorld )
+                # allNormals.append( om.MVector( vecNormal ) )
                 # handle normal
-                if( iterVertex.index() == nPosition ):
-                    iterVertex.getNormal( vecNormal, om.MSpace.kWorld )# remove if using allNormals
+                if iterVertex.index() == nPosition:
+                    iterVertex.getNormal(vecNormal, om.MSpace.kWorld)  # remove if using allNormals
                     handlePlane = om.MPlane()
-                    handlePlane.setPlane( vecNormal, 0.0 )
-                #
+                    handlePlane.setPlane(vecNormal, 0.0)
+                
                 iterVertex.next()
             # error check handle normal
-            if( handlePlane == None ):
-                raise NameError( 'Did not create handlePlane, maybe invalid position attribute value (no vertex with id): ', nPosition )
+            if handlePlane is None:
+                raise NameError(
+                    'Did not create handlePlane, maybe invalid position attribute value (no vertex with id): ',
+                    nPosition)
             # gather mesh data that can be saved over multiple deform calls
-            if( sAlgorithm != self.algorithmLastCall ):
+            if sAlgorithm != self.algorithmLastCall:
                 # gather mesh data to be used for parameterization
                 intArray = om.MIntArray()
                 # #################
                 # per edge data
-                iterEdge = om.MItMeshEdge( oInputGeom )
-                self.edgeVertices = []# IDs of connected vertices [(0,1), (1,2),...]
-                self.edgeFaces = []# IDs of connected faces [(0,1), (1,2),...]
+                iterEdge = om.MItMeshEdge(oInputGeom)
+                self.edgeVertices = []  # IDs of connected vertices [(0,1), (1,2),...]
+                self.edgeFaces = []  # IDs of connected faces [(0,1), (1,2),...]
                 while not iterEdge.isDone():
                     # vertices
-                    self.edgeVertices.append( [iterEdge.index(0), iterEdge.index(1)] )
+                    self.edgeVertices.append([iterEdge.index(0), iterEdge.index(1)])
                     # faces
-                    iterEdge.getConnectedFaces( intArray )
-                    self.edgeFaces.append( om.MIntArray( intArray ) )
-                    # 
+                    iterEdge.getConnectedFaces(intArray)
+                    self.edgeFaces.append(om.MIntArray(intArray))
+                    
                     iterEdge.next()
                 # #################
                 # per face data
-                iterPoly = om.MItMeshPolygon( oInputGeom )
-                self.faceVertices = []# all vertices of a face
-                self.faceEdges = []# edges building face
-                self.faceUs = []# all U values of faceVertices
-                self.faceVs = []# all V values of faceVertices
+                iterPoly = om.MItMeshPolygon(oInputGeom)
+                self.faceVertices = []  # all vertices of a face
+                self.faceEdges = []  # edges building face
+                self.faceUs = []  # all U values of faceVertices
+                self.faceVs = []  # all V values of faceVertices
                 eachFaceU = om.MFloatArray()
                 eachFaceV = om.MFloatArray()
                 while not iterPoly.isDone():
                     # face vertices
-                    iterPoly.getVertices( intArray )
-                    self.faceVertices.append( om.MIntArray( intArray ) )
+                    iterPoly.getVertices(intArray)
+                    self.faceVertices.append(om.MIntArray(intArray))
                     # face edges
-                    iterPoly.getEdges( intArray )
-                    self.faceEdges.append( om.MIntArray( intArray ) )
+                    iterPoly.getEdges(intArray)
+                    self.faceEdges.append(om.MIntArray(intArray))
                     # faceVertex UVs
-                    iterPoly.getUVs( eachFaceU, eachFaceV )
-                    self.faceUs.append( om.MFloatArray( eachFaceU ) )
-                    self.faceVs.append( om.MFloatArray( eachFaceV ) )
-                    # 
+                    iterPoly.getUVs(eachFaceU, eachFaceV)
+                    self.faceUs.append(om.MFloatArray(eachFaceU))
+                    self.faceVs.append(om.MFloatArray(eachFaceV))
+                    
                     iterPoly.next()
                 # #################
                 # per vertex data
-                self.vertexEdges = []# edges connected to vertex
-                self.vertexFaces = []# faces connected to vertex
-                self.vertexNeighborVertices = []# vertices on faces, which are connected to vertex
-                self.vertexFacesBorderEdges = []# initial border edges
+                self.vertexEdges = []  # edges connected to vertex
+                self.vertexFaces = []  # faces connected to vertex
+                self.vertexNeighborVertices = []  # vertices on faces, which are connected to vertex
+                self.vertexFacesBorderEdges = []  # initial border edges
                 iterVertex.reset()
                 while not iterVertex.isDone():
                     # edges
-                    iterVertex.getConnectedEdges( intArray )
-                    self.vertexEdges.append( om.MIntArray( intArray ) )
+                    iterVertex.getConnectedEdges(intArray)
+                    self.vertexEdges.append(om.MIntArray(intArray))
                     # faces
-                    iterVertex.getConnectedFaces( intArray )
-                    self.vertexFaces.append( om.MIntArray( intArray ) )
+                    iterVertex.getConnectedFaces(intArray)
+                    self.vertexFaces.append(om.MIntArray(intArray))
                     # vertex neighbors
                     tmpNeighbors = []
                     for eachFaceId in self.vertexFaces[-1]:
                         for eachPoint in self.faceVertices[eachFaceId]:
-                            if( not eachPoint in tmpNeighbors ):
-                                tmpNeighbors.append( eachPoint )
-                    self.vertexNeighborVertices.append( tmpNeighbors )
+                            if eachPoint not in tmpNeighbors:
+                                tmpNeighbors.append(eachPoint)
+                    self.vertexNeighborVertices.append(tmpNeighbors)
                     # border edges
                     borderEdges = []
                     for eachFace in self.vertexFaces[-1]:
                         for eachEdge in self.faceEdges[eachFace]:
-                            if( borderEdges.count(eachEdge) == 0 ):
-                                borderEdges.append( eachEdge )
+                            if borderEdges.count(eachEdge) == 0:
+                                borderEdges.append(eachEdge)
                             else:
-                                borderEdges.remove( eachEdge )
-                    self.vertexFacesBorderEdges.append( borderEdges )
-                    #
+                                borderEdges.remove(eachEdge)
+                    self.vertexFacesBorderEdges.append(borderEdges)
                     iterVertex.next()
-            # if algorithm change (or first call)
-        # if algorithm == 1
         
-        # -------------------------
         # main deform loop
-        while not iter.isDone():
-            iterIndex = iter.index()
-            pt = iter.position()
-            # get envelope-weight per vertex
-            weight = self.weightValue( block, multiIndex, iterIndex )
-            #     skip if weight is zero (no movement)
-            if( weight == 0.0 ):
-                paAllPoints.append( pt )
-                iter.next()
+        while not inputIter.isDone():
+            iterIndex = inputIter.index()
+            pt = inputIter.position()
+            weight = self.weightValue(block, multiIndex, iterIndex)
+            if weight == 0.0:
+                paAllPoints.append(pt)
+                inputIter.next()
                 continue
             # set point to world space (all calculations in this plugin are in world-space ... i think?!)
             pt *= matrix
             # get falloff value
             #     weight map
-            if( sFalloffType == 0 ):
+            if sFalloffType == 0:
                 if arrayFalloffWeights:
                     falloffValue = arrayFalloffWeights[iterIndex]
                 else:
                     falloffValue = 1.0
             #     radius
-            elif( sFalloffType == 1 ):
+            elif sFalloffType == 1:
                 # get distance to pPosition to see if it is in radius
                 distance = (pPosition - pt).length()
                 #     skip if out of radius
-                if( distance > fRadius ):
-                    paAllPoints.append( iter.position() )
-                    iter.next()
+                if distance > fRadius:
+                    paAllPoints.append(inputIter.position())
+                    inputIter.next()
                     continue
                 # get fall-off value from ramp
-                hRadiusFalloff.getValueAtPosition( distance/fRadius, fPtrRadiusFalloff )
-                falloffValue = f_util.getFloat( fPtrRadiusFalloff )
+                hRadiusFalloff.getValueAtPosition(distance / fRadius, fPtrRadiusFalloff)
+                falloffValue = f_util.getFloat(fPtrRadiusFalloff)
             #     skip if fall-off value is zero (zero influence)
-            if( falloffValue == 0.0 ):
-                paAllPoints.append( iter.position() )
-                iter.next()
+            if falloffValue == 0.0:
+                paAllPoints.append(inputIter.position())
+                inputIter.next()
                 continue
             # adjust displace vector with fall-off
             vecDisplaceEach = vecDisplace * falloffValue
             # get normal
-            fnMesh.getVertexNormal( iterIndex, True, vecNormal, om.MSpace.kWorld )
+            fnMesh.getVertexNormal(iterIndex, True, vecNormal, om.MSpace.kWorld)
             # flip displace vector, if its angle is more than 90degree off and flipAttr is on
-            if( bFlip ):
-                if( vecNormal * self.vector < 0 ):
+            if bFlip:
+                if vecNormal * self.vector < 0:
                     vecDisplaceEach *= -1
             # -------------------------
             # closest point slide:
             # 1. project locator-movement (with falloffValue) on vertex-normal-plane
             # 2. then get closest point on mesh
             # -------------------------
-            if( sAlgorithm == 0 ):
+            if sAlgorithm == 0:
                 # project handle displacement on each point normal plane and adjust length with falloff
-                #fnMesh.getVertexNormal( iterIndex, True, vecNormal, om.MSpace.kWorld )
-                vecMove = prProjectVectorOnPlane( vecDisplaceEach, vecNormal, self.plane, (vecDisplaceLength * falloffValue) )
+                # fnMesh.getVertexNormal( iterIndex, True, vecNormal, om.MSpace.kWorld )
+                vecMove = prProjectVectorOnPlane(vecDisplaceEach, vecNormal, self.plane,
+                                                 (vecDisplaceLength * falloffValue))
                 # get closest point on mesh
-                self.intersector.getClosestPoint((pt-vecMove), self.ptOM )
-                ptClosest = om.MPoint( self.ptOM.getPoint() )# else it is MFloatPoint
-                ptClosest *= matrix# worldspace, so it is same space as pt
-                vecMove = pt-ptClosest
+                self.intersector.getClosestPoint((pt - vecMove), self.ptOM)
+                ptClosest = om.MPoint(self.ptOM.getPoint())  # else it is MFloatPoint
+                ptClosest *= matrix  # worldspace, so it is same space as pt
+                vecMove = pt - ptClosest
                 # adjust movement with envelope and painted weight
-                vecMove *= env*weight
-                pt = pt-vecMove
+                vecMove *= env * weight
+                pt = pt - vecMove
             # -------------------------
             # paper slide
             # -------------------------
-            if( sAlgorithm == 1 ):
-                if( True ):#iter.index() == 0):
+            if sAlgorithm == 1:
+                if True:  # iter.index() == 0):
                     #
                     # 1. create Psi / local parameterization plane
-                    #self.plane.setPlane(allNormals[iterIndex], 0.0)# allNormals
-                    self.plane.setPlane( vecNormal, 0.0 )
-                    #eachPsi = prPsi( iterIndex, pt, allNormals[iterIndex], self.plane ) # -14 fps ... not sure why, when working with functions and variables locally only, it was only 1.5 fps faster# allNormals
-                    eachPsi = prPsi( iterIndex, pt, vecNormal, self.plane )
+                    # self.plane.setPlane(allNormals[iterIndex], 0.0)# allNormals
+                    self.plane.setPlane(vecNormal, 0.0)
+                    # eachPsi = prPsi( iterIndex, pt, allNormals[iterIndex], self.plane ) # -14 fps ... not sure why, when working with functions and variables locally only, it was only 1.5 fps faster# allNormals
+                    eachPsi = prPsi(iterIndex, pt, vecNormal, self.plane)
                     #
                     # 2. initial point mapping (handle-vertex and its neighbors)
-                    eachPsi.addPoints( self.vertexNeighborVertices[iterIndex], allPositions ) # -37 fps
+                    eachPsi.addPoints(self.vertexNeighborVertices[iterIndex], allPositions)  # -37 fps
                     #
                     # 3. save initial faces and border edges
-                    eachPsi.calculatePolygons( self.vertexFaces, self.faceVertices, self.vertexFaces[iterIndex] )# -0.7 fps
-                    eachPsi.calculateBorderEdges( self.edgeVertices, self.faceEdges, self.vertexFaces[iterIndex], self.vertexFacesBorderEdges[iterIndex] )# -0.2 fps
+                    eachPsi.calculatePolygons(self.vertexFaces, self.faceVertices,
+                                              self.vertexFaces[iterIndex])  # -0.7 fps
+                    eachPsi.calculateBorderEdges(self.edgeVertices, self.faceEdges, self.vertexFaces[iterIndex],
+                                                 self.vertexFacesBorderEdges[iterIndex])  # -0.2 fps
                     #
                     # 4. project displace vector on Psi (todo: only rotate vecDisplaceEach in psi 2d coordinates)
-                    eachPsi.projectDisplaceVector( vecDisplaceEach, handlePlane )# -0.9 fps
+                    eachPsi.projectDisplaceVector(vecDisplaceEach, handlePlane)  # -0.9 fps
                     #
                     # 5. get target position faceId
-                    faceId = eachPsi.pointInPolygon( vec1, vec2 )# -10 fps
+                    faceId = eachPsi.pointInPolygon(vec1, vec2)  # -10 fps
                     # if displace point is out of range, expand Psi until displace is on a face
-                    if( faceId == None ):
-                        counter = 0# limit to avoid crash - todo: maybe add attribute for user to set maximum?
+                    if faceId is None:
+                        counter = 0  # limit to avoid crash - todo: maybe add attribute for user to set maximum?
                         newFaceId = None
-                        while (counter < 100 and faceId == None ):
+                        while counter < 100 and faceId is None:
                             # get new face to map
-                            newFaceId = eachPsi.getConnectedFace( self.edgeFaces )
+                            newFaceId = eachPsi.getConnectedFace(self.edgeFaces)
                             # map new points
-                            eachPsi.addPoints( self.faceVertices[newFaceId], allPositions )#, fnMesh )
+                            eachPsi.addPoints(self.faceVertices[newFaceId], allPositions)  # , fnMesh )
                             # save face and border edges
-                            eachPsi.calculatePolygons( self.vertexFaces, self.faceVertices, [newFaceId] )
-                            eachPsi.calculateBorderEdges( self.edgeVertices, self.faceEdges, [newFaceId] )
+                            eachPsi.calculatePolygons(self.vertexFaces, self.faceVertices, [newFaceId])
+                            eachPsi.calculateBorderEdges(self.edgeVertices, self.faceEdges, [newFaceId])
                             # try to get face id with new mapped face
-                            faceId = eachPsi.pointInPolygon( vec1, vec2, [newFaceId] )
+                            faceId = eachPsi.pointInPolygon(vec1, vec2, [newFaceId])
                             #
                             counter += 1
                         # error check
-                        if( counter == 100 ):
-                            raise NameError( 'counter limit reached for vertex: ', iterIndex )
-                        if( faceId == None ):
-                            raise NameError( 'faceId not found, for vertex: ', iterIndex )
+                        if counter == 100:
+                            raise NameError('counter limit reached for vertex: ', iterIndex)
+                        if faceId is None:
+                            raise NameError('faceId not found, for vertex: ', iterIndex)
                     #
                     # 6. get UV value [u,v] on Psi to get position on mesh
-                    eachUV = eachPsi.getPositionUv( faceId, self.faceUs[faceId], self.faceVs[faceId] )# -1.2 fps
-                    f2_util.createFromList( eachUV, 2)
+                    eachUV = eachPsi.getPositionUv(faceId, self.faceUs[faceId], self.faceVs[faceId])  # -1.2 fps
+                    f2_util.createFromList(eachUV, 2)
                     f2_ptr = f2_util.asFloat2Ptr()
                     #
-                    fnMesh.getPointAtUV( faceId, ptTarget, f2_ptr, om.MSpace.kWorld )
+                    fnMesh.getPointAtUV(faceId, ptTarget, f2_ptr, om.MSpace.kWorld)
                     #
-                    ## sometimes error if ptDisplace is on edge, in that case just try all faces - todo: maybe find better solution??
-                    #try:
+                    # sometimes error if ptDisplace is on edge, in that case just try all faces - todo: maybe find better solution??
+                    # try:
                     #    fnMesh.getPointAtUV( faceId, ptTarget, f2_ptr, om.MSpace.kWorld )
-                    #except:
+                    # except:
                     #    for eachId in eachPsi.facePoints:
                     #        try:
                     #            fnMesh.getPointAtUV( eachId, ptTarget, f2_ptr, om.MSpace.kWorld )
@@ -618,48 +581,46 @@ class prSlideNode(OpenMayaMPx.MPxDeformerNode):
                     #        raise NameError( 'Could not find position on mesh for vertex (are connected polygons quads?): ', iterIndex )
                     #
                     # 7. displace vertex
-                    vecMove = pt-ptTarget
+                    vecMove = pt - ptTarget
                     # adjust with envelope and painted weight
-                    vecMove *= env*weight
+                    vecMove *= env * weight
                     # adjust pt
-                    pt = pt-vecMove
-            # end algorithm
+                    pt = pt - vecMove
             # set point to object space again
             pt *= matrixInverse
             
             # position point
-            paAllPoints.append( pt )
-            #
-            iter.next()
+            paAllPoints.append(pt)
+            
+            inputIter.next()
         # while iter
         # set the new positions
-        iter.setAllPositions( paAllPoints )
+        inputIter.setAllPositions(paAllPoints)
         # save algorithm used in this call for next call
         self.algorithmLastCall = sAlgorithm
         return
-    # deform
-# class
 
-def prProjectVectorOnPlane( vec_arg, normal_arg, plane_arg, length_arg=None ):
+
+def prProjectVectorOnPlane(vec_arg, normal_arg, plane_arg, length_arg=None):
     # project vector on plane and optionally set to given length
     #  vec_arg: vector to be projected
     #  normal_arg: plane normal
     #  plane_arg: plane to project onto
     #  length_arg: length of projected vector
     plane_arg.setPlane(normal_arg, 0.0)
-    dDistance = plane_arg.directedDistance( vec_arg )
+    dDistance = plane_arg.directedDistance(vec_arg)
     # get vector to plane
     ptOnPlane = (normal_arg * dDistance)
-    vecProjected = vec_arg-ptOnPlane
-    if( length_arg ):
+    vecProjected = vec_arg - ptOnPlane
+    if length_arg:
         vecProjectedLength = vecProjected.length()
-        if( vecProjectedLength > 0.0 ):
+        if vecProjectedLength > 0.0:
             vecProjected *= length_arg / vecProjectedLength
     return vecProjected
-# def
 
-class prPsi():
-    '''
+
+class prPsi:
+    """
     custom class for local parameterization "Psi" (a simplified 2D mesh)
     - save root position and plane on initialization (def __init__)
     - map new points (def addPoints)
@@ -667,19 +628,19 @@ class prPsi():
     - save border edges (def calculateBorderEdges)
     - calculate local displacement representation (def projectDisplaceVector)
     - calculate UV value at displacement representation
-    '''
+    """
     # variables / psi information to save
     rootId = None
     root = None
     plane = None
     normal = None
     displace = None
-    points = None# all mapped points {vertexId:<MPoint...>, ...}
-    facePoints = None# all completely mapped faces {faceId:(vtx1, vtx2), ...}
-    borderEdges = None# all border edges {edgeId:(vtx1, vtx2), ...}
+    points = None  # all mapped points {vertexId:<MPoint...>, ...}
+    facePoints = None  # all completely mapped faces {faceId:(vtx1, vtx2), ...}
+    borderEdges = None  # all border edges {edgeId:(vtx1, vtx2), ...}
     
     # create plane
-    def __init__( self, id_arg, pt_arg, normal_arg, plane_arg ):
+    def __init__(self, id_arg, pt_arg, normal_arg, plane_arg):
         # reset values (else they get used from last deform call / class instance is saved)
         self.rootId = None
         self.root = None
@@ -694,47 +655,40 @@ class prPsi():
         self.root = pt_arg
         self.plane = plane_arg
         self.normal = normal_arg
-    # def
     
-    # map points on Psi
-    def addPoints( self, pointIDsToAdd_arg, pointPositions_arg, mesh_arg=None ):
-        '''
+    def addPoints(self, pointIDsToAdd_arg, pointPositions_arg, mesh_arg=None):
+        """
         Adds points with world position on Psi-plane
         - pointIDsToAdd_arg: [id1,id2,..]
         - pointPositions_arg: all point positions {1:MPoint(), 2:MPoint(),...}
         - mesh_arg: MFnMesh, if given use normalCurve distance, else just world space distance
-        '''
+        """
         for eachID in pointIDsToAdd_arg:
             # skip mapped points
-            if( self.points.has_key( eachID ) ):
+            if eachID in self.points:
                 continue
-            #
-            vecNeighbor = pointPositions_arg[eachID] - self.root # -8fps // 1079 times
+            vecNeighbor = pointPositions_arg[eachID] - self.root  # -8fps // 1079 times
             # distance between points
             if mesh_arg:
-                dDistToNeighbor = self.normalCurveDistance( self.rootId, eachID, mesh_arg )
+                dDistToNeighbor = self.normalCurveDistance(self.rootId, eachID, mesh_arg)
             else:
-                dDistToNeighbor = vecNeighbor.length() # -2 fps
+                dDistToNeighbor = vecNeighbor.length()  # -2 fps
             # get normalized direction vector on Psi from root to new point
-            dDistance = self.plane.directedDistance( vecNeighbor ) # -2 fps
-            vecToNeighborOnPsi = vecNeighbor - (self.normal*dDistance) # -11 fps
-            vecToNeighborOnPsi.normalize() # -0.8 fps
+            dDistance = self.plane.directedDistance(vecNeighbor)  # -2 fps
+            vecToNeighborOnPsi = vecNeighbor - (self.normal * dDistance)  # -11 fps
+            vecToNeighborOnPsi.normalize()  # -0.8 fps
             # create mapped point
-            ptMapped = om.MPoint( vecToNeighborOnPsi*dDistToNeighbor )# -12 fps
+            ptMapped = om.MPoint(vecToNeighborOnPsi * dDistToNeighbor)  # -12 fps
             # save point position
             self.points[eachID] = ptMapped
-        # for
-    # def
     
-    # calculate and save polygons, which have all their vertices mapped
-    def calculatePolygons( self, vertexFaces_arg, faceVertices_arg, polygonsToSave_arg = None ):
-        # ########################
+    def calculatePolygons(self, vertexFaces_arg, faceVertices_arg, polygonsToSave_arg=None):
+        """calculate and save polygons, which have all their vertices mapped"""
         # if polygonsToSave_arg is given, just save them. no error checking. made for initial neighbor mapping
-        if( polygonsToSave_arg ):
+        if polygonsToSave_arg:
             for eachPoly in polygonsToSave_arg:
                 self.facePoints[eachPoly] = faceVertices_arg[eachPoly]
             return
-        # ########################
         # else calculate faces from mapped points
         #    get all polygons connected to any mapped point
         connectedPolygons = []
@@ -746,66 +700,59 @@ class prPsi():
         for eachPoly in connectedPolygons:
             allVertices = True
             for eachVertex in faceVertices_arg[eachPoly]:
-                if( not self.points.has_key(eachVertex) ):
+                if eachVertex not in self.points:
                     allVertices = False
                     break
-            if( allVertices ):
+            if allVertices:
                 self.facePoints[eachPoly] = faceVertices_arg[eachPoly]
-        # for
-    # def
     
-    # calculate and save border edges
-    def calculateBorderEdges( self, edgeVertices_arg, faceEdges_arg, newFaces_arg, borderEdgesToSave_arg = None ):
-        # ########################
+    def calculateBorderEdges(self, edgeVertices_arg, faceEdges_arg, newFaces_arg, borderEdgesToSave_arg=None):
+        """ calculate and save border edges """
         # if borderEdgesToSave_arg is given, just save them. no error checking. made for initial neighbor mapping
-        if( borderEdgesToSave_arg ):
+        if borderEdgesToSave_arg:
             for eachEdge in borderEdgesToSave_arg:
                 self.borderEdges[eachEdge] = edgeVertices_arg[eachEdge]
             return
-        # ########################
         # else calculate border edges
         for eachFace in newFaces_arg:
             for eachEdge in faceEdges_arg[eachFace]:
-                if( self.borderEdges.has_key(eachEdge) ):
+                if eachEdge in self.borderEdges:
                     del self.borderEdges[eachEdge]
                 else:
                     self.borderEdges[eachEdge] = edgeVertices_arg[eachEdge]
-        # for eachFace
-    # def
     
-    # project vector from handle-plane on this Psi plane
     def projectDisplaceVector(self, vec_arg, plane_arg):
+        """project vector from handle-plane on this Psi plane"""
         # temporary just project vector without handle-plane adjustment
-        dDistance = self.plane.directedDistance( vec_arg )
-        self.displace = om.MPoint( (self.normal * dDistance)-vec_arg )# todo: why not vec-planevec
-    # def
+        dDistance = self.plane.directedDistance(vec_arg)
+        self.displace = om.MPoint((self.normal * dDistance) - vec_arg)  # todo: why not vec-planevec
     
-    # return face, which is connected to the closest borderEdge, which is intersected by ptDisplace
     def getConnectedFace(self, edgeFaces_arg):
+        # return face, which is connected to the closest borderEdge, which is intersected by ptDisplace
         idClosest = None
         distanceClosest = None
-        vecDisplace = om.MVector( self.displace )
+        vecDisplace = om.MVector(self.displace)
         for each in self.borderEdges:
             # angle of edge points
-            vecEdge1 = om.MVector( self.points[ self.borderEdges[each][0] ] )
-            vecEdge2 = om.MVector( self.points[ self.borderEdges[each][1] ] )
-            angleEdge = vecEdge1.angle( vecEdge2 )
+            vecEdge1 = om.MVector(self.points[self.borderEdges[each][0]])
+            vecEdge2 = om.MVector(self.points[self.borderEdges[each][1]])
+            angleEdge = vecEdge1.angle(vecEdge2)
             # angles between displace and each edge point
-            angle1 = vecDisplace.angle( vecEdge1 )
-            angle2 = vecDisplace.angle( vecEdge2 )
+            angle1 = vecDisplace.angle(vecEdge1)
+            angle2 = vecDisplace.angle(vecEdge2)
             hit = False
             # check if displace intersects edge
-            if( angle1 <= 0.0000001 ):
+            if angle1 <= 0.0000001:
                 # on edge point
                 eachDistance = vecEdge1.length()
                 idClosest = each
                 hit = True
-            elif( angle2 <= 0.0000001 ):
+            elif angle2 <= 0.0000001:
                 # on edge point
                 eachDistance = vecEdge2.length()
                 idClosest = each
                 hit = True
-            elif( angle1 < angleEdge and angle2 < angleEdge ):
+            elif angle1 < angleEdge and angle2 < angleEdge:
                 # between edge points
                 weight1 = 1 - angle1 / angleEdge
                 weight2 = 1 - angle2 / angleEdge
@@ -813,38 +760,37 @@ class prPsi():
                 idClosest = each
                 hit = True
             # save if first hit or shorter distance than current
-            if( hit and ( idClosest == None or eachDistance < distanceClosest ) ):
+            if hit and (idClosest is None or eachDistance < distanceClosest):
                 idClosest = each
                 distanceClosest = eachDistance
-        # for
+        
         # error check
-        if( idClosest == None ):
-            raise NameError( 'Did not find a border edge in getConnectedFace' )
-        #
+        if idClosest is None:
+            raise NameError('Did not find a border edge in getConnectedFace')
+        
         # get new face
         for eachFace in edgeFaces_arg[idClosest]:
-            if( not self.facePoints.has_key(eachFace) ):
+            if eachFace not in self.facePoints:
                 return eachFace
-        # error check
-        raise NameError( 'Did not return face id in getConnectedFace' )
-    # def
+        
+        raise NameError('Did not return face id in getConnectedFace')
     
     # return face id that projected distplace point is on
     #    note: only works with convex polygons
     # algorithm from:
     # "Determining if a point lies on the interior of a polygon"
     # http://paulbourke.net/geometry/insidepoly/
-    def pointInPolygon(self, v1_arg, v2_arg, faceIdsToCheck_arg=None ):
+    def pointInPolygon(self, v1_arg, v2_arg, faceIdsToCheck_arg=None):
         anglesums = []
         ids = []
         faceIdsToCheck = self.facePoints
         # only check given face ids. to improve performance 
         #    when mapping is increased -> only new face has to be checked
-        if( faceIdsToCheck_arg ):
+        if faceIdsToCheck_arg:
             faceIdsToCheck = faceIdsToCheck_arg
         from math import acos
         EPSILON = 0.0000001
-        TWOPI   = 6.283185307
+        TWOPI = 6.283185307
         p1 = v1_arg
         p2 = v2_arg
         for eachId in faceIdsToCheck:
@@ -852,42 +798,38 @@ class prPsi():
             anglesum = 0
             p = self.facePoints[eachId]
             n = len(p)
-            for i in range( n ):
+            for i in range(n):
                 # if displace point is on vertex, return face
                 p1.x = self.points[p[i]].x - q.x
                 p1.y = self.points[p[i]].y - q.y
                 p1.z = self.points[p[i]].z - q.z
-                #
-                p2.x = self.points[p[(i+1)%n]].x - q.x
-                p2.y = self.points[p[(i+1)%n]].y - q.y
-                p2.z = self.points[p[(i+1)%n]].z - q.z
-                #
+                
+                p2.x = self.points[p[(i + 1) % n]].x - q.x
+                p2.y = self.points[p[(i + 1) % n]].y - q.y
+                p2.z = self.points[p[(i + 1) % n]].z - q.z
+                
                 m1 = p1.length()
                 m2 = p2.length()
-                if( m1*m2 <= EPSILON ):
+                if m1 * m2 <= EPSILON:
                     return eachId
                 else:
-                    costheta = (p1.x*p2.x + p1.y*p2.y + p1.z*p2.z ) / (m1*m2)
+                    costheta = (p1.x * p2.x + p1.y * p2.y + p1.z * p2.z) / (m1 * m2)
                 # costheta between -1.0 and 1.0 (python rounding?? does make it -1.000..1 or 1.000..1 sometimes) 
-                if( costheta < -1.0 ):
+                if costheta < -1.0:
                     costheta = -1.0
-                elif( costheta > 1.0 ):
+                elif costheta > 1.0:
                     costheta = 1.0
-                anglesum += acos( costheta )
-            # for i
-            if( anglesum+EPSILON >= TWOPI and anglesum-EPSILON <= TWOPI ):# rounding... instead of anglesum == TWOPI
+                anglesum += acos(costheta)
+            if anglesum + EPSILON >= TWOPI and anglesum - EPSILON <= TWOPI:  # rounding... instead of anglesum == TWOPI
                 return eachId
-            anglesums.append( anglesum )
-            ids.append( eachId )
-        # for eachId
-        #
+            anglesums.append(anglesum)
+            ids.append(eachId)
         return None
-    # def
     
     # calculate UV value for ptDisplace on given face (Barycentric Coordinates)
     # algorithm from paper:
     # "Barycentric Coordinates for Arbitrary Polygons in the Plane"
-    def getPositionUv( self, faceId_arg, faceUs_arg, faceVs_arg ):
+    def getPositionUv(self, faceId_arg, faceUs_arg, faceVs_arg):
         # eachPsi.displace, eachPsi.points, eachPsi.facePoints
         # get uvs
         fUi = faceUs_arg
@@ -896,156 +838,145 @@ class prPsi():
         vertexIds = self.facePoints[faceId_arg]
         vi = []
         for eachId in vertexIds:
-            vi.append( self.points[eachId] )
+            vi.append(self.points[eachId])
         n = len(vi)
         v = self.displace
         # algorithm
-        si = []# vectors from ptDisplace to each vi
-        for i in range( n ):
-            si.append( vi[i] - v )
-        #
-        ri = []# distances from v to each vi
-        Ai = []# plane area between si[i] and si[i+1] (crossproduct/2)
-        Di = []# dot product of si[i] and si[i+1]
-        for i in range( n ):
+        si = []  # vectors from ptDisplace to each vi
+        for i in range(n):
+            si.append(vi[i] - v)
+        
+        ri = []  # distances from v to each vi
+        Ai = []  # plane area between si[i] and si[i+1] (crossproduct/2)
+        Di = []  # dot product of si[i] and si[i+1]
+        for i in range(n):
             # this for loop is for the special cases that v is on a vertex or edge
-            ip = i+1# for last loop iteration #todo: better python way with lists?
-            if( ip == n ):
+            ip = i + 1  # for last loop iteration #todo: better python way with lists?
+            if ip == n:
                 ip = 0
-            ri.append( si[i].length() )
-            Ai.append( (si[i]^si[ip]).length() / 2 )
-            Di.append( si[i].x*si[ip].x + si[i].y*si[ip].y + si[i].z*si[ip].z )
-            if( ri[i] < 0.0001 ): # v on vertex #todo rounding avoidable?
+            ri.append(si[i].length())
+            Ai.append((si[i] ^ si[ip]).length() / 2)
+            Di.append(si[i].x * si[ip].x + si[i].y * si[ip].y + si[i].z * si[ip].z)
+            if ri[i] < 0.0001:  # v on vertex #todo rounding avoidable?
                 return [fUi[i], fVi[i]]
-            if( Ai[i] < 0.000001 and Di[i] < 0 ): # v on edge #todo rounding avoidable?
-                ri.append( si[ip].length() )
-                fU = (ri[ip]*fUi[i] + ri[i]*fUi[ip]) / (ri[i]+ri[ip])
-                fV = (ri[ip]*fVi[i] + ri[i]*fVi[ip]) / (ri[i]+ri[ip])
+            if Ai[i] < 0.000001 and Di[i] < 0:  # v on edge #todo rounding avoidable?
+                ri.append(si[ip].length())
+                fU = (ri[ip] * fUi[i] + ri[i] * fUi[ip]) / (ri[i] + ri[ip])
+                fV = (ri[ip] * fVi[i] + ri[i] * fVi[ip]) / (ri[i] + ri[ip])
                 return [fU, fV]
-        # end for
+        
         fU = 0
         fV = 0
         W = 0
-        for i in range( n ):
+        for i in range(n):
             # this for loop is for 'normal' cases
-            ip = i+1# for last loop iteration #todo: better python way with lists?
-            if( ip == n ):
+            ip = i + 1  # for last loop iteration #todo: better python way with lists?
+            if ip == n:
                 ip = 0
             w = 0
-            if( Ai[i-1] != 0 ):
-                w = w + (ri[i-1] - Di[i-1]/ri[i]) / Ai[i-1]
-            if( Ai[i] != 0 ):
-                w = w + (ri[ip] - Di[i]/ri[i]) / Ai[i]
-            fU = fU + w*fUi[i]
-            fV = fV + w*fVi[i]
+            if Ai[i - 1] != 0:
+                w = w + (ri[i - 1] - Di[i - 1] / ri[i]) / Ai[i - 1]
+            if Ai[i] != 0:
+                w = w + (ri[ip] - Di[i] / ri[i]) / Ai[i]
+            fU = fU + w * fUi[i]
+            fV = fV + w * fVi[i]
             W = W + w
-        # end for
-        return [fU/W, fV/W]
-        #
-    # def
+        return [fU / W, fV / W]
     
     def normalCurveDistance(self, firstPointId_arg, secondPointId_arg, fnMesh_arg):
-        #
-        
-        #
         return 0.1
-    # def
-# class
 
-# init attributes
+
 def nodeInitializer():
-    # add attributes
     nAttr = om.MFnNumericAttribute()
     rAttr = om.MRampAttribute()
     cAttr = om.MFnCompoundAttribute()
     eAttr = om.MFnEnumAttribute()
     mAttr = om.MFnMatrixAttribute()
     tAttr = om.MFnTypedAttribute()
-    #
     # input user
     #     aPosition
-    prSlideNode.aPosition = nAttr.create( "position", "pos", om.MFnNumericData.kInt, 0 )
+    prSlideNode.aPosition = nAttr.create("position", "pos", om.MFnNumericData.kInt, 0)
     nAttr.setKeyable(True)
     nAttr.setMin(0)
-    prSlideNode.addAttribute( prSlideNode.aPosition )
+    prSlideNode.addAttribute(prSlideNode.aPosition)
     #     aAlgorithm
-    prSlideNode.aAlgorithm = eAttr.create( "algorithm", "alg", 0 )
+    prSlideNode.aAlgorithm = eAttr.create("algorithm", "alg", 0)
     eAttr.setKeyable(True)
-    eAttr.addField( "slide closestPoint", 0 )
-    eAttr.addField( "slide paper", 1 )
-    prSlideNode.addAttribute( prSlideNode.aAlgorithm )
+    eAttr.addField("slide closestPoint", 0)
+    eAttr.addField("slide paper", 1)
+    prSlideNode.addAttribute(prSlideNode.aAlgorithm)
     #     aHandleVisibility
-    prSlideNode.aFlipOpposingSide = nAttr.create( "flipOpposingSide", "fos", om.MFnNumericData.kBoolean, 0.0 )
+    prSlideNode.aFlipOpposingSide = nAttr.create("flipOpposingSide", "fos", om.MFnNumericData.kBoolean, 0.0)
     nAttr.setKeyable(True)
-    prSlideNode.addAttribute( prSlideNode.aFlipOpposingSide )
+    prSlideNode.addAttribute(prSlideNode.aFlipOpposingSide)
     #     aHandleVisibility
-    prSlideNode.aHandleVisibility = nAttr.create( "handleVisibility", "hv", om.MFnNumericData.kBoolean, 1.0 )
+    prSlideNode.aHandleVisibility = nAttr.create("handleVisibility", "hv", om.MFnNumericData.kBoolean, 1.0)
     nAttr.setKeyable(True)
-    prSlideNode.addAttribute( prSlideNode.aHandleVisibility )
+    prSlideNode.addAttribute(prSlideNode.aHandleVisibility)
     #     aFalloffType
-    prSlideNode.aFalloffType = eAttr.create( "falloffType", "fot", 1 )
+    prSlideNode.aFalloffType = eAttr.create("falloffType", "fot", 1)
     eAttr.setKeyable(True)
-    eAttr.addField( "painted weight", 0 )
-    eAttr.addField( "radius", 1 )
-    prSlideNode.addAttribute( prSlideNode.aFalloffType )
+    eAttr.addField("painted weight", 0)
+    eAttr.addField("radius", 1)
+    prSlideNode.addAttribute(prSlideNode.aFalloffType)
     #     aRadius
-    prSlideNode.aRadius = nAttr.create( "radius", "rr", om.MFnNumericData.kFloat, 1.0 )
+    prSlideNode.aRadius = nAttr.create("radius", "rr", om.MFnNumericData.kFloat, 1.0)
     nAttr.setKeyable(True)
     nAttr.setMin(0.01)
-    prSlideNode.addAttribute( prSlideNode.aRadius )
+    prSlideNode.addAttribute(prSlideNode.aRadius)
     #     aRadiusFalloff
-    prSlideNode.aRadiusFalloff = rAttr.createCurveRamp( "radiusFalloff", "rfo" )
-    prSlideNode.addAttribute( prSlideNode.aRadiusFalloff )
+    prSlideNode.aRadiusFalloff = rAttr.createCurveRamp("radiusFalloff", "rfo")
+    prSlideNode.addAttribute(prSlideNode.aRadiusFalloff)
     #     aFalloffWeight
-    prSlideNode.aFalloffWeights = tAttr.create( 'falloffWeights', 'fow', om.MFnNumericData.kDoubleArray )
-    tAttr.setHidden( True )
+    prSlideNode.aFalloffWeights = tAttr.create('falloffWeights', 'fow', om.MFnNumericData.kDoubleArray)
+    tAttr.setHidden(True)
     # default value... does not seem to be necessary/work properly
-    #daWeightsDefault = om.MDoubleArray()
-    #fnWeightsDefault = om.MFnDoubleArrayData()
-    #oWeightsDefault = fnWeightsDefault.create( daWeightsDefault )
-    #tAttr.setDefault( oWeightsDefault )
+    # daWeightsDefault = om.MDoubleArray()
+    # fnWeightsDefault = om.MFnDoubleArrayData()
+    # oWeightsDefault = fnWeightsDefault.create( daWeightsDefault )
+    # tAttr.setDefault( oWeightsDefault )
     #     aFalloffWeightList
-    prSlideNode.aFalloffWeightList = cAttr.create( 'falloffWeightsList', 'fwl' )
-    cAttr.addChild( prSlideNode.aFalloffWeights )
-    cAttr.setHidden( True )
-    cAttr.setArray( True )
-    cAttr.setUsesArrayDataBuilder( True )
-    prSlideNode.addAttribute( prSlideNode.aFalloffWeightList )
-    #
+    prSlideNode.aFalloffWeightList = cAttr.create('falloffWeightsList', 'fwl')
+    cAttr.addChild(prSlideNode.aFalloffWeights)
+    cAttr.setHidden(True)
+    cAttr.setArray(True)
+    cAttr.setUsesArrayDataBuilder(True)
+    prSlideNode.addAttribute(prSlideNode.aFalloffWeightList)
     # input deformer
     #     aDisplace
-    prSlideNode.aDisplaceX = nAttr.create( "displaceX", "dpx", om.MFnNumericData.kDouble, 0.0 )
+    prSlideNode.aDisplaceX = nAttr.create("displaceX", "dpx", om.MFnNumericData.kDouble, 0.0)
     nAttr.setReadable(False)
-    prSlideNode.aDisplaceY = nAttr.create( "displaceY", "dpy", om.MFnNumericData.kDouble, 0.0 )
+    prSlideNode.aDisplaceY = nAttr.create("displaceY", "dpy", om.MFnNumericData.kDouble, 0.0)
     nAttr.setReadable(False)
-    prSlideNode.aDisplaceZ = nAttr.create( "displaceZ", "dpz", om.MFnNumericData.kDouble, 0.0 )
+    prSlideNode.aDisplaceZ = nAttr.create("displaceZ", "dpz", om.MFnNumericData.kDouble, 0.0)
     nAttr.setReadable(False)
-    prSlideNode.aDisplace = cAttr.create( "displace", "dsp" )
+    prSlideNode.aDisplace = cAttr.create("displace", "dsp")
     cAttr.addChild(prSlideNode.aDisplaceX)
     cAttr.addChild(prSlideNode.aDisplaceY)
     cAttr.addChild(prSlideNode.aDisplaceZ)
     cAttr.setKeyable(True)
     cAttr.setReadable(False)
-    prSlideNode.addAttribute( prSlideNode.aDisplace )
+    prSlideNode.addAttribute(prSlideNode.aDisplace)
     #     aNullParentInverse
-    prSlideNode.aNullParentInverse = mAttr.create( 'nullParentInverse', 'npi' )
+    prSlideNode.aNullParentInverse = mAttr.create('nullParentInverse', 'npi')
     mAttr.setReadable(False)
-    prSlideNode.addAttribute( prSlideNode.aNullParentInverse )
+    prSlideNode.addAttribute(prSlideNode.aNullParentInverse)
     # output deformer
     #     aNullTranslate
-    prSlideNode.aNullTranslateX = nAttr.create( "nullTranslateX", "ntx", om.MFnNumericData.kDouble, 0.0 )
+    prSlideNode.aNullTranslateX = nAttr.create("nullTranslateX", "ntx", om.MFnNumericData.kDouble, 0.0)
     nAttr.setWritable(False)
-    prSlideNode.aNullTranslateY = nAttr.create( "nullTranslateY", "nty", om.MFnNumericData.kDouble, 0.0 )
+    prSlideNode.aNullTranslateY = nAttr.create("nullTranslateY", "nty", om.MFnNumericData.kDouble, 0.0)
     nAttr.setWritable(False)
-    prSlideNode.aNullTranslateZ = nAttr.create( "nullTranslateZ", "ntz", om.MFnNumericData.kDouble, 0.0 )
+    prSlideNode.aNullTranslateZ = nAttr.create("nullTranslateZ", "ntz", om.MFnNumericData.kDouble, 0.0)
     nAttr.setWritable(False)
-    prSlideNode.aNullTranslate = cAttr.create( "nullTranslate", "ntr" )
+    prSlideNode.aNullTranslate = cAttr.create("nullTranslate", "ntr")
     cAttr.addChild(prSlideNode.aNullTranslateX)
     cAttr.addChild(prSlideNode.aNullTranslateY)
     cAttr.addChild(prSlideNode.aNullTranslateZ)
     cAttr.setWritable(False)
-    prSlideNode.addAttribute( prSlideNode.aNullTranslate )
-    #
+    prSlideNode.addAttribute(prSlideNode.aNullTranslate)
+    
     # affects
     aOutputgeom = OpenMayaMPx.cvar.MPxDeformerNode_outputGeom
     aInputgeom = OpenMayaMPx.cvar.MPxDeformerNode_inputGeom
@@ -1064,30 +995,34 @@ def nodeInitializer():
     prSlideNode.attributeAffects(prSlideNode.aDisplace, aOutputgeom)
     #     output
     prSlideNode.attributeAffects(prSlideNode.aNullParentInverse, prSlideNode.aNullTranslate)
-    #
+    
     # Make deformer weights paintable
     import maya.cmds as mc
     mc.makePaintable('prSlideNode', 'weights', attrType='multiFloat', shapeMode='deformer')
     mc.makePaintable('prSlideNode', 'falloffWeights', attrType='doubleArray', shapeMode='deformer')
 
+
 def initializePlugin(mobject):
     mplugin = OpenMayaMPx.MFnPlugin(mobject, "Parzival Roethlein", "0.9.1")
     try:
-        mplugin.registerNode( prSlideNode.pluginName, prSlideNode.pluginId, nodeCreator, nodeInitializer, OpenMayaMPx.MPxNode.kDeformerNode )
+        mplugin.registerNode(prSlideNode.pluginName, prSlideNode.pluginId, nodeCreator, nodeInitializer,
+                             OpenMayaMPx.MPxNode.kDeformerNode)
     except:
-        sys.stderr.write( "Failed to register node: %s\n" % prSlideNode.pluginName )
+        sys.stderr.write("Failed to register node: %s\n" % prSlideNode.pluginName)
+
 
 def uninitializePlugin(mobject):
     mplugin = OpenMayaMPx.MFnPlugin(mobject)
     try:
-        mplugin.deregisterNode( prSlideNode.pluginId )
+        mplugin.deregisterNode(prSlideNode.pluginId)
     except:
-        sys.stderr.write( "Failed to unregister node: %s\n" % prSlideNode.pluginName )
+        sys.stderr.write("Failed to unregister node: %s\n" % prSlideNode.pluginName)
+
 
 def nodeCreator():
-    return OpenMayaMPx.asMPxPtr( prSlideNode() )
+    return OpenMayaMPx.asMPxPtr(prSlideNode())
 
-# AETemplate
+
 mm.eval('''
 global proc AEprSlideNodeTemplate( string $nodeName )
 {
