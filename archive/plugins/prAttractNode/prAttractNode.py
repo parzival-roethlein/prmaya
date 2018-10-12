@@ -1,4 +1,8 @@
 """
+
+!!! 10.2018 UPDATE !!!
+new node prClosestPoint.py replaces this one (prAttractNode.py)
+
 # DESCRIPTION
 This deformer does attract mesh vertices to either: matrix (point), polygons, curves or nurbs-surfaces.
 Use cases:
