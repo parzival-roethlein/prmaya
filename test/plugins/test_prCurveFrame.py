@@ -16,7 +16,7 @@ reload(prCurveFrame)
 
 SETTINGS = {'plugin_name': 'prCurveFrame.py',
             'plugin_path': 'C:/Users/paz/Documents/git/prmaya/prmaya/plugins/prCurveFrame.py',
-            'file': 'C:/Users/paz/Documents/git/prmaya/test/plugins/prCurveFrame_scene_v001.mb',
+            'file': 'C:/Users/paz/Documents/git/prmaya/test/plugins/test_prCurveFrame_scene.mb',
             'curve1': 'curve1',
             'curve2': 'curve2',
             'upMatrixTransform': 'up_locator'
