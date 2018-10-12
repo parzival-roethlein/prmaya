@@ -16,8 +16,12 @@ reload(prClosestPoint)
 
 SETTINGS = {'plugin_name': 'prClosestPoint.py',
             'plugin_path': 'C:/Users/paz/Documents/git/prmaya/prmaya/plugins/prClosestPoint.py',
-            'file': 'C:/Users/paz/Documents/git/prmaya/test/plugins/prClosestPoint_scene_v001.ma',
-            'selection': ['driverMesh', 'driverMesh1', 'driverCurve', 'driverCurve1', 'driverSurface', 'driverSurface1',
+            'file': 'C:/Users/paz/Documents/git/prmaya/test/plugins/test_prClosestPoint_scene.ma',
+            'selection': ['driverMesh', 'driverMesh1',
+                          'driverCurve', 'driverCurve1',
+                          'driverSurface', 'driverSurface1',
+                          'driverLocator', 'driverLocator1',
+                          'driverTransform', 'driverTransform1',
                           'driven']
             }
 
