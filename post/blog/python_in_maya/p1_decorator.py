@@ -3,11 +3,13 @@ Python in Maya #1: Decorators
 Two examples of simple Python decorators for Maya.
 There are many resources online that explain decorators,
 so I don't want to add yet another one.
-I just want to demonstrate their usefulness to Maya coders that are not using them yet.
+I just want to demonstrate their usefulness to Maya coders that are
+not using them yet.
 
-Both examples show the good practice of using the optional, standard library, convenience function
-functools.wraps to not lose/overwrite the wrapped functions func.__name__, func.__doc__, ...
-docs: https://docs.python.org/2/library/functools.html#functools.wraps
+Both examples show the good practice of using the optional,
+standard library, convenience function functools.wraps to not
+lose/overwrite the wrapped functions func.__name__, func.__doc__, ..
+doc: https://docs.python.org/2/library/functools.html#functools.wraps
 """
 
 from functools import wraps

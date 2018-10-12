@@ -1,8 +1,19 @@
 """
-abstraction evolution for general purpose maya command context:
+Python in Maya #3 context manager
 
+Starting with a decorator from "Python in Maya #1: Decorators"
+we build a contextmanager version and then generalize it to work
+with most (?) Maya commands.
+
+contextmanager decorator used:
+https://docs.python.org/3/library/contextlib.html#contextlib.contextmanager
+
+result usage:
 with maya_cmds_flag(maya.cmds.currentUnit, linear='cm'):
-    pass
+    pass # all my pymel commands are working !!
+
+The ContextDecorator can be used as decorator and context manager:
+https://docs.python.org/3/library/contextlib.html#contextlib.ContextDecorator
 
 """
 
@@ -72,7 +83,7 @@ def maya_cmds_flag(func, **flags):
     for k, value in flags.iteritems():
         scene_value = func(query=True, **{k: True})
         if scene_value != value:
-            # TODO: find proper way to detect edit flag
+            # TODO: find better way to detect edit flag?
             try:
                 func(edit=True, **{k: value})
             except:
@@ -90,4 +101,4 @@ def working_unit_linear_cm(func):
         with maya_cmds_flag(func=mc.currentUnit, linear='cm'):
             result = func(*args, **kwargs)
         return result
-
+    return wrapper

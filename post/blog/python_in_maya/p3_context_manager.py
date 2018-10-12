@@ -1,7 +1,11 @@
+"""
+Python in Maya #3 context manager
+
+Some context managers examples
+"""
+
 from contextlib import contextmanager
-
 import maya.cmds as mc
-
 import pymel.core as pm
 
 

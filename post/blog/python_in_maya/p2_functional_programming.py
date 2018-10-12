@@ -5,7 +5,15 @@ functional programming in python:
 - reduce
 - map, filter (list comprehension is more pythonic)
 
+TODO ...
+
+Examples here:
+- List comprehension
+- List slicing
+- Iterate over strings
+- izip (zip iterator)
 """
+
 
 """
 1. Basic example
@@ -58,12 +66,14 @@ for attribute in [at + ax for at in 'trs' for ax in 'xyz'] + ['ro']:
 # 2. constant is better here, because it is:
 #    - more readable
 #    - almost same character count
-transform_attributes = ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz', 'ro']
+transform_attributes = ['tx', 'ty', 'tz',
+                        'rx', 'ry', 'rz',
+                        'sx', 'sy', 'sz',
+                        'ro']
 for attribute in transform_attributes:
     driver.attr(attribute) >> driven.attr(attribute)
 
 # 3. using parent attr
-# transform_attributes = ['translate', 'rotate', 'scale', 'rotateOrder']
 transform_attributes = ['t', 'r', 's', 'ro']
 for attribute in transform_attributes:
     driver.attr(attribute) >> driven.attr(attribute)
