@@ -1,10 +1,9 @@
 """
-"Maya API ramp attribute bug?"
+'Maya API ramp attribute bug?'
 https://pazrot3d.blogspot.com/2018/10/maya-api-ramp-attribute-bug.html
 
-workaround code sample
+workaround code
 """
-import OpenMayaMPx
 
 def shouldSave(self, plug, result):
     if plug == self.myRampAttr1:
