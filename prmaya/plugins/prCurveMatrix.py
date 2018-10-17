@@ -19,14 +19,13 @@ LINKS
 ...
 
 TODO
-ramp
-outputMatrix not working properly
+outputMatrix rotation not working properly
 
 TODO LATER
-user defined aim+up vector
 create outputRotate (create input[x].rotateOrder needed)
-nodeState / frozen functionality
+user defined aim+up vector
 initialize ramp attribute with second entry (1, 1, 1)
+nodeState / frozen functionality
 
 TODO MAYBE
 - (input[x] -> output[x]) index based dirty propagation
@@ -124,7 +123,7 @@ class prCurveMatrix(om.MPxNode):
     
     '''
     def postConstructor(self):
-        """this is not a clean fix, because user can't have default value only then"""
+        """this is not a proper workaround because user might want 0,0,1 single element"""
         ramp = om.MRampAttribute(self.thisMObject(), self.distribution)
         for value, compare in zip(ramp.getEntries(),
                                   (om.MIntArray([0]), om.MFloatArray([0]), om.MFloatArray([0]),
@@ -165,7 +164,7 @@ class prCurveMatrix(om.MPxNode):
             
             curveFn = om.MFnNurbsCurve(curveData)
             curveLength = curveFn.length()
-            stepLength = 1.0 / (((counter or 1) - 1) or 1)
+            stepLength = 1.0 / (counter - 1 if counter > 2 else 1)
             positions = []
             tangents = []
             for x in range(counter):

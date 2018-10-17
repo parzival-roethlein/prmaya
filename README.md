@@ -6,9 +6,9 @@ Scripts, plugins and posts (tutorials, notes) for Autodesk Maya.
     * __prObjectSetUi__: used in production
     * __manip_drag_panel_show__: used in production
   * plugins
-    * __prClosestPoint__: new, untested 
-    * __prCurveMatrix__: new, prototype
-    * __prPyMath__: new, untested
+    * __prClosestPoint__: not tested in production 
+    * __prCurveMatrix__: prototype
+    * __prPyMath__: not tested in production
 * archive (not usable, old, unsupported, only for code/algorithm reference)
   * plugins
     * __prAttractNode__: replaced by prClosestPoint. Demo: https://vimeo.com/20002149
