@@ -137,7 +137,6 @@ class prCurveMatrix(om.MPxNode):
     
     def compute(self, plug, dataBlock):
         thisNode = self.thisMObject()
-        print plug
         if (plug != prCurveMatrix.output and
                 plug != prCurveMatrix.outputMatrix and
                 plug != prCurveMatrix.outputTranslate):
@@ -295,14 +294,14 @@ def getConnectedInputIndices(curveMatrix):
     return indices
 
 
-def transformFromOutputTranslate(curveMatrix=None, transformType='locator'):
+def transformFromOutputTranslate(curveMatrix=None, transformType='locator', showLocalAxis=True):
     """create a connected transform for each output.outputTranslate"""
     curveMatrix = (mc.ls(curveMatrix, type='prCurveMatrix') or
                    mc.ls(sl=True, type='prCurveMatrix') or
                    [None])[0]
-    locators = []
+    transforms = []
     if not curveMatrix:
-        return locators
+        return transforms
     for index in getConnectedInputIndices(curveMatrix):
         for x in range(mc.getAttr('{0}.counter'.format(curveMatrix))):
             transform = mc.createNode(transformType)
@@ -310,9 +309,12 @@ def transformFromOutputTranslate(curveMatrix=None, transformType='locator'):
                 transform = mc.listRelatives(transform, parent=True)[0]
             mc.connectAttr('{0}.output[{1}].outputTranslate[{2}]'.format(curveMatrix, index, x),
                            '{0}.translate'.format(transform))
-            mc.rename(transform,
-                      '{0}_output{1}_translate{2}_{3}'.format(curveMatrix, index, x, transformType))
-    return locators
+            transform = mc.rename(transform,
+                                  '{0}_output{1}_translate{2}_{3}'.format(curveMatrix, index, x,
+                                                                          transformType))
+            transforms.append(transform)
+    mc.toggle(transforms, localAxis=showLocalAxis)
+    return transforms
 
 
 def transformFromOutputMatrix(curveMatrix=None, transformType='locator', showLocalAxis=True):
@@ -336,8 +338,8 @@ def transformFromOutputMatrix(curveMatrix=None, transformType='locator', showLoc
                                '{0}.translate'.format(transform))
                 mc.connectAttr('{0}.outputRotate'.format(decomposeMat),
                                '{0}.rotate'.format(transform))
-                mc.rename(transform,
-                          '{0}_output{1}_matrix{2}_{3}'.format(curveMatrix, index, x, transformType))
+                transform = mc.rename(transform,
+                                      '{0}_output{1}_matrix{2}_{3}'.format(curveMatrix, index, x, transformType))
                 transforms.append(transform)
     mc.toggle(transforms, localAxis=showLocalAxis)
     return transforms
