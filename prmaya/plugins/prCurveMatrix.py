@@ -1,32 +1,34 @@
 """
 DESCRIPTION
+...
 "Parallel Transport Approach to Curve Framing"
 https://pdfs.semanticscholar.org/7e65/2313c1f8183a0f43acce58ae8d8caf370a6b.pdf
 Tutorial:
 https://vimeo.com/251091418
 
 USE CASES
+...
 
 USAGE
+...
 
 ATTRIBUTES
+...
 
 LINKS
+...
 
+TODO
+ramp
+outputMatrix not working properly
 
-
-TODO:
-make creation script work with double array outputs
-translation distribution ramp attr
-
-TODO LATER :
+TODO LATER
+user defined aim+up vector
+create outputRotate (create input[x].rotateOrder needed)
 nodeState / frozen functionality
-outputMatrix:
-- make upMatrix upVector perpendicular to first tangent
-- fix unstable twist when rotations are zero
-- user defined aim+up vector
+initialize ramp attribute with second entry (1, 1, 1)
 
-TODO MAYBE:
+TODO MAYBE
 - (input[x] -> output[x]) index based dirty propagation
 - check if outputMatrix to MFnData.kMatrixArray ?
 - aetemplate outputMatrix scroll layout
@@ -49,6 +51,7 @@ class prCurveMatrix(om.MPxNode):
         matrixAttr = om.MFnMatrixAttribute()
         numericAttr = om.MFnNumericAttribute()
         compoundAttr = om.MFnCompoundAttribute()
+        rampAttr = om.MRampAttribute()
         
         # output
         prCurveMatrix.outputTranslate = numericAttr.createPoint('outputTranslate', 'outputTranslate')
@@ -63,7 +66,7 @@ class prCurveMatrix(om.MPxNode):
         matrixAttr.usesArrayDataBuilder = True
         matrixAttr.writable = False
         matrixAttr.storable = False
-
+        
         prCurveMatrix.output = compoundAttr.create('output', 'output')
         compoundAttr.addChild(prCurveMatrix.outputTranslate)
         compoundAttr.addChild(prCurveMatrix.outputMatrix)
@@ -73,6 +76,7 @@ class prCurveMatrix(om.MPxNode):
         
         # global settings
         prCurveMatrix.counter = numericAttr.create('counter', 'counter', om.MFnNumericData.kInt, 5)
+        numericAttr.setMin(0)
         numericAttr.keyable = True
         prCurveMatrix.addAttribute(prCurveMatrix.counter)
         prCurveMatrix.attributeAffects(prCurveMatrix.counter, prCurveMatrix.outputTranslate)
@@ -94,6 +98,22 @@ class prCurveMatrix(om.MPxNode):
         prCurveMatrix.attributeAffects(prCurveMatrix.inputCurve, prCurveMatrix.outputMatrix)
         prCurveMatrix.attributeAffects(prCurveMatrix.worldUpMatrix, prCurveMatrix.outputTranslate)
         prCurveMatrix.attributeAffects(prCurveMatrix.worldUpMatrix, prCurveMatrix.outputMatrix)
+        
+        # distribution
+        prCurveMatrix.distributionEnabled = numericAttr.create('distributionEnabled',
+                                                               'distributionEnabled',
+                                                               om.MFnNumericData.kBoolean, False)
+        numericAttr.keyable = True
+        prCurveMatrix.addAttribute(prCurveMatrix.distributionEnabled)
+        prCurveMatrix.attributeAffects(prCurveMatrix.distributionEnabled,
+                                       prCurveMatrix.outputTranslate)
+        prCurveMatrix.attributeAffects(prCurveMatrix.distributionEnabled,
+                                       prCurveMatrix.outputMatrix)
+        
+        prCurveMatrix.distribution = rampAttr.createCurveRamp('distribution', 'distribution')
+        prCurveMatrix.addAttribute(prCurveMatrix.distribution)
+        prCurveMatrix.attributeAffects(prCurveMatrix.distribution, prCurveMatrix.outputTranslate)
+        prCurveMatrix.attributeAffects(prCurveMatrix.distribution, prCurveMatrix.outputMatrix)
     
     @staticmethod
     def creator():
@@ -102,78 +122,98 @@ class prCurveMatrix(om.MPxNode):
     def __init__(self):
         om.MPxNode.__init__(self)
     
+    '''
+    def postConstructor(self):
+        """this is not a clean fix, because user can't have default value only then"""
+        ramp = om.MRampAttribute(self.thisMObject(), self.distribution)
+        for value, compare in zip(ramp.getEntries(),
+                                  (om.MIntArray([0]), om.MFloatArray([0]), om.MFloatArray([0]),
+                                   om.MIntArray([1]))):
+            if len(value) != len(compare) or value[0] != compare[0]:
+                break
+        else:
+            ramp.addEntries(om.MFloatArray([1]), om.MFloatArray([1]), om.MIntArray([om.MRampAttribute.kLinear]))
+    '''
+    
     def compute(self, plug, dataBlock):
-        # print '\nplug : {}'.format(plug)
-        if (plug != prCurveMatrix.output and plug != prCurveMatrix.outputMatrix and
+        thisNode = self.thisMObject()
+        print plug
+        if (plug != prCurveMatrix.output and
+                plug != prCurveMatrix.outputMatrix and
                 plug != prCurveMatrix.outputTranslate):
             return
         
         counter = dataBlock.inputValue(prCurveMatrix.counter).asInt()
         inputArrayHandle = dataBlock.inputArrayValue(self.input)
+        
+        distributionEnabled = dataBlock.inputValue(self.distributionEnabled).asBool()
+        if distributionEnabled:
+            distribution = om.MRampAttribute(thisNode, self.distribution)
+        
         outputArrayHandle = dataBlock.outputArrayValue(self.output)
         outputBuilder = outputArrayHandle.builder()
         
         for i in range(len(inputArrayHandle)):
             inputArrayHandle.jumpToPhysicalElement(i)
-            inputHandle = inputArrayHandle.inputValue()
-            curveHandle = inputHandle.child(self.inputCurve)
-            curveData = curveHandle.data()
-            
             index = inputArrayHandle.elementLogicalIndex()
             outputHandle = outputBuilder.addElement(index)
             outputArrayHandle.set(outputBuilder)
-            
+            inputHandle = inputArrayHandle.inputValue()
+            curveHandle = inputHandle.child(self.inputCurve)
+            curveData = curveHandle.data()
             if curveData.isNull():
-                # print '{0} : no curve'.format(index)
                 continue
-            # print '{0} : curve'.format(index)
             
             curveFn = om.MFnNurbsCurve(curveData)
-            stepLength = curveFn.length() / (counter-1)  # TODO make it work for counter < 2
+            curveLength = curveFn.length()
+            stepLength = 1.0 / (((counter or 1) - 1) or 1)
             positions = []
             tangents = []
             for x in range(counter):
-                parameter = curveFn.findParamFromLength(x*stepLength)
+                if distributionEnabled:
+                    distributionValue = distribution.getValueAtPosition(x * stepLength)
+                    parameter = curveFn.findParamFromLength(distributionValue * curveLength)
+                else:
+                    parameter = curveFn.findParamFromLength(x * stepLength * curveLength)
                 positions.append(curveFn.getPointAtParam(parameter, space=om.MSpace.kWorld))
                 tangents.append(curveFn.tangent(parameter, space=om.MSpace.kWorld))
             
-            outputTranslateArrayHandle = om.MArrayDataHandle(outputHandle.child(self.outputTranslate))
-            outputTranslateBuilder = outputTranslateArrayHandle.builder()
+            outTranslateArrayHandle = om.MArrayDataHandle(outputHandle.child(self.outputTranslate))
+            outTranslateBuilder = outTranslateArrayHandle.builder()
             for x, position in enumerate(positions):
-                outputTranslateHandle = outputTranslateBuilder.addElement(x)
-                outputTranslateHandle.set3Float(position[0], position[1], position[2])
-            outputTranslateArrayHandle.set(outputTranslateBuilder)
-            outputTranslateArrayHandle.setAllClean()
+                outTranslateHandle = outTranslateBuilder.addElement(x)
+                outTranslateHandle.set3Float(position[0], position[1], position[2])
+            outTranslateArrayHandle.set(outTranslateBuilder)
+            outTranslateArrayHandle.setAllClean()
             
-            # TODO WIP START
-            worldUpMatrix = inputHandle.child(self.worldUpMatrix).asMatrix()
-            normals = [om.MVector(list(worldUpMatrix)[4:7])]
-            bitangents = [om.MVector(list(worldUpMatrix)[7:10])]
-            for x in range(counter-1):
-                bitangent = tangents[x] ^ tangents[x+1]
-                if bitangent.length() == 0:
-                    normal = normals[x]
-                else:
-                    bitangent.normalize()
-                    angle = math.radians(math.acos(tangents[x] * tangents[x+1]))
-                    normal = normals[x].rotateBy(om.MQuaternion(angle, bitangent))
-                    # normal = normal[x] * getRotationMatrix(angle, bitangent)
-                normals.append(normal)
-                bitangents.append(bitangent)
-            outputMatrixArrayHandle = om.MArrayDataHandle(outputHandle.child(self.outputMatrix))
-            outputMatrixBuilder = outputMatrixArrayHandle.builder()
-            for x in range(counter):
-                matrix = om.MMatrix((list(tangents[x]) + [0],
-                                     list(normals[x]) + [0],
-                                     list(bitangents[x]) + [0],
-                                     list(positions[x])))
-                outputMatrixHandle = outputMatrixBuilder.addElement(x)
-                outputMatrixHandle.setMMatrix(matrix)
-            outputMatrixArrayHandle.set(outputMatrixBuilder)
-            outputMatrixArrayHandle.setAllClean()
-            # TODO WIP END
-            
-        # print('output len : {}'.format(len(outputArrayHandle)))
+            if plug == prCurveMatrix.outputMatrix:
+                # TODO FIX TEMP CODE
+                worldUpMatrix = inputHandle.child(self.worldUpMatrix).asMatrix()
+                normals = [om.MVector(list(worldUpMatrix)[4:7])]
+                bitangents = [om.MVector(list(worldUpMatrix)[7:10])]
+                for x in range(counter-1):
+                    bitangent = tangents[x] ^ tangents[x+1]
+                    if bitangent.length() == 0:
+                        normal = normals[x]
+                    else:
+                        bitangent.normalize()
+                        angle = math.radians(math.acos(tangents[x] * tangents[x+1]))
+                        normal = normals[x].rotateBy(om.MQuaternion(angle, bitangent))
+                        # normal = normal[x] * getRotationMatrix(angle, bitangent)
+                    normals.append(normal)
+                    bitangents.append(bitangent)
+                outputMatrixArrayHandle = om.MArrayDataHandle(outputHandle.child(self.outputMatrix))
+                outputMatrixBuilder = outputMatrixArrayHandle.builder()
+                for x in range(counter):
+                    matrix = om.MMatrix((list(tangents[x]) + [0],
+                                         list(normals[x]) + [0],
+                                         list(bitangents[x]) + [0],
+                                         list(positions[x])))
+                    outputMatrixHandle = outputMatrixBuilder.addElement(x)
+                    outputMatrixHandle.setMMatrix(matrix)
+                outputMatrixArrayHandle.set(outputMatrixBuilder)
+                outputMatrixArrayHandle.setAllClean()
+                
         # outputArrayHandle.setAllClean()
         dataBlock.setClean(plug)
 
@@ -208,8 +248,10 @@ def evalAETemplate():
     global proc AEprCurveMatrixTemplate(string $nodeName)
     {
         editorTemplate -beginScrollLayout;
-            editorTemplate -beginLayout "prPyMath Attributes" -collapse 0;
+            editorTemplate -beginLayout "prCurveMatrix Attributes" -collapse 0;
                 editorTemplate -label "counter" -addControl "counter";
+                editorTemplate -label "distributionEnabled" -addControl "distributionEnabled";
+                AEaddRampControl ($nodeName+".distribution");
                 editorTemplate -label "input" -addControl "input";
             editorTemplate -endLayout;
             AEdependNodeTemplate $nodeName;
