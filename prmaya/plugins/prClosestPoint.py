@@ -42,6 +42,7 @@ https://pazrot3d.blogspot.com/2018/10/prclosestpointpy-making-of.html
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
+nodeState / frozen
 - make fromSelection() work with vertex selection
 
 TODO optional
@@ -85,66 +86,90 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
         unitAttr = om.MFnUnitAttribute()
         genericAttr = om.MFnGenericAttribute()
         
-        prClosestPoint.enabled = numericAttr.create('enabled', 'enabled', om.MFnNumericData.kBoolean, True)
+        prClosestPoint.enabled = numericAttr.create('enabled', 'enabled',
+                                                    om.MFnNumericData.kBoolean, True)
         numericAttr.setKeyable(True)
         prClosestPoint.addAttribute(prClosestPoint.enabled)
         prClosestPoint.attributeAffects(prClosestPoint.enabled, prClosestPoint.outputGeometry)
 
         # maxDistance
-        prClosestPoint.maxDistanceEnabled = numericAttr.create('maxDistanceEnabled', 'maxDistanceEnabled', om.MFnNumericData.kBoolean, True)
+        prClosestPoint.maxDistanceEnabled = numericAttr.create('maxDistanceEnabled',
+                                                               'maxDistanceEnabled',
+                                                               om.MFnNumericData.kBoolean, True)
         numericAttr.setKeyable(True)
         prClosestPoint.addAttribute(prClosestPoint.maxDistanceEnabled)
-        prClosestPoint.attributeAffects(prClosestPoint.maxDistanceEnabled, prClosestPoint.outputGeometry)
+        prClosestPoint.attributeAffects(prClosestPoint.maxDistanceEnabled,
+                                        prClosestPoint.outputGeometry)
         
-        prClosestPoint.maxDistance = unitAttr.create('maxDistance', 'maxDistance', om.MFnUnitAttribute.kDistance, 1.0)
+        prClosestPoint.maxDistance = unitAttr.create('maxDistance', 'maxDistance',
+                                                     om.MFnUnitAttribute.kDistance, 1.0)
         unitAttr.setKeyable(True)
         unitAttr.setMin(0.0)
         prClosestPoint.addAttribute(prClosestPoint.maxDistance)
         prClosestPoint.attributeAffects(prClosestPoint.maxDistance, prClosestPoint.outputGeometry)
         
-        prClosestPoint.maxDistanceWeights = numericAttr.create('maxDistanceWeights', 'maxDistanceWeights', om.MFnNumericData.kFloat, 1.0)
+        prClosestPoint.maxDistanceWeights = numericAttr.create('maxDistanceWeights',
+                                                               'maxDistanceWeights',
+                                                               om.MFnNumericData.kFloat, 1.0)
         numericAttr.setMin(0.0)
         numericAttr.setMax(1.0)
         numericAttr.setArray(True)
         numericAttr.setUsesArrayDataBuilder(True)
         
-        prClosestPoint.maxDistanceWeightList = compoundAttr.create('maxDistanceWeightList', 'maxDistanceWeightList')
+        prClosestPoint.maxDistanceWeightList = compoundAttr.create('maxDistanceWeightList',
+                                                                   'maxDistanceWeightList')
         compoundAttr.setArray(True)
         compoundAttr.setUsesArrayDataBuilder(True)
         compoundAttr.addChild(prClosestPoint.maxDistanceWeights)
         prClosestPoint.addAttribute(prClosestPoint.maxDistanceWeightList)
-        prClosestPoint.attributeAffects(prClosestPoint.maxDistanceWeights, prClosestPoint.outputGeometry)
+        prClosestPoint.attributeAffects(prClosestPoint.maxDistanceWeights,
+                                        prClosestPoint.outputGeometry)
         
-        prClosestPoint.maxDistanceUScaleEnabled = numericAttr.create('maxDistanceUScaleEnabled', 'maxDistanceUScaleEnabled', om.MFnNumericData.kBoolean, False)
+        prClosestPoint.maxDistanceUScaleEnabled = numericAttr.create('maxDistanceUScaleEnabled',
+                                                                     'maxDistanceUScaleEnabled',
+                                                                     om.MFnNumericData.kBoolean,
+                                                                     False)
         numericAttr.setKeyable(True)
         prClosestPoint.addAttribute(prClosestPoint.maxDistanceUScaleEnabled)
-        prClosestPoint.attributeAffects(prClosestPoint.maxDistanceUScaleEnabled, prClosestPoint.outputGeometry)
+        prClosestPoint.attributeAffects(prClosestPoint.maxDistanceUScaleEnabled,
+                                        prClosestPoint.outputGeometry)
         
-        prClosestPoint.maxDistanceUScale = rampAttr.createCurveRamp('maxDistanceUScale', 'maxDistanceUScale')
+        prClosestPoint.maxDistanceUScale = rampAttr.createCurveRamp('maxDistanceUScale',
+                                                                    'maxDistanceUScale')
         prClosestPoint.addAttribute(prClosestPoint.maxDistanceUScale)
-        prClosestPoint.attributeAffects(prClosestPoint.maxDistanceUScale, prClosestPoint.outputGeometry)
+        prClosestPoint.attributeAffects(prClosestPoint.maxDistanceUScale,
+                                        prClosestPoint.outputGeometry)
         
-        prClosestPoint.maxDistanceVScaleEnabled = numericAttr.create('maxDistanceVScaleEnabled', 'maxDistanceVScaleEnabled', om.MFnNumericData.kBoolean, False)
+        prClosestPoint.maxDistanceVScaleEnabled = numericAttr.create('maxDistanceVScaleEnabled',
+                                                                     'maxDistanceVScaleEnabled',
+                                                                     om.MFnNumericData.kBoolean,
+                                                                     False)
         numericAttr.setKeyable(True)
         prClosestPoint.addAttribute(prClosestPoint.maxDistanceVScaleEnabled)
-        prClosestPoint.attributeAffects(prClosestPoint.maxDistanceVScaleEnabled, prClosestPoint.outputGeometry)
+        prClosestPoint.attributeAffects(prClosestPoint.maxDistanceVScaleEnabled,
+                                        prClosestPoint.outputGeometry)
         
-        prClosestPoint.maxDistanceVScale = rampAttr.createCurveRamp('maxDistanceVScale', 'maxDistanceVScale')
+        prClosestPoint.maxDistanceVScale = rampAttr.createCurveRamp('maxDistanceVScale',
+                                                                    'maxDistanceVScale')
         prClosestPoint.addAttribute(prClosestPoint.maxDistanceVScale)
-        prClosestPoint.attributeAffects(prClosestPoint.maxDistanceVScale, prClosestPoint.outputGeometry)
+        prClosestPoint.attributeAffects(prClosestPoint.maxDistanceVScale,
+                                        prClosestPoint.outputGeometry)
         
         # falloff
-        prClosestPoint.falloffEnabled = numericAttr.create('falloffEnabled', 'falloffEnabled', om.MFnNumericData.kBoolean, True)
+        prClosestPoint.falloffEnabled = numericAttr.create('falloffEnabled', 'falloffEnabled',
+                                                           om.MFnNumericData.kBoolean, True)
         numericAttr.setKeyable(True)
         prClosestPoint.addAttribute(prClosestPoint.falloffEnabled)
-        prClosestPoint.attributeAffects(prClosestPoint.falloffEnabled, prClosestPoint.outputGeometry)
+        prClosestPoint.attributeAffects(prClosestPoint.falloffEnabled,
+                                        prClosestPoint.outputGeometry)
         
         prClosestPoint.falloff = rampAttr.createCurveRamp('falloff', 'falloff')
         prClosestPoint.addAttribute(prClosestPoint.falloff)
         prClosestPoint.attributeAffects(prClosestPoint.falloff, prClosestPoint.outputGeometry)
         
         # inputTarget
-        prClosestPoint.targetEnabled = numericAttr.create('targetEnabled', 'targetEnabled', om.MFnNumericData.kBoolean, True)
+        prClosestPoint.targetEnabled = numericAttr.create('targetEnabled', 'targetEnabled',
+                                                          om.MFnNumericData.kBoolean, True)
         numericAttr.setKeyable(True)
         
         prClosestPoint.target = genericAttr.create('target', 'target')
@@ -153,7 +178,8 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
         genericAttr.addDataAccept(om.MFnMeshData.kMesh)
         genericAttr.addDataAccept(om.MFnMatrixData.kMatrix)
 
-        prClosestPoint.closestVertex = numericAttr.create('closestVertex', 'closestVertex', om.MFnNumericData.kFloat, 0.0)
+        prClosestPoint.closestVertex = numericAttr.create('closestVertex', 'closestVertex',
+                                                          om.MFnNumericData.kFloat, 0.0)
         numericAttr.setKeyable(True)
         numericAttr.setMin(0.0)
         numericAttr.setMax(1.0)
@@ -169,7 +195,8 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
         prClosestPoint.attributeAffects(prClosestPoint.target, prClosestPoint.outputGeometry)
         
         mc.makePaintable('prClosestPoint', 'weights', attrType='multiFloat', shapeMode='deformer')
-        mc.makePaintable('prClosestPoint', 'maxDistanceWeights', attrType='multiFloat', shapeMode='deformer')
+        mc.makePaintable('prClosestPoint', 'maxDistanceWeights', attrType='multiFloat',
+                         shapeMode='deformer')
     
     @staticmethod
     def creator():
@@ -218,7 +245,7 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
         """ https://pazrot3d.blogspot.com/2018/10/maya-api-ramp-attribute-bug.html """
         if plug == self.falloff or plug == self.maxDistanceUScale or plug == self.maxDistanceVScale:
             return True
-        return OpenMayaMPx.MPxNode.shouldSave(self, plug, result)  # 'unknown'
+        return OpenMayaMPx.MPxNode.shouldSave(self, plug, result)  # == 'unknown'
     
     def deform(self, block, iterator, localToWorldMatrix, multiIndex):
         thisNode = self.thisMObject()
@@ -484,7 +511,12 @@ def fromSelection(nodes=None):
     if not nodes:
         return
     driven = nodes.pop()
-    nodes = [mc.listRelatives(n, type='shape')[0] if mc.ls(n, type='transform') and mc.listRelatives(n, type='shape') else n for n in nodes]
+
+    nodes = [mc.listRelatives(node, type='shape')[0]
+             if mc.ls(node, type='transform') and mc.listRelatives(node, type='shape')
+             else node
+             for node in nodes]
+    
     deformer = mc.deformer(driven, type=prClosestPoint.nodeTypeName)[0]
 
     for driver in nodes:
