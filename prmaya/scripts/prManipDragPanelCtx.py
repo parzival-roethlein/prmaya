@@ -1,7 +1,8 @@
 """
 # DESCRIPTION
-- Temporarily set (Panel > Show > types) when dragging the move/rotate/scale tool
-- The purpose is to have a clear view of the geometry during animation/posing
+Temporarily set (Panel > Show > types) when dragging the move/rotate/scale tool
+The purpose is to have a clear view of the geometry during animation/posing
+Part of prmaya: https://github.com/parzival-roethlein/prmaya
 
 # USAGE
 from prmaya.scripts import prManipDragPanelCtx

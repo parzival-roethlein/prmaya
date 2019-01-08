@@ -1,14 +1,3 @@
-"""
-
-import prmaya.scripts.prObjectSetUi.utils as object_set_ui_utils
-reload(object_set_ui_utils)
-object_set_ui_utils.reload_all()
-object_set_ui_utils.ui()
-
-
-TODO:
-- text scroll list selection order gets lost
-"""
 
 import os
 from functools import wraps

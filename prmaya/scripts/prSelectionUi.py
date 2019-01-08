@@ -1,18 +1,26 @@
 """
+# DESCRIPTION
+A dynamic User Interface (UI) to manage selections and poses in Autodesk Maya.
+Part of prmaya: https://github.com/parzival-roethlein/prmaya
 
-D E S C R I P T I O N:
-This is a dynamic User Interface (UI) to manage selections and poses.
-It is written in Python (PyMEL) for Autodesk Maya.
+# USAGE
+Put the file prSelectionUi.py in your Maya scripts folder and execute:
+- Python:
+import prSelectionUi;prSelectionUi.UI()
+- MEL (for marking menu, ...):
+python("import prSelectionUi;prSelectionUi.UI()");
 
-L I N K S:
-- Demo video with link to latest version
+# LINKS
+- Demo video
 http://vimeo.com/37670989
+- Latest version
+https://github.com/parzival-roethlein/prmaya
 - Background information on my blog
 http://pazrot3d.blogspot.com/2012/03/prselectionui.html
 - This was written in my spare time. If you use it at work or learned something from the code, consider a donation:
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
-F E A T U R E S:
+# FEATURES
 - User can add/remove/edit any components at any time (sets/selections/poses/members)
 - All information is stored in the scene as objectSets (works when referenced)
 -- These sets can be exported/imported between scenes like any Maya object
@@ -22,15 +30,7 @@ F E A T U R E S:
 --- RMC on Selection/Pose: Create/Edit Selection/Pose/Members
 ---- MMC on Selection/Pose for extra commands (keyframe, reset, ..)
 
-U S A G E:
-Put the file prSelectionUi.py in your Maya scripts folder and execute:
-- Python:
-import prSelectionUi;prSelectionUi.UI()
-- MEL (for marking menu, ...):
-python("import prSelectionUi;prSelectionUi.UI()");
-
-
-V E R S I O N S:
+# VERSIONS
 2016-06-01 / 0.9.9: nonforced dockable confirmdialog
 2012-12-25 / 0.9.8: Pose % items added to Pose middle mouse click menu // Autofocus on panel (tool shortcuts keep working)
 2012-12-15 / 0.9.7: added option "UI: toggle tablayout" to switch display between tablayout and drop down menu
@@ -41,7 +41,7 @@ V E R S I O N S:
 2012-04-13 / 0.9.1: removed limitations // new features // can't read sets from old version
 2012-03-01 / 0.9.0: first version
 
-T O D O:
+# TODO
 - export/import set UI button (right click menu?)
 - add color option in create new button window
 - improve default name of tab/button (from selection)
