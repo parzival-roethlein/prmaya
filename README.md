@@ -2,19 +2,19 @@
 Scripts, plugins and posts (tutorials, notes) for Autodesk Maya. 
 * prmaya (structured like the default maya user folder) 
   * scripts
-    * __prSelectionUi__: used in production. demo: https://vimeo.com/37670989
-    * __prObjectSetUi__: used in production
-    * __prManipDragPanelCtx__: used in production
+    * __prManipDragPanelCtx__: Used in production
+    * __prObjectSetUi__: Used in production
+    * __prSelectionUi__: Used in production. Demo: https://vimeo.com/37670989
   * plugins
-    * __prClosestPoint__: not tested in production 
-    * __prCurveMatrix__: prototype
-    * __prPyMath__: not tested in production
-* archive (not usable, old, unsupported, only for code/algorithm reference)
+    * __prClosestPoint__: Not tested in production 
+    * __prCurveMatrix__: Prototype
+    * __prPyMath__: Not tested in production
+* archive (Unusable. Only good for code/algorithm reference. Made when learning API basics in 2011)
   * plugins
-    * __prAttractNode__: replaced by prClosestPoint. Demo: https://vimeo.com/20002149
-    * __prOffsetNode__: learning API basics in 2011
-    * __prSlideNode__: Paper algorithm incomplete. Demo: https://vimeo.com/28079528
-    * __prVertexDistanceNode__: learning API basics in 2011
+    * __prAttractNode__: Replaced by prClosestPoint. Demo: https://vimeo.com/20002149
+    * __prOffsetNode__:
+    * __prSlideNode__: Demo: https://vimeo.com/28079528
+    * __prVertexDistanceNode__: 
 * post
    * from my __blog__: http://pazrot3d.blogspot.com/
    * __other__ websites
