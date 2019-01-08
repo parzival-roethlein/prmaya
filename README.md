@@ -4,7 +4,7 @@ Scripts, plugins and posts (tutorials, notes) for Autodesk Maya.
   * scripts
     * __prSelectionUi__: used in production. demo: https://vimeo.com/37670989
     * __prObjectSetUi__: used in production
-    * __manip_drag_panel_show__: used in production
+    * __prManipDragPanelCtx__: used in production
   * plugins
     * __prClosestPoint__: not tested in production 
     * __prCurveMatrix__: prototype
