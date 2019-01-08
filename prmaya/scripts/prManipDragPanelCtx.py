@@ -25,7 +25,13 @@ prManipDragPanelCtx.setCommandsFromFlags(nurbsCurves=False, manipulators=False)
 prManipDragPanelCtx.setCommandsFromFlags(nurbsCurves=False)
 prManipDragPanelCtx.setCommandsFromFlags(manipulators=False)
 prManipDragPanelCtx.setCommands()
-
+# API
+import maya.OpenMaya as OpenMaya
+idx = OpenMaya.MEventMessage.addEventCallback("SelectionChanged", updateCtx)
+OpenMaya.MMessage.removeCallback(idx)
+# SCRIPTJOB
+jobNum = cmds.scriptJob( event= ["SelectionChanged", updateCtx])
+cmds.scriptJob( kill=jobNum, force=True)
 """
 
 from collections import defaultdict
