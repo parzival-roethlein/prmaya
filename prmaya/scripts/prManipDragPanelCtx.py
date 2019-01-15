@@ -2,36 +2,53 @@
 # DESCRIPTION
 Temporarily set (Panel > Show > types) when dragging the move/rotate/scale tool
 The purpose is to have a clear view of the geometry during animation/posing
+The simple usage will create a scriptJob that evaluates on selection changes
 Part of prmaya: https://github.com/parzival-roethlein/prmaya
 
-# USAGE
-from prmaya.scripts import prManipDragPanelCtx
-# enable (feel free to change the arguments/flags)
-prManipDragPanelCtx.setCommandsFromFlags(nurbsCurves=False, manipulators=False)
-# disable
-prManipDragPanelCtx.setCommands()
+# SIMPLE USAGE
+import prManipDragPanelCtx
+prManipDragPanelCtx.enable()
+prManipDragPanelCtx.disable()
+
+# ADVANCED USAGE: USER DEFINED PANEL SETTINGS
+import prManipDragPanelCtx
+prManipDragPanelCtx.enable(nurbsCurve=False, manipulators=False, controllers=False)
+prManipDragPanelCtx.disable()
+
+# ADVANCED USAGE: WHEN ONLY WORKING WITH ONE NODE TYPE
+import prManipDragPanelCtx
+prManipDragPanelCtx.setCommandsFromFlags(nodeType='transform') # enable
+prManipDragPanelCtx.setCommands() # disable
+
 
 # TODO
 - channelBox attribute drag support: mc.draggerContext doesn't seem to trigger from channelBox drag
 - support joint selection: how? expected nodeType=transform to include joint, but does not
 - Universal Manipulator support: Doesn't seem to have a command, als tried mc.draggerContext('xformManipContext', ..)
+- component selection support
+
 
 # DEV
+import maya.cmds as mc
 from prmaya.scripts import prManipDragPanelCtx
+
+prManipDragPanelCtx.disable()
 reload(prManipDragPanelCtx)
 prManipDragPanelCtx.logger.setLevel(10)
+prManipDragPanelCtx.enable()
+print(mc.scriptJob(listJobs=True))
+prManipDragPanelCtx.disable()
+prManipDragPanelCtx.enable(nurbsCurves=False)
+prManipDragPanelCtx.enable(manipulators=False)
+prManipDragPanelCtx.enable(withFocus=True)
+prManipDragPanelCtx.enable(polygons=False)
+
 prManipDragPanelCtx.setCommandsFromFlags(withFocus=True, nurbsCurves=False, manipulators=False)
 prManipDragPanelCtx.setCommandsFromFlags(nurbsCurves=False, manipulators=False)
 prManipDragPanelCtx.setCommandsFromFlags(nurbsCurves=False)
 prManipDragPanelCtx.setCommandsFromFlags(manipulators=False)
 prManipDragPanelCtx.setCommands()
-# API
-import maya.OpenMaya as OpenMaya
-idx = OpenMaya.MEventMessage.addEventCallback("SelectionChanged", updateCtx)
-OpenMaya.MMessage.removeCallback(idx)
-# SCRIPTJOB
-jobNum = cmds.scriptJob( event= ["SelectionChanged", updateCtx])
-cmds.scriptJob( kill=jobNum, force=True)
+
 """
 
 from collections import defaultdict
@@ -46,6 +63,28 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 SCENE_PANEL_VALUES = defaultdict(dict)
+NODE_TYPE = None
+SCRIPT_JOB_ID = None
+DEFAULT_FLAGS = {'nurbsCurves': False,
+                 'manipulators': False,
+                 'controllers': False,
+                 'locators': False,
+                 'joints': False}
+
+
+def enable(withFocus=False, **panelFlags):
+    """
+    for the user
+    :param withFocus: only affect panel with focus
+    :param panelFlags: panel>show values during drag. For example: 'nurbsCurves': False, 'manipulators': False
+    :return:
+    """
+    createScriptJob(withFocus=withFocus, **panelFlags)
+
+
+def disable():
+    """ for the user """
+    deleteScriptJob()
 
 
 def log(func):
@@ -106,6 +145,53 @@ def postCommand():
 
 
 @log
-def setCommandsFromFlags(nodeType='transform', withFocus=False, **flags):
+def createFromNodeTypeAndFlags(nodeType='transform', withFocus=False, **flags):
+    if not flags:
+        global DEFAULT_FLAGS
+        logger.debug('using default flags')
+        flags = DEFAULT_FLAGS
     setCommands(nodeType=nodeType, preFunc=lambda: preCommand(withFocus=withFocus, **flags), postFunc=postCommand)
 
+
+@log
+def isNodeTypeUpdateRequired():
+    global NODE_TYPE
+    selectedNodeTypes = mc.ls(sl=True, showType=True)[1::2]
+    if not selectedNodeTypes or NODE_TYPE in selectedNodeTypes:
+        return False
+    NODE_TYPE = selectedNodeTypes[0]
+    return True
+
+
+@log
+def createScriptJob(withFocus=False, **panelFlags):
+    disable()
+
+    def prManipDragPanelCtxScriptJob():
+        if isNodeTypeUpdateRequired():
+            global NODE_TYPE
+            createFromNodeTypeAndFlags(nodeType=NODE_TYPE, withFocus=withFocus, **panelFlags)
+
+    global SCRIPT_JOB_ID
+    SCRIPT_JOB_ID = mc.scriptJob(event=["SelectionChanged", prManipDragPanelCtxScriptJob])
+    prManipDragPanelCtxScriptJob()
+
+
+@log
+def deleteScriptJob():
+    global SCRIPT_JOB_ID
+    if SCRIPT_JOB_ID is not None:
+        mc.scriptJob(kill=SCRIPT_JOB_ID, force=True)
+        SCRIPT_JOB_ID = None
+    for scriptJob in mc.scriptJob(listJobs=True):
+        if 'prManipDragPanelCtxScriptJob' in scriptJob:
+            scriptJobId = int(scriptJob[:scriptJob.find(':')])
+            mc.scriptJob(kill=scriptJobId, force=True)
+    setCommands()
+
+
+"""
+import maya.OpenMaya as OpenMaya
+idx = OpenMaya.MEventMessage.addEventCallback("SelectionChanged", updateCtx)
+OpenMaya.MMessage.removeCallback(idx)
+"""
