@@ -18,21 +18,19 @@ import maya.cmds as cmds
 import prManipDragPanelCtx
 cmds.evalDeferred('prManipDragPanelCtx.enable()')
 
-# USAGE EXAMPLE: USER DEFINED PANEL SETTINGS
+# USAGE EXAMPLE: USER DEFINED PANEL SETTINGS FOR ANIMATORS
 import prManipDragPanelCtx
-prManipDragPanelCtx.enable(nurbsCurves=False, manipulators=False, controllers=False, selectionHiliteDisplay=False)
+prManipDragPanelCtx.enable(manipulators=False, nurbsCurves=False, controllers=False, locators=False)
 
 # USAGE EXAMPLE: WHEN ONLY WORKING WITH ONE NODE TYPE AND NOT WANTING THE SCRIPTJOB
 import prManipDragPanelCtx
-prManipDragPanelCtx.createFromNodeTypeAndFlags(nodeType='transform')
-
+prManipDragPanelCtx.createFromNodeTypeAndFlags(nodeType='transform', manipulators=False, nurbsCurves=False)
 
 # TODO
 - MEvent version
 - component selection support
 - channelBox attribute drag support: mc.draggerContext doesn't seem to trigger from channelBox drag
 - Universal Manipulator support: Doesn't seem to have a command, als tried mc.draggerContext('xformManipContext', ..)
-
 
 # DEV
 import maya.cmds as cmds
@@ -66,11 +64,7 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-DEFAULT_FLAGS = {'nurbsCurves': False,
-                 'manipulators': False,
-                 'controllers': False,
-                 'locators': False,
-                 'joints': False}
+DEFAULT_FLAGS = {'manipulators': False}
 SCENE_PANEL_VALUES = defaultdict(dict)
 NODE_TYPE = None
 SCRIPT_JOB_ID = None
