@@ -6,25 +6,21 @@ By default will create a scriptJob that evaluates on selection changes.
 Part of https://github.com/parzival-roethlein/prmaya
 
 # INSTALLATION
-Copy this file ("prManipDragPanelCtx.py") into your ".../maya/scripts" folder
+Copy this file ("prPanelShowDragCtx.py") into your ".../maya/scripts" folder
 
 # BASIC USAGE
-import prManipDragPanelCtx
-prManipDragPanelCtx.enable()
-prManipDragPanelCtx.disable()
+import prPanelShowDragCtx
+prPanelShowDragCtx.enable()
+prPanelShowDragCtx.disable()
 
 # USAGE EXAMPLE: ALWAYS AUTOMATICALLY ENABLED (put this in your userSetup.py)
 import maya.cmds as cmds
-import prManipDragPanelCtx
-cmds.evalDeferred('prManipDragPanelCtx.enable()')
+import prPanelShowDragCtx
+cmds.evalDeferred('prPanelShowDragCtx.enable()')
 
 # USAGE EXAMPLE: USER DEFINED PANEL SETTINGS FOR ANIMATORS
-import prManipDragPanelCtx
-prManipDragPanelCtx.enable(manipulators=False, nurbsCurves=False, controllers=False, locators=False)
-
-# USAGE EXAMPLE: WHEN ONLY WORKING WITH ONE NODE TYPE AND NOT WANTING THE SCRIPTJOB
-import prManipDragPanelCtx
-prManipDragPanelCtx.createFromNodeTypeAndFlags(nodeType='transform', manipulators=False, nurbsCurves=False)
+import prPanelShowDragCtx
+prPanelShowDragCtx.enable(manipulators=False, nurbsCurves=False, controllers=False, locators=False)
 
 # TODO
 - MEvent version
@@ -34,22 +30,16 @@ prManipDragPanelCtx.createFromNodeTypeAndFlags(nodeType='transform', manipulator
 
 # DEV
 import maya.cmds as cmds
-from prmaya.scripts import prManipDragPanelCtx
-reload(prManipDragPanelCtx)
-prManipDragPanelCtx.logger.setLevel(10)
-prManipDragPanelCtx.enable()
+from prmaya.scripts import prPanelShowDragCtx
+reload(prPanelShowDragCtx)
+prPanelShowDragCtx.logger.setLevel(10)
+prPanelShowDragCtx.enable()
 print(cmds.scriptJob(listJobs=True))
-prManipDragPanelCtx.enable(nurbsCurves=False)
-prManipDragPanelCtx.enable(manipulators=False)
-prManipDragPanelCtx.enable(polymeshes=False)
-prManipDragPanelCtx.enable(withFocus=True)
-prManipDragPanelCtx.disable()
-
-prManipDragPanelCtx.createFromNodeTypeAndFlags(nodeType='transform', withFocus=True, nurbsCurves=False, manipulators=False)
-prManipDragPanelCtx.createFromNodeTypeAndFlags(nodeType='transform', nurbsCurves=False, manipulators=False)
-prManipDragPanelCtx.createFromNodeTypeAndFlags(nodeType='transform', selectionHiliteDisplay=False)
-prManipDragPanelCtx.createFromNodeTypeAndFlags(nodeType='joint', nurbsCurves=False)
-prManipDragPanelCtx.createFromNodeTypeAndFlags(nodeType='joint', manipulators=False)
+prPanelShowDragCtx.enable(nurbsCurves=False)
+prPanelShowDragCtx.enable(manipulators=False)
+prPanelShowDragCtx.enable(polymeshes=False)
+prPanelShowDragCtx.enable(withFocus=True)
+prPanelShowDragCtx.disable()
 
 """
 
@@ -58,7 +48,7 @@ from functools import wraps
 import logging
 
 import maya.cmds as mc
-
+import maya.mel as mm
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -77,10 +67,12 @@ def enable(withFocus=False, **panelFlags):
     :return:
     """
     createScriptJob(withFocus=withFocus, **panelFlags)
+    createTimelineDragCtx(withFocus=withFocus, **panelFlags)
 
 
 def disable():
     deleteScriptJob()
+    deleteTimelineDragCtx()
     setCommands()
     global NODE_TYPE
     NODE_TYPE = None
@@ -169,14 +161,14 @@ def isNodeTypeUpdateRequired():
 def createScriptJob(withFocus=False, **panelFlags):
     disable()
 
-    def prManipDragPanelCtxScriptJob():
+    def prPanelShowDragCtxScriptJob():
         if isNodeTypeUpdateRequired():
             global NODE_TYPE
             createFromNodeTypeAndFlags(nodeType=NODE_TYPE, withFocus=withFocus, **panelFlags)
 
     global SCRIPT_JOB_ID
-    SCRIPT_JOB_ID = mc.scriptJob(event=["SelectionChanged", prManipDragPanelCtxScriptJob])
-    prManipDragPanelCtxScriptJob()
+    SCRIPT_JOB_ID = mc.scriptJob(event=["SelectionChanged", prPanelShowDragCtxScriptJob])
+    prPanelShowDragCtxScriptJob()
 
 
 @log
@@ -186,9 +178,24 @@ def deleteScriptJob():
         mc.scriptJob(kill=SCRIPT_JOB_ID, force=True)
         SCRIPT_JOB_ID = None
     for scriptJob in mc.scriptJob(listJobs=True):
-        if 'prManipDragPanelCtxScriptJob' in scriptJob:
+        if 'prPanelShowDragCtxScriptJob' in scriptJob:
             scriptJobId = int(scriptJob[:scriptJob.find(':')])
             mc.scriptJob(kill=scriptJobId, force=True)
+
+
+def createTimelineDragCtx(withFocus=False, **flags):
+    if not flags:
+        global DEFAULT_FLAGS
+        flags = DEFAULT_FLAGS
+    playbackSlider = mm.eval('$tmpVar=$gPlayBackSlider')
+    mc.timeControl(playbackSlider, edit=True, pressCommand=lambda a: preCommand(withFocus=withFocus, **flags))
+    mc.timeControl(playbackSlider, edit=True, releaseCommand=lambda a: postCommand())
+
+
+def deleteTimelineDragCtx():
+    playbackSlider = mm.eval('$tmpVar=$gPlayBackSlider')
+    mc.timeControl(playbackSlider, edit=True, pressCommand=str)
+    mc.timeControl(playbackSlider, edit=True, releaseCommand=str)
 
 
 """
