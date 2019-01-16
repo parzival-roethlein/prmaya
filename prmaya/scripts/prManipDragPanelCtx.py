@@ -8,20 +8,24 @@ Part of https://github.com/parzival-roethlein/prmaya
 # INSTALLATION
 Copy this file ("prManipDragPanelCtx.py") into your ".../maya/scripts" folder
 
-# SIMPLE USAGE
+# BASIC USAGE
 import prManipDragPanelCtx
 prManipDragPanelCtx.enable()
 prManipDragPanelCtx.disable()
 
-# ADVANCED USAGE: USER DEFINED PANEL SETTINGS
+# USAGE EXAMPLE: ALWAYS AUTOMATICALLY ENABLED (put this in your userSetup.py)
+import maya.cmds as cmds
 import prManipDragPanelCtx
-prManipDragPanelCtx.enable(nurbsCurve=False, manipulators=False, controllers=False, selectionHiliteDisplay=False)
-prManipDragPanelCtx.disable()
+cmds.evalDeferred('prManipDragPanelCtx.enable()')
 
-# ADVANCED USAGE: WHEN ONLY WORKING WITH ONE NODE TYPE AND NOT WANTING THE SCRIPTJOB
+# USAGE EXAMPLE: USER DEFINED PANEL SETTINGS
 import prManipDragPanelCtx
-prManipDragPanelCtx.createFromNodeTypeAndFlags(nodeType='transform') # enable
-prManipDragPanelCtx.setCommands() # disable
+prManipDragPanelCtx.enable(nurbsCurves=False, manipulators=False, controllers=False, selectionHiliteDisplay=False)
+
+# USAGE EXAMPLE: WHEN ONLY WORKING WITH ONE NODE TYPE AND NOT WANTING THE SCRIPTJOB
+import prManipDragPanelCtx
+prManipDragPanelCtx.createFromNodeTypeAndFlags(nodeType='transform')
+
 
 # TODO
 - MEvent version
@@ -37,17 +41,17 @@ reload(prManipDragPanelCtx)
 prManipDragPanelCtx.logger.setLevel(10)
 prManipDragPanelCtx.enable()
 print(cmds.scriptJob(listJobs=True))
-prManipDragPanelCtx.disable()
 prManipDragPanelCtx.enable(nurbsCurves=False)
 prManipDragPanelCtx.enable(manipulators=False)
+prManipDragPanelCtx.enable(polymeshes=False)
 prManipDragPanelCtx.enable(withFocus=True)
-prManipDragPanelCtx.enable(polygons=False)
+prManipDragPanelCtx.disable()
 
-prManipDragPanelCtx.createFromNodeTypeAndFlags(withFocus=True, nurbsCurves=False, manipulators=False)
-prManipDragPanelCtx.createFromNodeTypeAndFlags(nurbsCurves=False, manipulators=False)
-prManipDragPanelCtx.createFromNodeTypeAndFlags(nurbsCurves=False)
-prManipDragPanelCtx.createFromNodeTypeAndFlags(manipulators=False)
-prManipDragPanelCtx.setCommands()
+prManipDragPanelCtx.createFromNodeTypeAndFlags(nodeType='transform', withFocus=True, nurbsCurves=False, manipulators=False)
+prManipDragPanelCtx.createFromNodeTypeAndFlags(nodeType='transform', nurbsCurves=False, manipulators=False)
+prManipDragPanelCtx.createFromNodeTypeAndFlags(nodeType='transform', selectionHiliteDisplay=False)
+prManipDragPanelCtx.createFromNodeTypeAndFlags(nodeType='joint', nurbsCurves=False)
+prManipDragPanelCtx.createFromNodeTypeAndFlags(nodeType='joint', manipulators=False)
 
 """
 
@@ -74,8 +78,8 @@ SCRIPT_JOB_ID = None
 
 def enable(withFocus=False, **panelFlags):
     """
-    :param withFocus: only affect panel with focus. maya command cmds.getPanel(withFocus=True)
-    :param panelFlags: see maya command "modelEditor" documentation
+    :param withFocus: see maya.cmds.getPanel(withFocus=...) documentation
+    :param panelFlags: see maya.cmds.modelEditor() documentation
     :return:
     """
     createScriptJob(withFocus=withFocus, **panelFlags)
@@ -115,8 +119,8 @@ def setCommands(nodeType='transform', preFunc=str, postFunc=str):
 @log
 def preCommand(withFocus=False, **flags):
     """
-    :param withFocus: only affect the panel with focus
-    :param flags: for mc.modelEditor
+    :param withFocus: see maya.cmds.getPanel(withFocus=...) documentation
+    :param flags: see maya.cmds.modelEditor() documentation
     :return: list of affected panels
     """
     global SCENE_PANEL_VALUES
