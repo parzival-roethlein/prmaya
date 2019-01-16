@@ -57,14 +57,14 @@ class prCurveMatrix(om.MPxNode):
         numericAttr.array = True
         numericAttr.usesArrayDataBuilder = True
         numericAttr.writable = False
-        numericAttr.storable = False
+        # numericAttr.storable = False
         
         prCurveMatrix.outputMatrix = matrixAttr.create('outputMatrix', 'outputMatrix',
                                                        matrixAttr.kDouble)
         matrixAttr.array = True
         matrixAttr.usesArrayDataBuilder = True
         matrixAttr.writable = False
-        matrixAttr.storable = False
+        # matrixAttr.storable = False
         
         prCurveMatrix.output = compoundAttr.create('output', 'output')
         compoundAttr.addChild(prCurveMatrix.outputTranslate)
@@ -136,9 +136,8 @@ class prCurveMatrix(om.MPxNode):
     
     def compute(self, plug, dataBlock):
         thisNode = self.thisMObject()
-        if (plug != prCurveMatrix.output and
-                plug != prCurveMatrix.outputMatrix and
-                plug != prCurveMatrix.outputTranslate):
+        if plug not in [prCurveMatrix.output, prCurveMatrix.outputMatrix,
+                        prCurveMatrix.outputTranslate]:
             return
         
         counter = dataBlock.inputValue(prCurveMatrix.counter).asInt()

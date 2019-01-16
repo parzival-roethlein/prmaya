@@ -1,9 +1,9 @@
 """
 # DESCRIPTION
-Temporarily set (Panel > Show > types) when dragging the move/rotate/scale tool
+Temporarily set (Panel > Show > types) while dragging the move/rotate/scale tool
 The purpose is to have a clear view of the geometry during animation/posing
-The simple usage will create a scriptJob that evaluates on selection changes
-Part of prmaya: https://github.com/parzival-roethlein/prmaya
+By default it will create a scriptJob that evaluates on selection changes
+This script is part of prmaya: https://github.com/parzival-roethlein/prmaya
 
 # SIMPLE USAGE
 import prManipDragPanelCtx
@@ -15,23 +15,19 @@ import prManipDragPanelCtx
 prManipDragPanelCtx.enable(nurbsCurve=False, manipulators=False, controllers=False)
 prManipDragPanelCtx.disable()
 
-# ADVANCED USAGE: WHEN ONLY WORKING WITH ONE NODE TYPE
+# ADVANCED USAGE: WHEN WORKING WITH ONLY ONE NODE TYPE (DOES NOT CREATE SCRIPTJOB)
 import prManipDragPanelCtx
 prManipDragPanelCtx.setCommandsFromFlags(nodeType='transform') # enable
 prManipDragPanelCtx.setCommands() # disable
 
-
 # TODO
-- channelBox attribute drag support: mc.draggerContext doesn't seem to trigger from channelBox drag
-- support joint selection: how? expected nodeType=transform to include joint, but does not
-- Universal Manipulator support: Doesn't seem to have a command, als tried mc.draggerContext('xformManipContext', ..)
 - component selection support
-
+- channelBox attribute drag support: mc.draggerContext doesn't seem to trigger from channelBox drag
+- Universal Manipulator support: Doesn't seem to have a command, als tried mc.draggerContext('xformManipContext', ..)
 
 # DEV
 import maya.cmds as mc
 from prmaya.scripts import prManipDragPanelCtx
-
 prManipDragPanelCtx.disable()
 reload(prManipDragPanelCtx)
 prManipDragPanelCtx.logger.setLevel(10)
@@ -42,13 +38,11 @@ prManipDragPanelCtx.enable(nurbsCurves=False)
 prManipDragPanelCtx.enable(manipulators=False)
 prManipDragPanelCtx.enable(withFocus=True)
 prManipDragPanelCtx.enable(polygons=False)
-
 prManipDragPanelCtx.setCommandsFromFlags(withFocus=True, nurbsCurves=False, manipulators=False)
 prManipDragPanelCtx.setCommandsFromFlags(nurbsCurves=False, manipulators=False)
 prManipDragPanelCtx.setCommandsFromFlags(nurbsCurves=False)
 prManipDragPanelCtx.setCommandsFromFlags(manipulators=False)
 prManipDragPanelCtx.setCommands()
-
 """
 
 from collections import defaultdict
@@ -74,16 +68,14 @@ DEFAULT_FLAGS = {'nurbsCurves': False,
 
 def enable(withFocus=False, **panelFlags):
     """
-    for the user
     :param withFocus: only affect panel with focus
-    :param panelFlags: panel>show values during drag. For example: 'nurbsCurves': False, 'manipulators': False
+    :param panelFlags: panel>show values during drag. For example: 'nurbsCurves'=False, 'manipulators'=False
     :return:
     """
     createScriptJob(withFocus=withFocus, **panelFlags)
 
 
 def disable():
-    """ for the user """
     deleteScriptJob()
 
 
@@ -175,6 +167,7 @@ def createScriptJob(withFocus=False, **panelFlags):
     global SCRIPT_JOB_ID
     SCRIPT_JOB_ID = mc.scriptJob(event=["SelectionChanged", prManipDragPanelCtxScriptJob])
     prManipDragPanelCtxScriptJob()
+    return SCRIPT_JOB_ID
 
 
 @log

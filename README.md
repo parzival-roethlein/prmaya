@@ -16,7 +16,7 @@ Scripts, plugins and posts (tutorials, notes) for Autodesk Maya.
     * __prSlideNode__: Demo: https://vimeo.com/28079528
     * __prVertexDistanceNode__: 
 * post
-   * from my __blog__: http://pazrot3d.blogspot.com/
+   * from my __blog__: https://pazrot3d.blogspot.com/
    * __other__ websites
 
 

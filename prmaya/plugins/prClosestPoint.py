@@ -243,7 +243,7 @@ class prClosestPoint(OpenMayaMPx.MPxDeformerNode):
     
     def shouldSave(self, plug, result):
         """ https://pazrot3d.blogspot.com/2018/10/maya-api-ramp-attribute-bug.html """
-        if plug == self.falloff or plug == self.maxDistanceUScale or plug == self.maxDistanceVScale:
+        if plug in [self.falloff, self.maxDistanceUScale, self.maxDistanceVScale]:
             return True
         return OpenMayaMPx.MPxNode.shouldSave(self, plug, result)  # == 'unknown'
     
