@@ -93,7 +93,7 @@ def disable():
     deletePlaybackCtx()
 
 
-def preDragCommand(withFocus=False, **flags):
+def preCommand(withFocus=False, **flags):
     """
     :param withFocus: only affect panel with focus: cmds.getPanel(withFocus=...)
     :param flags: see cmds.modelEditor() documentation
@@ -123,7 +123,7 @@ def preDragCommand(withFocus=False, **flags):
     return panels
 
 
-def postDragCommand():
+def postCommand():
     for panel, flags in SCENE_PANEL_VALUES.iteritems():
         for flag, value in flags.iteritems():
             mc.modelEditor(panel, e=True, **{flag: value})
@@ -151,7 +151,6 @@ def setManipCommands(nodeType='transform', preFunc=str, postFunc=str):
     mc.setToolTo(mc.currentCtx())
 
 
-@log
 def manipCtxNodeTypeChange():
     global MANIP_NODE_TYPE
     selectedNodeTypes = mc.ls(sl=True, showType=True)[1::2]
@@ -168,13 +167,14 @@ def createManipCtx(**kwargs):
     def prPanelShowDragCtxManipScriptJob():
         if manipCtxNodeTypeChange():
             global MANIP_NODE_TYPE
-            setManipCommands(nodeType=MANIP_NODE_TYPE, preFunc=lambda: preDragCommand(**kwargs), postFunc=postDragCommand)
+            setManipCommands(nodeType=MANIP_NODE_TYPE, preFunc=lambda: preCommand(**kwargs), postFunc=postCommand)
     prPanelShowDragCtxManipScriptJob()
 
     global MANIP_CTX_ID
     MANIP_CTX_ID = mc.scriptJob(event=["SelectionChanged", prPanelShowDragCtxManipScriptJob])
 
 
+@log
 def getManipCtx():
     scriptJob_ids = []
     for scriptJob in mc.scriptJob(listJobs=True):
@@ -206,9 +206,9 @@ def createPlaybackCtx(**kwargs):
 
     def prPanelShowDragCtxCondition(state, **kwargs):
         if state:
-            preDragCommand(**kwargs)
+            preCommand(**kwargs)
         else:
-            postDragCommand()
+            postCommand()
     global PLAYBACK_CTX_ID
     PLAYBACK_CTX_ID = om.MConditionMessage.addConditionCallback('playingBack', lambda state, *args: prPanelShowDragCtxCondition(state, **kwargs))
 
