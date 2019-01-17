@@ -18,26 +18,36 @@ import maya.cmds as cmds
 import prPanelShowDragCtx
 cmds.evalDeferred('prPanelShowDragCtx.enable()')
 
-# USAGE EXAMPLE: USER DEFINED PANEL SETTINGS FOR ANIMATORS
+# USAGE EXAMPLE: USER DEFINED PANEL SETTINGS
 import prPanelShowDragCtx
 prPanelShowDragCtx.enable(manipulators=False, nurbsCurves=False, controllers=False, locators=False)
 
 # TODO
-- MEvent version
+- camera orbit mode
+- UI
+- MEvent version of manipScriptjob
 - component selection support
 - channelBox attribute drag support: mc.draggerContext doesn't seem to trigger from channelBox drag
 - Universal Manipulator support: Doesn't seem to have a command, als tried mc.draggerContext('xformManipContext', ..)
 
 # DEV
 import maya.cmds as cmds
+cmds.file("/home/prthlein/private/code/prmaya/test/scripts/prPanelShowDragCtx.ma", open=True, force=True)
+import sys
+sys.path.append('/home/prthlein/private/code/prmaya/')
 from prmaya.scripts import prPanelShowDragCtx
-reload(prPanelShowDragCtx)
 prPanelShowDragCtx.logger.setLevel(10)
+
 prPanelShowDragCtx.enable()
-print(cmds.scriptJob(listJobs=True))
-prPanelShowDragCtx.enable(nurbsCurves=False)
-prPanelShowDragCtx.enable(manipulators=False)
+prPanelShowDragCtx.getManipCtx()
+prPanelShowDragCtx.disable()
+
+prPanelShowDragCtx.enable(nurbsCurves=False, manipulators=False)
+prPanelShowDragCtx.disable()
+
 prPanelShowDragCtx.enable(polymeshes=False)
+prPanelShowDragCtx.disable()
+
 prPanelShowDragCtx.enable(withFocus=True)
 prPanelShowDragCtx.disable()
 
@@ -47,6 +57,7 @@ from collections import defaultdict
 from functools import wraps
 import logging
 
+import maya.api.OpenMaya as om
 import maya.cmds as mc
 import maya.mel as mm
 
@@ -55,27 +66,29 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 DEFAULT_FLAGS = {'manipulators': False}
+
 SCENE_PANEL_VALUES = defaultdict(dict)
-NODE_TYPE = None
-SCRIPT_JOB_ID = None
+MANIP_NODE_TYPE = None
+MANIP_CTX_ID = None
+PLAYBACK_CTX_ID = None
 
 
-def enable(withFocus=False, **panelFlags):
+def enable(manipulatorCtx=True, playingBackCtx=True, **kwargs):
     """
-    :param withFocus: see maya.cmds.getPanel(withFocus=...) documentation
-    :param panelFlags: see maya.cmds.modelEditor() documentation
+    :param manipulatorCtx: enable manipulator context
+    :param playingBackCtx: enable playingBack context
+    :param kwargs: see def preDragCommand(..)
     :return:
     """
-    createScriptJob(withFocus=withFocus, **panelFlags)
-    createTimelineDragCtx(withFocus=withFocus, **panelFlags)
+    if manipulatorCtx:
+        createManipCtx(**kwargs)
+    if playingBackCtx:
+        createPlaybackCtx(**kwargs)
 
 
 def disable():
-    deleteScriptJob()
-    deleteTimelineDragCtx()
-    setCommands()
-    global NODE_TYPE
-    NODE_TYPE = None
+    deleteManipCtx()
+    deletePlaybackCtx()
 
 
 def log(func):
@@ -83,15 +96,13 @@ def log(func):
     def wrapper(*args, **kwargs):
         logger.debug('{0}(args: {1}, kwargs: {2})'.format(func.__name__, args, kwargs))
         result = func(*args, **kwargs)
-        if result is not None:
-            logger.debug('result: {0}'.format(result))
-        logger.debug('SCENE_PANEL_VALUES: {0}'.format(SCENE_PANEL_VALUES))
+        logger.debug('  {0} output = {1}'.format(func.__name__, result))
+
         return result
     return wrapper
 
 
-@log
-def setCommands(nodeType='transform', preFunc=str, postFunc=str):
+def setManipCommands(nodeType='transform', preFunc=str, postFunc=str):
     mc.manipMoveContext('Move', e=True, preDragCommand=[preFunc, nodeType])
     mc.manipMoveContext('Move', e=True, postDragCommand=[postFunc, nodeType])
     mc.manipRotateContext('Rotate', e=True, preDragCommand=[preFunc, nodeType])
@@ -102,15 +113,18 @@ def setCommands(nodeType='transform', preFunc=str, postFunc=str):
     mc.setToolTo(mc.currentCtx())
 
 
-@log
-def preCommand(withFocus=False, **flags):
+def preDragCommand(withFocus=False, **flags):
     """
-    :param withFocus: see maya.cmds.getPanel(withFocus=...) documentation
-    :param flags: see maya.cmds.modelEditor() documentation
+    :param withFocus: only affect panel with focus: cmds.getPanel(withFocus=...)
+    :param flags: see cmds.modelEditor() documentation
     :return: list of affected panels
     """
     global SCENE_PANEL_VALUES
     SCENE_PANEL_VALUES.clear()
+
+    if not flags:
+        global DEFAULT_FLAGS
+        flags = DEFAULT_FLAGS
 
     panels = mc.getPanel(type='modelPanel')
     if withFocus:
@@ -129,83 +143,78 @@ def preCommand(withFocus=False, **flags):
     return panels
 
 
-@log
-def postCommand():
+def postDragCommand():
     for panel, flags in SCENE_PANEL_VALUES.iteritems():
         for flag, value in flags.iteritems():
             mc.modelEditor(panel, e=True, **{flag: value})
 
 
 @log
-def createFromNodeTypeAndFlags(nodeType='transform', withFocus=False, **flags):
-    if not flags:
-        global DEFAULT_FLAGS
-        logger.debug('using default flags')
-        flags = DEFAULT_FLAGS
-    setCommands(nodeType=nodeType, preFunc=lambda: preCommand(withFocus=withFocus, **flags), postFunc=postCommand)
-
-
-@log
-def isNodeTypeUpdateRequired():
-    global NODE_TYPE
-    logger.debug('OLD NODE_TYPE: {}'.format(NODE_TYPE))
+def manipCtxNodeTypeChange():
+    global MANIP_NODE_TYPE
     selectedNodeTypes = mc.ls(sl=True, showType=True)[1::2]
-    if not selectedNodeTypes or NODE_TYPE in selectedNodeTypes:
+    if not selectedNodeTypes or MANIP_NODE_TYPE in selectedNodeTypes:
         return False
-    NODE_TYPE = selectedNodeTypes[0]
-    logger.debug('NEW NODE_TYPE: {}'.format(NODE_TYPE))
+    MANIP_NODE_TYPE = selectedNodeTypes[0]
     return True
 
 
 @log
-def createScriptJob(withFocus=False, **panelFlags):
-    disable()
+def createManipCtx(**kwargs):
+    deleteManipCtx()
 
-    def prPanelShowDragCtxScriptJob():
-        if isNodeTypeUpdateRequired():
-            global NODE_TYPE
-            createFromNodeTypeAndFlags(nodeType=NODE_TYPE, withFocus=withFocus, **panelFlags)
+    def prPanelShowDragCtxManipScriptJob():
+        if manipCtxNodeTypeChange():
+            global MANIP_NODE_TYPE
+            setManipCommands(nodeType=MANIP_NODE_TYPE, preFunc=lambda: preDragCommand(**kwargs), postFunc=postDragCommand)
+    prPanelShowDragCtxManipScriptJob()
 
-    global SCRIPT_JOB_ID
-    SCRIPT_JOB_ID = mc.scriptJob(event=["SelectionChanged", prPanelShowDragCtxScriptJob])
-    prPanelShowDragCtxScriptJob()
+    global MANIP_CTX_ID
+    MANIP_CTX_ID = mc.scriptJob(event=["SelectionChanged", prPanelShowDragCtxManipScriptJob])
+
+
+def getManipCtx():
+    scriptJob_ids = []
+    for scriptJob in mc.scriptJob(listJobs=True):
+        if 'prPanelShowDragCtxManipScriptJob' in scriptJob:
+            scriptJobId = int(scriptJob[:scriptJob.find(':')])
+            scriptJob_ids.append(scriptJobId)
+    return scriptJob_ids
 
 
 @log
-def deleteScriptJob():
-    global SCRIPT_JOB_ID
-    if SCRIPT_JOB_ID is not None:
-        mc.scriptJob(kill=SCRIPT_JOB_ID, force=True)
-        SCRIPT_JOB_ID = None
-    for scriptJob in mc.scriptJob(listJobs=True):
-        if 'prPanelShowDragCtxScriptJob' in scriptJob:
-            scriptJobId = int(scriptJob[:scriptJob.find(':')])
-            mc.scriptJob(kill=scriptJobId, force=True)
+def deleteManipCtx():
+    global MANIP_CTX_ID
+    if MANIP_CTX_ID:
+        mc.scriptJob(kill=MANIP_CTX_ID, force=True)
+        MANIP_CTX_ID = None
+    global MANIP_NODE_TYPE
+    MANIP_NODE_TYPE = None
+    setManipCommands()
+    invalid_ids = getManipCtx()
+    if invalid_ids:
+        for id_ in invalid_ids:
+            mc.scriptJob(kill=id_, force=True)
+        mm.eval('warning "Deleted manipCtx ids that should not have existed : {}"'.format(invalid_ids))
 
 
-def createTimelineDragCtx(withFocus=False, **flags):
-    if not flags:
-        global DEFAULT_FLAGS
-        flags = DEFAULT_FLAGS
-    playbackSlider = mm.eval('$tmpVar=$gPlayBackSlider')
-    mc.timeControl(playbackSlider, edit=True, pressCommand=lambda a: preCommand(withFocus=withFocus, **flags))
-    mc.timeControl(playbackSlider, edit=True, releaseCommand=lambda a: postCommand())
+@log
+def createPlaybackCtx(**kwargs):
+    deletePlaybackCtx()
+
+    def prPanelShowDragCtxCondition(state, **kwargs):
+        if state:
+            preDragCommand(**kwargs)
+        else:
+            postDragCommand()
+    global PLAYBACK_CTX_ID
+    PLAYBACK_CTX_ID = om.MConditionMessage.addConditionCallback('playingBack', lambda state, *args: prPanelShowDragCtxCondition(state, **kwargs))
 
 
-def deleteTimelineDragCtx():
-    playbackSlider = mm.eval('$tmpVar=$gPlayBackSlider')
-    mc.timeControl(playbackSlider, edit=True, pressCommand=str)
-    mc.timeControl(playbackSlider, edit=True, releaseCommand=str)
-
-
-"""
-def createMEvent():
-    import maya.OpenMaya as OpenMaya
-    global M_EVENT_ID 
-    M_EVENT_ID = OpenMaya.MEventMessage.addEventCallback("SelectionChanged", updateCtx)
-
-def deleteMEvent():
-    global M_EVENT_ID
-    OpenMaya.MMessage.removeCallback(MEVENT_ID)
-"""
+@log
+def deletePlaybackCtx():
+    global PLAYBACK_CTX_ID
+    if PLAYBACK_CTX_ID:
+        om.MMessage.removeCallback(PLAYBACK_CTX_ID)
+        PLAYBACK_CTX_ID = None
 
