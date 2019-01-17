@@ -1,9 +1,9 @@
 """
 # DESCRIPTION
-Temporarily set (Panel > Show > types) when dragging the move/rotate/scale tool
-The purpose is to have a clear view of the geometry during animation/posing
-By default will create a scriptJob that evaluates on selection changes.
-Part of https://github.com/parzival-roethlein/prmaya
+Temporarily sets (Panel > Show > types) while dragging the translate/rotate/scale tools or the timeline changes
+The purpose is to have a clear view of the deforming geometry
+Creates a scriptJob (SelectionChanged) and OpenMaya.MConditionMessage (playingBack)
+Get the latest version at https://github.com/parzival-roethlein/prmaya
 
 # INSTALLATION
 Copy this file ("prPanelShowDragCtx.py") into your ".../maya/scripts" folder
