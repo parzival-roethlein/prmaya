@@ -36,6 +36,8 @@ cmds.file("/home/prthlein/private/code/prmaya/test/scripts/prPanelShowDragCtx.ma
 import sys
 sys.path.append('/home/prthlein/private/code/prmaya/')
 from prmaya.scripts import prPanelShowDragCtx
+prPanelShowDragCtx.disable()
+reload(prPanelShowDragCtx)
 prPanelShowDragCtx.logger.setLevel(10)
 
 prPanelShowDragCtx.enable()
@@ -91,28 +93,6 @@ def disable():
     deletePlaybackCtx()
 
 
-def log(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        logger.debug('{0}(args: {1}, kwargs: {2})'.format(func.__name__, args, kwargs))
-        result = func(*args, **kwargs)
-        logger.debug('  {0} output = {1}'.format(func.__name__, result))
-
-        return result
-    return wrapper
-
-
-def setManipCommands(nodeType='transform', preFunc=str, postFunc=str):
-    mc.manipMoveContext('Move', e=True, preDragCommand=[preFunc, nodeType])
-    mc.manipMoveContext('Move', e=True, postDragCommand=[postFunc, nodeType])
-    mc.manipRotateContext('Rotate', e=True, preDragCommand=[preFunc, nodeType])
-    mc.manipRotateContext('Rotate', e=True, postDragCommand=[postFunc, nodeType])
-    mc.manipScaleContext('Scale', e=True, preDragCommand=[preFunc, nodeType])
-    mc.manipScaleContext('Scale', e=True, postDragCommand=[postFunc, nodeType])
-    # the drag commands are only active on reentering the context
-    mc.setToolTo(mc.currentCtx())
-
-
 def preDragCommand(withFocus=False, **flags):
     """
     :param withFocus: only affect panel with focus: cmds.getPanel(withFocus=...)
@@ -147,6 +127,28 @@ def postDragCommand():
     for panel, flags in SCENE_PANEL_VALUES.iteritems():
         for flag, value in flags.iteritems():
             mc.modelEditor(panel, e=True, **{flag: value})
+
+
+def log(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        logger.debug('{0}(args: {1}, kwargs: {2})'.format(func.__name__, args, kwargs))
+        result = func(*args, **kwargs)
+        logger.debug('  {0} output = {1}'.format(func.__name__, result))
+
+        return result
+    return wrapper
+
+
+def setManipCommands(nodeType='transform', preFunc=str, postFunc=str):
+    mc.manipMoveContext('Move', e=True, preDragCommand=[preFunc, nodeType])
+    mc.manipMoveContext('Move', e=True, postDragCommand=[postFunc, nodeType])
+    mc.manipRotateContext('Rotate', e=True, preDragCommand=[preFunc, nodeType])
+    mc.manipRotateContext('Rotate', e=True, postDragCommand=[postFunc, nodeType])
+    mc.manipScaleContext('Scale', e=True, preDragCommand=[preFunc, nodeType])
+    mc.manipScaleContext('Scale', e=True, postDragCommand=[postFunc, nodeType])
+    # the drag commands are only active on reentering the context
+    mc.setToolTo(mc.currentCtx())
 
 
 @log
