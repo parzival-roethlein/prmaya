@@ -75,17 +75,17 @@ MANIP_CTX_ID = None
 PLAYBACK_CTX_ID = None
 
 
-def enable(manipulatorCtx=True, playingBackCtx=True, **kwargs):
+def enable(manipulatorCtx=True, playingBackCtx=True, **preCommandKwargs):
     """
     :param manipulatorCtx: enable manipulator context
     :param playingBackCtx: enable playingBack context
-    :param kwargs: see def preDragCommand(..)
+    :param preCommandKwargs: see def preCommand(..)
     :return:
     """
     if manipulatorCtx:
-        createManipCtx(**kwargs)
+        createManipCtx(**preCommandKwargs)
     if playingBackCtx:
-        createPlaybackCtx(**kwargs)
+        createPlaybackCtx(**preCommandKwargs)
 
 
 def disable():
@@ -161,13 +161,13 @@ def manipCtxNodeTypeChange():
 
 
 @log
-def createManipCtx(**kwargs):
+def createManipCtx(**preCommandKwargs):
     deleteManipCtx()
 
     def prPanelShowDragCtxManipScriptJob():
         if manipCtxNodeTypeChange():
             global MANIP_NODE_TYPE
-            setManipCommands(nodeType=MANIP_NODE_TYPE, preFunc=lambda: preCommand(**kwargs), postFunc=postCommand)
+            setManipCommands(nodeType=MANIP_NODE_TYPE, preFunc=lambda: preCommand(**preCommandKwargs), postFunc=postCommand)
     prPanelShowDragCtxManipScriptJob()
 
     global MANIP_CTX_ID
@@ -201,16 +201,16 @@ def deleteManipCtx():
 
 
 @log
-def createPlaybackCtx(**kwargs):
+def createPlaybackCtx(**preCommandKwargs):
     deletePlaybackCtx()
 
-    def prPanelShowDragCtxCondition(state, **kwargs):
+    def prPanelShowDragCtxCondition(state, **preCommandKwargs):
         if state:
-            preCommand(**kwargs)
+            preCommand(**preCommandKwargs)
         else:
             postCommand()
     global PLAYBACK_CTX_ID
-    PLAYBACK_CTX_ID = om.MConditionMessage.addConditionCallback('playingBack', lambda state, *args: prPanelShowDragCtxCondition(state, **kwargs))
+    PLAYBACK_CTX_ID = om.MConditionMessage.addConditionCallback('playingBack', lambda state, *args: prPanelShowDragCtxCondition(state, **preCommandKwargs))
 
 
 @log
