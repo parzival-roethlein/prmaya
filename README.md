@@ -2,7 +2,7 @@
 Scripts, plugins and posts (tutorials, notes) for Autodesk Maya. 
 * prmaya (structured like the default maya user folder) 
   * scripts
-    * __prManipDragPanelCtx__: Used in production
+    * __prPanelShowDragCtx__: Used in production
     * __prObjectSetUi__: Used in production
     * __prSelectionUi__: Used in production. Demo: https://vimeo.com/37670989
   * plugins
