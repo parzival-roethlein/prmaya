@@ -1,6 +1,7 @@
 """
 DESCRIPTION
-array version of maya default remapValue node
+array version of maya default remapValue node.
+Everything should be the same except inputValue and outValue are arrays
 
 USE CASES
 ...
@@ -15,7 +16,7 @@ LINKS
 ...
 
 TODO
-
+...
 
 """
 
@@ -40,8 +41,8 @@ class prRemapValue(om.MPxNode):
         numericAttr.array = True
         numericAttr.usesArrayDataBuilder = True
         numericAttr.writable = False
-        # numericAttr.storable = False
-        
+        prRemapValue.addAttribute(prRemapValue.outValue)
+
         # input
         prRemapValue.inputValue = numericAttr.create('inputValue', 'inputValue', om.MFnNumericData.kFloat)
         numericAttr.array = True
@@ -62,82 +63,35 @@ class prRemapValue(om.MPxNode):
     
     def compute(self, plug, dataBlock):
         thisNode = self.thisMObject()
-        if plug not in [prRemapValue.outValue]:
+        if plug not in [self.outValue]:
             print 'unknown plug: {}'.format(plug)
             return
         
-        counter = dataBlock.inputValue(prRemapValue.counter).asInt()
-        inputArrayHandle = dataBlock.inputArrayValue(self.input)
-        
-        distributionEnabled = dataBlock.inputValue(self.distributionEnabled).asBool()
-        if distributionEnabled:
-            distribution = om.MRampAttribute(thisNode, self.distribution)
-        
-        outputArrayHandle = dataBlock.outputArrayValue(self.output)
-        outputBuilder = outputArrayHandle.builder()
-        
-        for i in range(len(inputArrayHandle)):
-            inputArrayHandle.jumpToPhysicalElement(i)
-            index = inputArrayHandle.elementLogicalIndex()
-            outputHandle = outputBuilder.addElement(index)
-            outputArrayHandle.set(outputBuilder)
-            inputHandle = inputArrayHandle.inputValue()
-            curveHandle = inputHandle.child(self.inputCurve)
-            curveData = curveHandle.data()
-            if curveData.isNull():
-                continue
-            
-            curveFn = om.MFnNurbsCurve(curveData)
-            curveLength = curveFn.length()
-            stepLength = 1.0 / (counter - 1 if counter > 2 else 1)
-            positions = []
-            tangents = []
-            for x in range(counter):
-                if distributionEnabled:
-                    distributionValue = distribution.getValueAtPosition(x * stepLength)
-                    parameter = curveFn.findParamFromLength(distributionValue * curveLength)
-                else:
-                    parameter = curveFn.findParamFromLength(x * stepLength * curveLength)
-                positions.append(curveFn.getPointAtParam(parameter, space=om.MSpace.kWorld))
-                tangents.append(curveFn.tangent(parameter, space=om.MSpace.kWorld))
-            
-            outTranslateArrayHandle = om.MArrayDataHandle(outputHandle.child(self.outputTranslate))
-            outTranslateBuilder = outTranslateArrayHandle.builder()
-            for x, position in enumerate(positions):
-                outTranslateHandle = outTranslateBuilder.addElement(x)
-                outTranslateHandle.set3Float(position[0], position[1], position[2])
-            outTranslateArrayHandle.set(outTranslateBuilder)
-            outTranslateArrayHandle.setAllClean()
-            
-            if plug == prRemapValue.outputMatrix:
-                # TODO FIX TEMP CODE
-                worldUpMatrix = inputHandle.child(self.worldUpMatrix).asMatrix()
-                normals = [om.MVector(list(worldUpMatrix)[4:7])]
-                bitangents = [om.MVector(list(worldUpMatrix)[7:10])]
-                for x in range(counter - 1):
-                    bitangent = tangents[x] ^ tangents[x + 1]
-                    if bitangent.length() == 0:
-                        normal = normals[x]
-                    else:
-                        bitangent.normalize()
-                        angle = math.radians(math.acos(tangents[x] * tangents[x + 1]))
-                        normal = normals[x].rotateBy(om.MQuaternion(angle, bitangent))
-                        # normal = normal[x] * getRotationMatrix(angle, bitangent)
-                    normals.append(normal)
-                    bitangents.append(bitangent)
-                outputMatrixArrayHandle = om.MArrayDataHandle(outputHandle.child(self.outputMatrix))
-                outputMatrixBuilder = outputMatrixArrayHandle.builder()
-                for x in range(counter):
-                    matrix = om.MMatrix((list(tangents[x]) + [0],
-                                         list(normals[x]) + [0],
-                                         list(bitangents[x]) + [0],
-                                         list(positions[x])))
-                    outputMatrixHandle = outputMatrixBuilder.addElement(x)
-                    outputMatrixHandle.setMMatrix(matrix)
-                outputMatrixArrayHandle.set(outputMatrixBuilder)
-                outputMatrixArrayHandle.setAllClean()
-        
-        # outputArrayHandle.setAllClean()
+        inputValue_arrayHandle = dataBlock.inputArrayValue(prRemapValue.inputValue)
+        while not inputValue_arrayHandle.isDone():
+            v = inputValue_arrayHandle.inputValue().asFloat()
+            inputValue_arrayHandle.next()
+
+        outValue_arrayHandle = dataBlock.outputArrayValue(prRemapValue.outValue)
+        outValue_builder = outValue_arrayHandle.builder()
+
+        value_handle = om.MRampAttribute(thisNode, prRemapValue.value)
+        print value_handle
+
+        for i in range(len(inputValue_arrayHandle)):
+            inputValue_arrayHandle.jumpToPhysicalElement(i)
+            index = inputValue_arrayHandle.elementLogicalIndex()
+            inputValue = inputValue_arrayHandle.inputValue().asFloat()
+
+            outValue_handle = outValue_builder.addElement(index)
+            outValue_arrayHandle.set(outValue_builder)
+            v = value_handle.getValueAtPosition(inputValue)
+            outValue_handle.setFloat(v)
+            print v
+
+        outValue_arrayHandle.set(outValue_builder)
+        outValue_arrayHandle.setAllClean()
+
         dataBlock.setClean(plug)
 
 
