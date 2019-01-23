@@ -6,6 +6,15 @@ import test_prCurveMatrix
 reload(test_prCurveMatrix)
 test_prCurveMatrix.run()
 
+
+import sys
+sys.path.append('/home/prthlein/private/code/prmaya/test/plugins')
+import test_prCurveMatrix
+reload(test_prCurveMatrix)
+test_prCurveMatrix.SETTINGS['plugin_path'] = '/home/prthlein/private/code/prmaya/prmaya/plugins/prCurveMatrix.py',
+test_prCurveMatrix.SETTINGS['file'] = '/home/prthlein/private/code/prmaya/test/plugins/test_prCurveMatrix_scene.ma',
+test_prCurveMatrix.run()
+
 """
 
 
@@ -16,7 +25,7 @@ reload(prCurveMatrix)
 
 SETTINGS = {'plugin_name': 'prCurveMatrix.py',
             'plugin_path': 'C:/Users/paz/Documents/git/prmaya/prmaya/plugins/prCurveMatrix.py',
-            'file': 'C:/Users/paz/Documents/git/prmaya/test/plugins/test_prCurveMatrix_scene.mb',
+            'file': 'C:/Users/paz/Documents/git/prmaya/test/plugins/test_prCurveMatrix_scene.ma',
             'outputPositionCurve': 'outputPositionCurve',
             'outputPositionCurve1': 'outputPositionCurve1',
             'outputMatrixCurve': 'outputMatrixCurve',
@@ -28,7 +37,7 @@ def run():
     mc.file(newFile=True, force=True)
     mc.unloadPlugin(SETTINGS['plugin_name'])
     mc.loadPlugin(SETTINGS['plugin_path'])
-    mc.file(SETTINGS['file'], open=True)
+    mc.file(SETTINGS['file'], open=True, force=True)
 
     positionFrame = prCurveMatrix.fromCurves([SETTINGS['outputPositionCurve'],
                                               SETTINGS['outputPositionCurve1']])

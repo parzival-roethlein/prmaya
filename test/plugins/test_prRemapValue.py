@@ -1,10 +1,20 @@
 """
 
 import sys
+sys.path.append('/home/prthlein/private/code/prmaya')
 sys.path.append('/home/prthlein/private/code/prmaya/test/plugins')
 import test_prRemapValue
 reload(test_prRemapValue)
 test_prRemapValue.run()
+
+
+import maya.cmds as mc
+mc.file(new=True, force=True)
+mc.file(rename='/home/prthlein/private/Documents/asdf.ma')
+mc.createNode('prRemapValue')
+mc.file(save=True)
+mc.file(new=True, force=True)
+mc.file('/home/prthlein/private/Documents/asdf.ma', open=True, force=True)
 
 """
 
@@ -28,6 +38,8 @@ def run():
     mc.unloadPlugin(SETTINGS['plugin_name'])
     mc.loadPlugin(SETTINGS['plugin_path'])
     mc.file(SETTINGS['file'], open=True, force=True)
+    mc.file(rename='asdf')
+    mc.file(renameToSave=True)
 
     mc.createNode('prRemapValue')
     mc.setAttr("prRemapValue1.value[1].value_Position", 1)
