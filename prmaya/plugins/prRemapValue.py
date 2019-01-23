@@ -82,21 +82,34 @@ class prRemapValue(om.MPxNode):
         print plug.asBool()
     '''
 
+    #'''
     def postConstructor(self, *args, **kwargs):
-
+        thisNode = self.thisMObject()
+        objectHandle = om.MObjectHandle(thisNode)
         def initialize_ramp():
-            print('initialize_ramp: {} {}'.format(self, prRemapValue.isNodeInitialized))
-            thisNode = self.thisMObject()
+            print('\n==postConstructor initialize_ramp')
+            if thisNode.isNull():
+                print ' thisNode valid'
+                return
+            else:
+                print ' thisNode invalid'
+            if objectHandle.isValid():
+                print ' objectHandle valid'
+            else:
+                print ' objectHandle invalid'
+                return
+
             plug = om.MPlug(thisNode, prRemapValue.isNodeInitialized)
             isNodeInitialized = plug.asBool()
-            print plug.asBool()
+            print ' value: {}'.format(plug.asBool())
             if not isNodeInitialized:
-                print('initializing')
+                print(' initializing plug')
                 plug.setBool(True)
             else:
-                print 'did not initialize'
-            print plug.asBool()
-        mc.evalDeferred(initialize_ramp, evaluateNext=True)
+                print ' did not initialize plug'
+            print ' value: {}'.format(plug.asBool())
+        mc.evalDeferred(initialize_ramp)#, evaluateNext=True)
+    #'''
 
     def compute(self, plug, dataBlock):
         thisNode = self.thisMObject()
@@ -109,10 +122,10 @@ class prRemapValue(om.MPxNode):
         print '\ncompute'
         print isNodeInitialized_handle.asBool()
         if not isNodeInitialized_handle.asBool():
-            print('compute initialize')
+            print(' initializing')
             isNodeInitialized_handle.setBool(True)
         else:
-            print('compute did not initialize')
+            print(' not initializing')
         print isNodeInitialized_handle.asBool()
         '''
 
