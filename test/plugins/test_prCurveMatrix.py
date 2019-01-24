@@ -25,7 +25,7 @@ reload(prCurveMatrix)
 
 SETTINGS = {'plugin_name': 'prCurveMatrix.py',
             'plugin_path': 'C:/Users/paz/Documents/git/prmaya/prmaya/plugins/prCurveMatrix.py',
-            'file': 'C:/Users/paz/Documents/git/prmaya/test/plugins/test_prCurveMatrix_scene.ma',
+            'file': 'C:/Users/paz/Documents/git/prmaya/test/plugins/test_prCurveMatrix.ma',
             'outputPositionCurve': 'outputPositionCurve',
             'outputPositionCurve1': 'outputPositionCurve1',
             'outputMatrixCurve': 'outputMatrixCurve',

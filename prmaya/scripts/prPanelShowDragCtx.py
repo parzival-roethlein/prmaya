@@ -27,29 +27,6 @@ prPanelShowDragCtx.enable(manipulators=False, nurbsCurves=False, controllers=Fal
 - channelBox attribute drag support: mc.draggerContext doesn't seem to trigger from channelBox drag
 - Universal Manipulator support: Doesn't seem to have a command, als tried mc.draggerContext('xformManipContext', ..)
 
-# DEV
-import maya.cmds as cmds
-cmds.file("/home/prthlein/private/code/prmaya/test/scripts/prPanelShowDragCtx.ma", open=True, force=True)
-import sys
-sys.path.append('/home/prthlein/private/code/prmaya/')
-from prmaya.scripts import prPanelShowDragCtx
-prPanelShowDragCtx.disable()
-reload(prPanelShowDragCtx)
-prPanelShowDragCtx.logger.setLevel(10)
-
-prPanelShowDragCtx.enable()
-prPanelShowDragCtx.getManipCtx()
-prPanelShowDragCtx.disable()
-
-prPanelShowDragCtx.enable(nurbsCurves=False, manipulators=False)
-prPanelShowDragCtx.disable()
-
-prPanelShowDragCtx.enable(polymeshes=False)
-prPanelShowDragCtx.disable()
-
-prPanelShowDragCtx.enable(withFocus=True)
-prPanelShowDragCtx.disable()
-
 """
 
 from collections import defaultdict

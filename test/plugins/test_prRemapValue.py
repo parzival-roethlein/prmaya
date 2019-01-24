@@ -42,7 +42,7 @@ reload(prRemapValue)
 
 SETTINGS = {'plugin_name': 'prRemapValue.py',
             'plugin_path': '/home/prthlein/private/code/prmaya/prmaya/plugins/prRemapValue.py',
-            'file': '/home/prthlein/private/code/prmaya/test/plugins/test_prRemapValue_scene.ma',
+            'file': '/home/prthlein/private/code/prmaya/test/plugins/test_prRemapValue.ma',
             'outputPositionCurve': 'outputPositionCurve',
             'outputPositionCurve1': 'outputPositionCurve1',
             'outputMatrixCurve': 'outputMatrixCurve',
