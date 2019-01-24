@@ -23,7 +23,6 @@ TODO
 import sys
 
 import maya.api.OpenMaya as om
-import maya.cmds as mc
 
 
 class prRemapValue(om.MPxNode):
@@ -42,23 +41,49 @@ class prRemapValue(om.MPxNode):
         numericAttr.writable = False
         prRemapValue.addAttribute(prRemapValue.outValue)
 
+        prRemapValue.outColor = numericAttr.createColor('outColor', 'outColor')
+        numericAttr.array = True
+        numericAttr.usesArrayDataBuilder = True
+        numericAttr.writable = False
+        prRemapValue.addAttribute(prRemapValue.outColor)
+        
         # input
         prRemapValue.inputValue = numericAttr.create('inputValue', 'inputValue', om.MFnNumericData.kFloat)
         numericAttr.array = True
         prRemapValue.addAttribute(prRemapValue.inputValue)
         prRemapValue.attributeAffects(prRemapValue.inputValue, prRemapValue.outValue)
+        
+        prRemapValue.inputMin = numericAttr.create('inputMin', 'inputMin', om.MFnNumericData.kFloat, 0.0)
+        numericAttr.setSoftMin(0.0)
+        numericAttr.setSoftMax(1.0)
+        prRemapValue.addAttribute(prRemapValue.inputMin)
+        prRemapValue.attributeAffects(prRemapValue.inputMin, prRemapValue.outValue)
+        
+        prRemapValue.inputMax = numericAttr.create('inputMax', 'inputMax', om.MFnNumericData.kFloat, 1.0)
+        numericAttr.setSoftMin(0.0)
+        numericAttr.setSoftMax(1.0)
+        prRemapValue.addAttribute(prRemapValue.inputMax)
+        prRemapValue.attributeAffects(prRemapValue.inputMax, prRemapValue.outValue)
 
-        # settings
+        prRemapValue.outputMin = numericAttr.create('outputMin', 'outputMin', om.MFnNumericData.kFloat, 0.0)
+        numericAttr.setSoftMin(0.0)
+        numericAttr.setSoftMax(1.0)
+        prRemapValue.addAttribute(prRemapValue.outputMin)
+        prRemapValue.attributeAffects(prRemapValue.outputMin, prRemapValue.outValue)
+
+        prRemapValue.outputMax = numericAttr.create('outputMax', 'outputMax', om.MFnNumericData.kFloat, 1.0)
+        numericAttr.setSoftMin(0.0)
+        numericAttr.setSoftMax(1.0)
+        prRemapValue.addAttribute(prRemapValue.outputMax)
+        prRemapValue.attributeAffects(prRemapValue.outputMax, prRemapValue.outValue)
+        
         prRemapValue.value = rampAttr.createCurveRamp('value', 'value')
         prRemapValue.addAttribute(prRemapValue.value)
         prRemapValue.attributeAffects(prRemapValue.value, prRemapValue.outValue)
 
-        prRemapValue.isNodeInitialized = numericAttr.create('isNodeInitialized', 'isNodeInitialized', om.MFnNumericData.kBoolean, False)
-        numericAttr.hidden = True
-        numericAttr.connectable = False
-        #numericAttr.writable = False
-        #numericAttr.storable = True
-        prRemapValue.addAttribute(prRemapValue.isNodeInitialized)
+        prRemapValue.color = rampAttr.createColorRamp('color', 'color')
+        prRemapValue.addAttribute(prRemapValue.color)
+        prRemapValue.attributeAffects(prRemapValue.color, prRemapValue.outColor)
 
     @staticmethod
     def creator():
@@ -67,67 +92,11 @@ class prRemapValue(om.MPxNode):
     def __init__(self):
         om.MPxNode.__init__(self)
 
-    '''
-    def postConstructor(self, *args, **kwargs):
-        print('postConstructor: {} {}'.format(self, prRemapValue.isNodeInitialized))
-        thisNode = self.thisMObject()
-        plug = om.MPlug(thisNode, prRemapValue.isNodeInitialized)
-        isNodeInitialized = plug.asBool()
-        print plug.asBool()
-        if not isNodeInitialized:
-            print('initializing')
-            plug.setBool(True)
-        else:
-            print 'did not initialize'
-        print plug.asBool()
-    '''
-
-    #'''
-    def postConstructor(self, *args, **kwargs):
-        thisNode = self.thisMObject()
-        objectHandle = om.MObjectHandle(thisNode)
-        def initialize_ramp():
-            print('\n==postConstructor initialize_ramp')
-            if thisNode.isNull():
-                print ' thisNode valid'
-                return
-            else:
-                print ' thisNode invalid'
-            if objectHandle.isValid():
-                print ' objectHandle valid'
-            else:
-                print ' objectHandle invalid'
-                return
-
-            plug = om.MPlug(thisNode, prRemapValue.isNodeInitialized)
-            isNodeInitialized = plug.asBool()
-            print ' value: {}'.format(plug.asBool())
-            if not isNodeInitialized:
-                print(' initializing plug')
-                plug.setBool(True)
-            else:
-                print ' did not initialize plug'
-            print ' value: {}'.format(plug.asBool())
-        mc.evalDeferred(initialize_ramp)#, evaluateNext=True)
-    #'''
-
     def compute(self, plug, dataBlock):
         thisNode = self.thisMObject()
         if plug not in [self.outValue]:
             print 'unknown plug: {}'.format(plug)
             return
-
-        '''
-        isNodeInitialized_handle = dataBlock.outputValue(prRemapValue.isNodeInitialized)
-        print '\ncompute'
-        print isNodeInitialized_handle.asBool()
-        if not isNodeInitialized_handle.asBool():
-            print(' initializing')
-            isNodeInitialized_handle.setBool(True)
-        else:
-            print(' not initializing')
-        print isNodeInitialized_handle.asBool()
-        '''
 
         inputValue_arrayHandle = dataBlock.inputArrayValue(prRemapValue.inputValue)
 
@@ -153,7 +122,6 @@ class prRemapValue(om.MPxNode):
         dataBlock.setClean(plug)
 
 
-# CALLBACK_ID = None
 def initializePlugin(obj):
     pluginFn = om.MFnPlugin(obj, 'Parzival Roethlein', '0.0.1')
     try:
@@ -164,21 +132,6 @@ def initializePlugin(obj):
         raise
     evalAETemplate()
 
-    '''def bla(*args, **kwargs):
-        print('\n\n ----- args: {}\n ----- kwargs: // {}\n\n'.format(args, kwargs))
-        mObject, none = args
-        plug = om.MPlug(mObject, prRemapValue.isNodeInitialized)
-        print 'before: {}'.format(plug.asBool())
-        if not plug.asBool():
-            print('initializing')
-            plug.setBool(True)
-        else:
-            print 'did not initialize'
-        print 'after: {}'.format(plug.asBool())
-    global CALLBACK_ID
-    CALLBACK_ID = om.MDGMessage.addNodeAddedCallback(bla, 'prRemapValue')
-    '''
-
 
 def uninitializePlugin(obj):
     pluginFn = om.MFnPlugin(obj)
@@ -187,8 +140,6 @@ def uninitializePlugin(obj):
     except:
         sys.stderr.write('Failed to deregister node: {0}'.format(prRemapValue.nodeTypeName))
         raise
-    #global CALLBACK_ID
-    #om.MMessage.removeCallback(CALLBACK_ID)
 
 
 def maya_useNewAPI():
@@ -204,11 +155,19 @@ def evalAETemplate():
             editorTemplate -beginLayout "prRemapValue Attributes" -collapse 0;
                 editorTemplate -label "inputValue" -addControl "inputValue";
                 AEaddRampControl ($nodeName+".value");
+                AEaddRampControl ($nodeName+".color");
+            editorTemplate -endLayout;
+            editorTemplate -beginLayout "Input and Output Ranges";
+                editorTemplate -label "inputMin" -addControl "inputMin";
+                editorTemplate -label "inputMax" -addControl "inputMax";
+                editorTemplate -label "outputMin" -addControl "outputMin";
+                editorTemplate -label "outputMax" -addControl "outputMax";
             editorTemplate -endLayout;
             AEdependNodeTemplate $nodeName;
             editorTemplate -addExtraControls;
         editorTemplate -endScrollLayout;
         editorTemplate -suppress "output";
+        editorTemplate -suppress "outColor";
     };
     ''')
 
