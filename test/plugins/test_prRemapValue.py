@@ -11,7 +11,6 @@ test_prRemapValue.run()
 
 
 import sys
-sys.path.append('/home/prthlein/private/code/prmaya')
 sys.path.append('/home/prthlein/private/code/prmaya/test/plugins')
 import test_prRemapValue
 reload(test_prRemapValue)
