@@ -98,6 +98,11 @@ class prRemapValue(om.MPxNode):
             print 'unknown plug: {}'.format(plug)
             return
 
+        inputMin = dataBlock.inputValue(prRemapValue.inputMin).asFloat()
+        inputMax = dataBlock.inputValue(prRemapValue.inputMax).asFloat()
+        outputMin = dataBlock.inputValue(prRemapValue.outputMin).asFloat()
+        outputMax = dataBlock.inputValue(prRemapValue.outputMax).asFloat()
+
         inputValue_arrayHandle = dataBlock.inputArrayValue(prRemapValue.inputValue)
 
         value_handle = om.MRampAttribute(thisNode, prRemapValue.value)
@@ -110,12 +115,17 @@ class prRemapValue(om.MPxNode):
             inputValue_arrayHandle.jumpToPhysicalElement(i)
             index = inputValue_arrayHandle.elementLogicalIndex()
             inputValue = inputValue_arrayHandle.inputValue().asFloat()
-
             outValue_handle = outValue_builder.addElement(index)
-            outValue = value_handle.getValueAtPosition(inputValue)
+
+            if inputMin == inputMax:
+                rampPosition = 0.0
+            else:
+                rampPosition = (inputValue - inputMin) / (inputMax - inputMin)
+            rampValue = value_handle.getValueAtPosition(rampPosition)
+            outValue = outputMin * (1 - rampValue) + outputMax * rampValue
+
             outValue_handle.setFloat(outValue)
             values.append([inputValue, outValue])
-        print(values)
 
         outValue_arrayHandle.set(outValue_builder)
         outValue_arrayHandle.setAllClean()

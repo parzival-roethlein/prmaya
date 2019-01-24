@@ -1,22 +1,19 @@
 """
 
 import sys
-sys.path.append('C:/Users/paz/Documents/git/prmaya/test/plugins')
-import test_prRemapValue
-reload(test_prRemapValue)
-test_prRemapValue.SETTINGS['plugin_path'] = r'C:\Users\paz\Documents\git\prmaya\prmaya\plugins\prRemapValue.py'
-test_prRemapValue.SETTINGS['file'] = r'C:\Users\paz\Documents\git\prmaya\test\plugins\test_prRemapValue_scene.ma'
-test_prRemapValue.run()
-
-
-
-import sys
 sys.path.append('/home/prthlein/private/code/prmaya/test/plugins')
 import test_prRemapValue
 reload(test_prRemapValue)
 test_prRemapValue.run()
 
 
+import sys
+sys.path.append('C:/Users/paz/Documents/git/prmaya/test/plugins')
+import test_prRemapValue
+reload(test_prRemapValue)
+test_prRemapValue.SETTINGS['plugin_path'] = r'C:\Users\paz\Documents\git\prmaya\prmaya\plugins\prRemapValue.py'
+test_prRemapValue.SETTINGS['file'] = r'C:\Users\paz\Documents\git\prmaya\test\plugins\test_prRemapValue_scene.ma'
+test_prRemapValue.run()
 
 
 import maya.cmds as mc
@@ -42,10 +39,6 @@ reload(prRemapValue)
 SETTINGS = {'plugin_name': 'prRemapValue.py',
             'plugin_path': '/home/prthlein/private/code/prmaya/prmaya/plugins/prRemapValue.py',
             'file': '/home/prthlein/private/code/prmaya/test/plugins/test_prRemapValue.ma',
-            'outputPositionCurve': 'outputPositionCurve',
-            'outputPositionCurve1': 'outputPositionCurve1',
-            'outputMatrixCurve': 'outputMatrixCurve',
-            'matrixUpTransform': 'up_locator'
             }
 
 
@@ -66,3 +59,4 @@ def run():
         mc.connectAttr('prRemapValue1.outValue[{}]'.format(x), 'pCube{}.ty'.format(x+2))
 
     print(mc.getAttr('prRemapValue1.outValue'))
+    #mc.select('prRemapValue1')
