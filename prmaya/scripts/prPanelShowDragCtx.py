@@ -13,19 +13,16 @@ import prPanelShowDragCtx
 prPanelShowDragCtx.enable()
 prPanelShowDragCtx.disable()
 
-# USAGE EXAMPLE: ALWAYS AUTOMATICALLY ENABLED (put this in your userSetup.py)
-import maya.cmds as cmds
-import prPanelShowDragCtx
-cmds.evalDeferred('prPanelShowDragCtx.enable()')
-
 # USAGE EXAMPLE: USER DEFINED PANEL SETTINGS
 import prPanelShowDragCtx
 prPanelShowDragCtx.enable(manipulators=False, nurbsCurves=False, controllers=False, locators=False)
 
 # TODO
-- camera orbit mode
 - UI
 - MEvent version of manipScriptjob
+
+# TODO (maybe impossible)
+- camera orbit mode
 - component selection support
 - channelBox attribute drag support: mc.draggerContext doesn't seem to trigger from channelBox drag
 - Universal Manipulator support: Doesn't seem to have a command, als tried mc.draggerContext('xformManipContext', ..)
@@ -162,16 +159,18 @@ def manipCtxNodeTypeChange():
 
 @log
 def createManipCtx(**preCommandKwargs):
-    deleteManipCtx()
+    def createManipCtxDeferred():
+        deleteManipCtx()
 
-    def prPanelShowDragCtxManipScriptJob():
-        if manipCtxNodeTypeChange():
-            global MANIP_NODE_TYPE
-            setManipCommands(nodeType=MANIP_NODE_TYPE, preFunc=lambda: preCommand(**preCommandKwargs), postFunc=postCommand)
-    prPanelShowDragCtxManipScriptJob()
+        def prPanelShowDragCtxManipScriptJob():
+            if manipCtxNodeTypeChange():
+                global MANIP_NODE_TYPE
+                setManipCommands(nodeType=MANIP_NODE_TYPE, preFunc=lambda: preCommand(**preCommandKwargs), postFunc=postCommand)
+        prPanelShowDragCtxManipScriptJob()
 
-    global MANIP_CTX_ID
-    MANIP_CTX_ID = mc.scriptJob(event=["SelectionChanged", prPanelShowDragCtxManipScriptJob])
+        global MANIP_CTX_ID
+        MANIP_CTX_ID = mc.scriptJob(event=["SelectionChanged", prPanelShowDragCtxManipScriptJob])
+    mc.evalDeferred(createManipCtxDeferred)
 
 
 @log
@@ -202,15 +201,17 @@ def deleteManipCtx():
 
 @log
 def createPlaybackCtx(**preCommandKwargs):
-    deletePlaybackCtx()
+    def createPlaybackCtxDeferred():
+        deletePlaybackCtx()
 
-    def prPanelShowDragCtxCondition(state, **preCommandKwargs):
-        if state:
-            preCommand(**preCommandKwargs)
-        else:
-            postCommand()
-    global PLAYBACK_CTX_ID
-    PLAYBACK_CTX_ID = om.MConditionMessage.addConditionCallback('playingBack', lambda state, *args: prPanelShowDragCtxCondition(state, **preCommandKwargs))
+        def prPanelShowDragCtxCondition(state, **preCommandKwargs):
+            if state:
+                preCommand(**preCommandKwargs)
+            else:
+                postCommand()
+        global PLAYBACK_CTX_ID
+        PLAYBACK_CTX_ID = om.MConditionMessage.addConditionCallback('playingBack', lambda state, *args: prPanelShowDragCtxCondition(state, **preCommandKwargs))
+    mc.evalDeferred(createPlaybackCtxDeferred)
 
 
 @log
