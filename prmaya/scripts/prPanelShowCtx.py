@@ -1,21 +1,25 @@
 """
+https://github.com/parzival-roethlein/prmaya
+
 # DESCRIPTION
-Temporarily sets (Panel > Show > types) while dragging the translate/rotate/scale tools or the timeline changes
+Temporarily sets (Panel > Show > types) while:
+ - dragging the translate/rotate/scale tools
+ - timeline dragging
+ - timeline playback
 The purpose is to have a clear view of the deforming geometry
 Creates a scriptJob (SelectionChanged) and OpenMaya.MConditionMessage (playingBack)
-Get the latest version at https://github.com/parzival-roethlein/prmaya
 
 # INSTALLATION
-Copy this file ("prPanelShowDragCtx.py") into your ".../maya/scripts" folder
+Copy this file ("prPanelShowCtx.py") into your ".../maya/scripts" folder
 
-# BASIC USAGE
-import prPanelShowDragCtx
-prPanelShowDragCtx.enable()
-prPanelShowDragCtx.disable()
+# USAGE
+import prPanelShowCtx
+prPanelShowCtx.enable()
+prPanelShowCtx.disable()
 
-# USAGE EXAMPLE: USER DEFINED PANEL SETTINGS
-import prPanelShowDragCtx
-prPanelShowDragCtx.enable(manipulators=False, nurbsCurves=False, controllers=False, locators=False)
+# USAGE ANIMATOR (USER DEFINED PANEL SETTINGS)
+import prPanelShowCtx
+prPanelShowCtx.enable(manipulators=False, nurbsCurves=False, controllers=False, locators=False)
 
 # TODO
 - UI
@@ -139,14 +143,14 @@ def createManipCtx(**preCommandKwargs):
     def createManipCtxDeferred():
         deleteManipCtx()
 
-        def prPanelShowDragCtxManipScriptJob():
+        def prPanelShowCtxManipScriptJob():
             if manipCtxNodeTypeChange():
                 global MANIP_NODE_TYPE
                 setManipCommands(nodeType=MANIP_NODE_TYPE, preFunc=lambda: preCommand(**preCommandKwargs), postFunc=postCommand)
-        prPanelShowDragCtxManipScriptJob()
+        prPanelShowCtxManipScriptJob()
 
         global MANIP_CTX_ID
-        MANIP_CTX_ID = mc.scriptJob(event=["SelectionChanged", prPanelShowDragCtxManipScriptJob])
+        MANIP_CTX_ID = mc.scriptJob(event=["SelectionChanged", prPanelShowCtxManipScriptJob])
     mc.evalDeferred(createManipCtxDeferred)
 
 
@@ -154,7 +158,7 @@ def createManipCtx(**preCommandKwargs):
 def getManipCtx():
     scriptJob_ids = []
     for scriptJob in mc.scriptJob(listJobs=True):
-        if 'prPanelShowDragCtxManipScriptJob' in scriptJob:
+        if 'prPanelShowCtxManipScriptJob' in scriptJob:
             scriptJobId = int(scriptJob[:scriptJob.find(':')])
             scriptJob_ids.append(scriptJobId)
     return scriptJob_ids
@@ -181,13 +185,13 @@ def createPlaybackCtx(**preCommandKwargs):
     def createPlaybackCtxDeferred():
         deletePlaybackCtx()
 
-        def prPanelShowDragCtxCondition(state, **preCommandKwargs):
+        def prPanelShowCtxCondition(state, **preCommandKwargs):
             if state:
                 preCommand(**preCommandKwargs)
             else:
                 postCommand()
         global PLAYBACK_CTX_ID
-        PLAYBACK_CTX_ID = om.MConditionMessage.addConditionCallback('playingBack', lambda state, *args: prPanelShowDragCtxCondition(state, **preCommandKwargs))
+        PLAYBACK_CTX_ID = om.MConditionMessage.addConditionCallback('playingBack', lambda state, *args: prPanelShowCtxCondition(state, **preCommandKwargs))
     mc.evalDeferred(createPlaybackCtxDeferred)
 
 
