@@ -1,6 +1,16 @@
 """
 
 import sys
+sys.path.append('C:/Users/paz/Documents/git/prmaya/test/plugins')
+import test_prRemapValue
+reload(test_prRemapValue)
+test_prRemapValue.SETTINGS['plugin_path'] = r'C:\Users\paz\Documents\git\prmaya\prmaya\plugins\prRemapValue.py'
+test_prRemapValue.SETTINGS['file'] = r'C:\Users\paz\Documents\git\prmaya\test\plugins\test_prRemapValue_scene.ma'
+test_prRemapValue.run()
+
+
+
+import sys
 sys.path.append('/home/prthlein/private/code/prmaya')
 sys.path.append('/home/prthlein/private/code/prmaya/test/plugins')
 import test_prRemapValue
