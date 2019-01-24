@@ -8,13 +8,20 @@ reload(test_prRemapValue)
 test_prRemapValue.run()
 
 
+
+
 import maya.cmds as mc
 mc.file(new=True, force=True)
 mc.file(rename='/home/prthlein/private/Documents/asdf.ma')
 mc.createNode('prRemapValue')
-mc.file(save=True)
+mc.createNode('prRemapValue')
+#mc.getAttr('prRemapValue1.outValue')
+mc.connectAttr('prRemapValue1.outValue', 'prRemapValue2.inputValue')
+mc.file(save=True, typ='mayaAscii')
 mc.file(new=True, force=True)
 mc.file('/home/prthlein/private/Documents/asdf.ma', open=True, force=True)
+
+
 
 """
 
