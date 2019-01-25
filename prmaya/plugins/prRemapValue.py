@@ -184,7 +184,7 @@ def evalAETemplate():
     {
         editorTemplate -beginScrollLayout;
             editorTemplate -beginLayout "prRemapValue Attributes" -collapse 0;
-                editorTemplate -label "inputValue" -addControl "inputValue";
+                editorTemplate -label "inputValue" -addControl "inputValue" -collapse 0;
                 AEaddRampControl ($nodeName+".value");
                 AEaddRampControl ($nodeName+".color");
             editorTemplate -endLayout;
@@ -197,7 +197,5 @@ def evalAETemplate():
             AEdependNodeTemplate $nodeName;
             editorTemplate -addExtraControls;
         editorTemplate -endScrollLayout;
-        editorTemplate -suppress "output";
-        editorTemplate -suppress "outColor";
     };
     ''')

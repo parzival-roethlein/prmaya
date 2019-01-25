@@ -475,7 +475,7 @@ def evalAETemplate():
         editorTemplate -beginScrollLayout;
             editorTemplate -beginLayout "prClosestPoint Attributes" -collapse 0;
                 editorTemplate -label "enabled" -addControl "enabled";
-                editorTemplate -beginLayout "maxDistance Attributes" -collapse 1;
+                editorTemplate -beginLayout "maxDistance Attributes";
                     editorTemplate -label "maxDistanceEnabled" -addControl "maxDistanceEnabled";
                     editorTemplate -label "maxDistance" -addControl "maxDistance";
                     editorTemplate -label "maxDistanceUScaleEnabled" -addControl "maxDistanceUScaleEnabled";
@@ -483,11 +483,11 @@ def evalAETemplate():
                     editorTemplate -label "maxDistanceVScaleEnabled" -addControl "maxDistanceVScaleEnabled";
                     AEaddRampControl ($nodeName+".maxDistanceVScale");
                 editorTemplate -endLayout;
-                editorTemplate -beginLayout "falloff Attributes" -collapse 1;
+                editorTemplate -beginLayout "falloff Attributes";
                     editorTemplate -label "falloffEnabled" -addControl "falloffEnabled";
                     AEaddRampControl ($nodeName+".falloff");
                 editorTemplate -endLayout;
-                editorTemplate -beginLayout "inputTarget Attributes" -collapse 1;
+                editorTemplate -beginLayout "inputTarget Attributes";
                     editorTemplate -label "inputTargetEnabled" -addControl "inputTargetEnabled";
                     editorTemplate -label "inputTarget" -addControl "inputTarget";
                 editorTemplate -endLayout;
