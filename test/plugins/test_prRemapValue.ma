@@ -1,25 +1,28 @@
-//Maya ASCII 2018 scene
-//Name: test_prRemapValue_scene.ma
-//Last modified: Wed, Jan 23, 2019 11:09:30 PM
-//Codeset: 1252
-requires maya "2018";
+//Maya ASCII 2018ff08 scene
+//Name: test_prRemapValue.ma
+//Last modified: Fri, Jan 25, 2019 12:40:57 PM
+//Codeset: UTF-8
+requires maya "2018ff08";
+requires "stereoCamera" "10.0";
 requires "stereoCamera" "10.0";
 currentUnit -l centimeter -a degree -t film;
 fileInfo "application" "maya";
 fileInfo "product" "Maya 2018";
 fileInfo "version" "2018";
-fileInfo "cutIdentifier" "201706261615-f9658c4cfc";
-fileInfo "osv" "Microsoft Windows 8 Business Edition, 64-bit  (Build 9200)\n";
+fileInfo "cutIdentifier" "201804211841-f3d65dda2a";
+fileInfo "osv" "Linux 3.10.0-693.21.1.el7.x86_64 #1 SMP Wed Mar 7 19:03:37 UTC 2018 x86_64";
+fileInfo "modified-by" "prthlein";
+fileInfo "modified-in" "Montreal";
 createNode transform -s -n "persp";
 	rename -uid "7EFC462A-4940-F1CB-C589-58B36020743B";
 	setAttr ".v" no;
-	setAttr ".t" -type "double3" 15.771486102611389 15.944877416001434 24.515148403737449 ;
+	setAttr ".t" -type "double3" 6.5965339615020664 10.131677504829275 17.228218210917721 ;
 	setAttr ".r" -type "double3" -30.338352729602462 15.799999999999978 0 ;
 createNode camera -s -n "perspShape" -p "persp";
 	rename -uid "04DFB295-4EA6-D172-D155-92B2416D5AA2";
 	setAttr -k off ".v" no;
 	setAttr ".fl" 34.999999999999993;
-	setAttr ".coi" 30.684462993146731;
+	setAttr ".coi" 19.54070131947779;
 	setAttr ".imn" -type "string" "persp";
 	setAttr ".den" -type "string" "persp_depth";
 	setAttr ".man" -type "string" "persp_mask";
@@ -81,10 +84,35 @@ createNode mesh -n "pCubeShape1" -p "pCube1";
 	setAttr ".vir" yes;
 	setAttr ".vif" yes;
 	setAttr ".uvst[0].uvsn" -type "string" "map1";
+	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
+		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
+		 0.875 0.25 0.125 0 0.125 0.25;
 	setAttr ".cuvs" -type "string" "map1";
 	setAttr ".dcc" -type "string" "Ambient+Diffuse";
 	setAttr ".covm[0]"  0 1 1;
 	setAttr ".cdvm[0]"  0 1 1;
+	setAttr ".sdt" 0;
+	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
+		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
+	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
+		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
+	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
+		f 4 0 5 -2 -5
+		mu 0 4 0 1 3 2
+		f 4 1 7 -3 -7
+		mu 0 4 2 3 5 4
+		f 4 2 9 -4 -9
+		mu 0 4 4 5 7 6
+		f 4 3 11 -1 -11
+		mu 0 4 6 7 9 8
+		f 4 -12 -10 -8 -6
+		mu 0 4 1 10 11 3
+		f 4 10 4 6 8
+		mu 0 4 12 0 2 13;
+	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
+	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
+	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
+	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -n "pCube2";
 	rename -uid "E4520220-4C8C-B2BA-EFA2-4FA5347FDC1E";
 	setAttr ".t" -type "double3" 2 0 0 ;
@@ -101,6 +129,7 @@ createNode mesh -n "pCubeShape2" -p "pCube2";
 	setAttr ".dcc" -type "string" "Ambient+Diffuse";
 	setAttr ".covm[0]"  0 1 1;
 	setAttr ".cdvm[0]"  0 1 1;
+	setAttr ".sdt" 0;
 	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
 		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
 	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
@@ -138,6 +167,7 @@ createNode mesh -n "pCubeShape3" -p "pCube3";
 	setAttr ".dcc" -type "string" "Ambient+Diffuse";
 	setAttr ".covm[0]"  0 1 1;
 	setAttr ".cdvm[0]"  0 1 1;
+	setAttr ".sdt" 0;
 	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
 		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
 	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
@@ -175,6 +205,7 @@ createNode mesh -n "pCubeShape4" -p "pCube4";
 	setAttr ".dcc" -type "string" "Ambient+Diffuse";
 	setAttr ".covm[0]"  0 1 1;
 	setAttr ".cdvm[0]"  0 1 1;
+	setAttr ".sdt" 0;
 	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
 		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
 	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
@@ -212,6 +243,7 @@ createNode mesh -n "pCubeShape5" -p "pCube5";
 	setAttr ".dcc" -type "string" "Ambient+Diffuse";
 	setAttr ".covm[0]"  0 1 1;
 	setAttr ".cdvm[0]"  0 1 1;
+	setAttr ".sdt" 0;
 	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
 		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
 	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
@@ -249,6 +281,7 @@ createNode mesh -n "pCubeShape6" -p "pCube6";
 	setAttr ".dcc" -type "string" "Ambient+Diffuse";
 	setAttr ".covm[0]"  0 1 1;
 	setAttr ".cdvm[0]"  0 1 1;
+	setAttr ".sdt" 0;
 	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
 		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
 	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
@@ -271,29 +304,74 @@ createNode mesh -n "pCubeShape6" -p "pCube6";
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode lightLinker -s -n "lightLinker1";
-	rename -uid "8274C153-4032-BC9D-C1D3-5C93546C50D1";
-	setAttr -s 2 ".lnk";
-	setAttr -s 2 ".slnk";
+	rename -uid "516AE900-0000-B413-5C4B-4906000002B5";
+	setAttr -s 8 ".lnk";
+	setAttr -s 8 ".slnk";
 createNode shapeEditorManager -n "shapeEditorManager";
-	rename -uid "4F26544D-4F92-9FE4-7643-1E91A49BB189";
+	rename -uid "516AE900-0000-B413-5C4B-4906000002B6";
 createNode poseInterpolatorManager -n "poseInterpolatorManager";
-	rename -uid "2DACE831-46B6-CA2A-6FA9-91B1E7932F97";
+	rename -uid "516AE900-0000-B413-5C4B-4906000002B7";
 createNode displayLayerManager -n "layerManager";
-	rename -uid "71290FF6-4EAF-04CF-52DF-AF807E5D55E8";
+	rename -uid "516AE900-0000-B413-5C4B-4906000002B8";
 createNode displayLayer -n "defaultLayer";
 	rename -uid "3EA7AA28-4307-76C5-7C33-168126581686";
 createNode renderLayerManager -n "renderLayerManager";
-	rename -uid "9E128C31-4845-DE8F-304A-F8846C9ABE8B";
+	rename -uid "516AE900-0000-B413-5C4B-4906000002BA";
 createNode renderLayer -n "defaultRenderLayer";
 	rename -uid "D5F23239-4BB7-746C-D627-FFB61A16A630";
 	setAttr ".g" yes;
-createNode polyCube -n "polyCube1";
-	rename -uid "7A5409A4-4680-98DE-4476-3BA990F0FF76";
-	setAttr ".cuv" 4;
 createNode script -n "sceneConfigurationScriptNode";
 	rename -uid "01437D0C-4492-5B89-CDFC-5989FAAB4625";
 	setAttr ".b" -type "string" "playbackOptions -min 1 -max 120 -ast 1 -aet 200 ";
 	setAttr ".st" 6;
+createNode blinn -n "blinn2";
+	rename -uid "516AE900-0000-B413-5C4B-49D3000002BE";
+createNode shadingEngine -n "blinn1SG";
+	rename -uid "516AE900-0000-B413-5C4B-49D3000002BF";
+	setAttr ".ihi" 0;
+	setAttr ".ro" yes;
+createNode materialInfo -n "materialInfo1";
+	rename -uid "516AE900-0000-B413-5C4B-49D3000002C0";
+createNode blinn -n "blinn4";
+	rename -uid "516AE900-0000-B413-5C4B-49D6000002C3";
+createNode shadingEngine -n "blinn2SG";
+	rename -uid "516AE900-0000-B413-5C4B-49D6000002C4";
+	setAttr ".ihi" 0;
+	setAttr ".ro" yes;
+createNode materialInfo -n "materialInfo2";
+	rename -uid "516AE900-0000-B413-5C4B-49D6000002C5";
+createNode blinn -n "blinn5";
+	rename -uid "516AE900-0000-B413-5C4B-49D9000002C6";
+createNode shadingEngine -n "blinn3SG";
+	rename -uid "516AE900-0000-B413-5C4B-49D9000002C7";
+	setAttr ".ihi" 0;
+	setAttr ".ro" yes;
+createNode materialInfo -n "materialInfo3";
+	rename -uid "516AE900-0000-B413-5C4B-49D9000002C8";
+createNode blinn -n "blinn6";
+	rename -uid "516AE900-0000-B413-5C4B-49DB000002C9";
+createNode shadingEngine -n "blinn4SG";
+	rename -uid "516AE900-0000-B413-5C4B-49DB000002CA";
+	setAttr ".ihi" 0;
+	setAttr ".ro" yes;
+createNode materialInfo -n "materialInfo4";
+	rename -uid "516AE900-0000-B413-5C4B-49DB000002CB";
+createNode blinn -n "blinn3";
+	rename -uid "516AE900-0000-B413-5C4B-49DF000002CC";
+createNode shadingEngine -n "blinn5SG";
+	rename -uid "516AE900-0000-B413-5C4B-49DF000002CD";
+	setAttr ".ihi" 0;
+	setAttr ".ro" yes;
+createNode materialInfo -n "materialInfo5";
+	rename -uid "516AE900-0000-B413-5C4B-49DF000002CE";
+createNode blinn -n "blinn1";
+	rename -uid "516AE900-0000-B413-5C4B-49E4000002CF";
+createNode shadingEngine -n "blinn6SG";
+	rename -uid "516AE900-0000-B413-5C4B-49E4000002D0";
+	setAttr ".ihi" 0;
+	setAttr ".ro" yes;
+createNode materialInfo -n "materialInfo6";
+	rename -uid "516AE900-0000-B413-5C4B-49E4000002D1";
 select -ne :time1;
 	setAttr -av -k on ".cch";
 	setAttr -av -cb on ".ihi";
@@ -321,7 +399,7 @@ select -ne :renderPartition;
 	setAttr -cb on ".ihi";
 	setAttr -av -k on ".nds";
 	setAttr -cb on ".bnm";
-	setAttr -s 2 ".st";
+	setAttr -s 8 ".st";
 	setAttr -cb on ".an";
 	setAttr -cb on ".pt";
 select -ne :renderGlobalsList1;
@@ -334,7 +412,7 @@ select -ne :defaultShaderList1;
 	setAttr -cb on ".ihi";
 	setAttr -k on ".nds";
 	setAttr -cb on ".bnm";
-	setAttr -s 4 ".s";
+	setAttr -s 10 ".s";
 select -ne :postProcessList1;
 	setAttr -k on ".cch";
 	setAttr -cb on ".ihi";
@@ -348,7 +426,6 @@ select -ne :initialShadingGroup;
 	setAttr -cb on ".ihi";
 	setAttr -av -k on ".nds";
 	setAttr -cb on ".bnm";
-	setAttr -s 6 ".dsm";
 	setAttr -k on ".mwc";
 	setAttr -cb on ".an";
 	setAttr -cb on ".il";
@@ -387,6 +464,14 @@ select -ne :defaultResolution;
 	setAttr -av -k on ".zsl";
 	setAttr -av -k on ".isu";
 	setAttr -av -k on ".pdu";
+select -ne :defaultColorMgtGlobals;
+	setAttr ".cfe" yes;
+	setAttr ".cfp" -type "string" "/work/21762_TRAIN/config/ocio/config.ocio";
+	setAttr ".vtn" -type "string" "Medium High Contrast (Monitor)";
+	setAttr ".wsn" -type "string" "linear";
+	setAttr ".pote" no;
+	setAttr ".otn" -type "string" "Medium High Contrast (Monitor)";
+	setAttr ".potn" -type "string" "Medium High Contrast (Monitor)";
 select -ne :hardwareRenderGlobals;
 	setAttr -k on ".cch";
 	setAttr -cb on ".ihi";
@@ -425,18 +510,59 @@ select -ne :hardwareRenderGlobals;
 	setAttr -k on ".bswa";
 	setAttr -k on ".shml";
 	setAttr -k on ".hwel";
-connectAttr "polyCube1.out" "pCubeShape1.i";
 relationship "link" ":lightLinker1" ":initialShadingGroup.message" ":defaultLightSet.message";
 relationship "link" ":lightLinker1" ":initialParticleSE.message" ":defaultLightSet.message";
+relationship "link" ":lightLinker1" "blinn1SG.message" ":defaultLightSet.message";
+relationship "link" ":lightLinker1" "blinn2SG.message" ":defaultLightSet.message";
+relationship "link" ":lightLinker1" "blinn3SG.message" ":defaultLightSet.message";
+relationship "link" ":lightLinker1" "blinn4SG.message" ":defaultLightSet.message";
+relationship "link" ":lightLinker1" "blinn5SG.message" ":defaultLightSet.message";
+relationship "link" ":lightLinker1" "blinn6SG.message" ":defaultLightSet.message";
 relationship "shadowLink" ":lightLinker1" ":initialShadingGroup.message" ":defaultLightSet.message";
 relationship "shadowLink" ":lightLinker1" ":initialParticleSE.message" ":defaultLightSet.message";
+relationship "shadowLink" ":lightLinker1" "blinn1SG.message" ":defaultLightSet.message";
+relationship "shadowLink" ":lightLinker1" "blinn2SG.message" ":defaultLightSet.message";
+relationship "shadowLink" ":lightLinker1" "blinn3SG.message" ":defaultLightSet.message";
+relationship "shadowLink" ":lightLinker1" "blinn4SG.message" ":defaultLightSet.message";
+relationship "shadowLink" ":lightLinker1" "blinn5SG.message" ":defaultLightSet.message";
+relationship "shadowLink" ":lightLinker1" "blinn6SG.message" ":defaultLightSet.message";
 connectAttr "layerManager.dli[0]" "defaultLayer.id";
 connectAttr "renderLayerManager.rlmi[0]" "defaultRenderLayer.rlid";
+connectAttr "blinn2.oc" "blinn1SG.ss";
+connectAttr "pCubeShape2.iog" "blinn1SG.dsm" -na;
+connectAttr "blinn1SG.msg" "materialInfo1.sg";
+connectAttr "blinn2.msg" "materialInfo1.m";
+connectAttr "blinn4.oc" "blinn2SG.ss";
+connectAttr "pCubeShape4.iog" "blinn2SG.dsm" -na;
+connectAttr "blinn2SG.msg" "materialInfo2.sg";
+connectAttr "blinn4.msg" "materialInfo2.m";
+connectAttr "blinn5.oc" "blinn3SG.ss";
+connectAttr "pCubeShape5.iog" "blinn3SG.dsm" -na;
+connectAttr "blinn3SG.msg" "materialInfo3.sg";
+connectAttr "blinn5.msg" "materialInfo3.m";
+connectAttr "blinn6.oc" "blinn4SG.ss";
+connectAttr "pCubeShape6.iog" "blinn4SG.dsm" -na;
+connectAttr "blinn4SG.msg" "materialInfo4.sg";
+connectAttr "blinn6.msg" "materialInfo4.m";
+connectAttr "blinn3.oc" "blinn5SG.ss";
+connectAttr "pCubeShape3.iog" "blinn5SG.dsm" -na;
+connectAttr "blinn5SG.msg" "materialInfo5.sg";
+connectAttr "blinn3.msg" "materialInfo5.m";
+connectAttr "blinn1.oc" "blinn6SG.ss";
+connectAttr "pCubeShape1.iog" "blinn6SG.dsm" -na;
+connectAttr "blinn6SG.msg" "materialInfo6.sg";
+connectAttr "blinn1.msg" "materialInfo6.m";
+connectAttr "blinn1SG.pa" ":renderPartition.st" -na;
+connectAttr "blinn2SG.pa" ":renderPartition.st" -na;
+connectAttr "blinn3SG.pa" ":renderPartition.st" -na;
+connectAttr "blinn4SG.pa" ":renderPartition.st" -na;
+connectAttr "blinn5SG.pa" ":renderPartition.st" -na;
+connectAttr "blinn6SG.pa" ":renderPartition.st" -na;
+connectAttr "blinn2.msg" ":defaultShaderList1.s" -na;
+connectAttr "blinn4.msg" ":defaultShaderList1.s" -na;
+connectAttr "blinn5.msg" ":defaultShaderList1.s" -na;
+connectAttr "blinn6.msg" ":defaultShaderList1.s" -na;
+connectAttr "blinn3.msg" ":defaultShaderList1.s" -na;
+connectAttr "blinn1.msg" ":defaultShaderList1.s" -na;
 connectAttr "defaultRenderLayer.msg" ":defaultRenderingList1.r" -na;
-connectAttr "pCubeShape1.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "pCubeShape2.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "pCubeShape3.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "pCubeShape4.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "pCubeShape5.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "pCubeShape6.iog" ":initialShadingGroup.dsm" -na;
-// End of test_prRemapValue_scene.ma
+// End of test_prRemapValue.ma

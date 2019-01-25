@@ -32,8 +32,9 @@ mc.file('/home/prthlein/private/Documents/asdf.ma', open=True, force=True)
 """
 
 import maya.cmds as mc
-from prmaya.plugins import prRemapValue
+import pymel.core as pm
 
+from prmaya.plugins import prRemapValue
 reload(prRemapValue)
 
 SETTINGS = {'plugin_name': 'prRemapValue.py',
@@ -53,10 +54,18 @@ def run():
     mc.createNode('prRemapValue')
     mc.setAttr("prRemapValue1.value[1].value_Position", 1)
     mc.setAttr("prRemapValue1.value[1].value_FloatValue", 1)
+    mc.setAttr("prRemapValue1.color[1].color_Position", 1)
+    mc.setAttr("prRemapValue1.color[1].color_Color", 0, 1, 0)
 
     for x in range(5):
         mc.setAttr('prRemapValue1.inputValue[{}]'.format(x), 1.0/4 * x)
         mc.connectAttr('prRemapValue1.outValue[{}]'.format(x), 'pCube{}.ty'.format(x+2))
+        mc.connectAttr('prRemapValue1.outColor[{}]'.format(x), 'blinn{}.color'.format(x + 2))
 
     print(mc.getAttr('prRemapValue1.outValue'))
-    #mc.select('prRemapValue1')
+
+    outColor = pm.PyNode('prRemapValue1.outColor')
+    outColorValues = []
+    for x in range(outColor.numChildren()):
+        outColorValues.append(outColor[x].get())
+    print(outColorValues)

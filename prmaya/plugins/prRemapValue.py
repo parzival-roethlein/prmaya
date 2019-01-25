@@ -1,7 +1,8 @@
 """
 DESCRIPTION
-array version of maya default remapValue node.
-Everything should be the same except inputValue and outValue are arrays
+Array version of mayas remapValue node.
+Everything should be the same except inputValue, outValue, outColor are arrays.
+The purpose is to have fewer nodes and avoid repetition.
 
 USE CASES
 ...
@@ -16,7 +17,9 @@ LINKS
 ...
 
 TODO
-...
+- node behavior
+- aetemplate inputValue
+- icon
 
 """
 
@@ -52,31 +55,36 @@ class prRemapValue(om.MPxNode):
         numericAttr.array = True
         prRemapValue.addAttribute(prRemapValue.inputValue)
         prRemapValue.attributeAffects(prRemapValue.inputValue, prRemapValue.outValue)
-        
+        prRemapValue.attributeAffects(prRemapValue.inputValue, prRemapValue.outColor)
+
         prRemapValue.inputMin = numericAttr.create('inputMin', 'inputMin', om.MFnNumericData.kFloat, 0.0)
         numericAttr.setSoftMin(0.0)
         numericAttr.setSoftMax(1.0)
         prRemapValue.addAttribute(prRemapValue.inputMin)
         prRemapValue.attributeAffects(prRemapValue.inputMin, prRemapValue.outValue)
-        
+        prRemapValue.attributeAffects(prRemapValue.inputMin, prRemapValue.outColor)
+
         prRemapValue.inputMax = numericAttr.create('inputMax', 'inputMax', om.MFnNumericData.kFloat, 1.0)
         numericAttr.setSoftMin(0.0)
         numericAttr.setSoftMax(1.0)
         prRemapValue.addAttribute(prRemapValue.inputMax)
         prRemapValue.attributeAffects(prRemapValue.inputMax, prRemapValue.outValue)
+        prRemapValue.attributeAffects(prRemapValue.inputMax, prRemapValue.outColor)
 
         prRemapValue.outputMin = numericAttr.create('outputMin', 'outputMin', om.MFnNumericData.kFloat, 0.0)
         numericAttr.setSoftMin(0.0)
         numericAttr.setSoftMax(1.0)
         prRemapValue.addAttribute(prRemapValue.outputMin)
         prRemapValue.attributeAffects(prRemapValue.outputMin, prRemapValue.outValue)
+        prRemapValue.attributeAffects(prRemapValue.outputMin, prRemapValue.outColor)
 
         prRemapValue.outputMax = numericAttr.create('outputMax', 'outputMax', om.MFnNumericData.kFloat, 1.0)
         numericAttr.setSoftMin(0.0)
         numericAttr.setSoftMax(1.0)
         prRemapValue.addAttribute(prRemapValue.outputMax)
         prRemapValue.attributeAffects(prRemapValue.outputMax, prRemapValue.outValue)
-        
+        prRemapValue.attributeAffects(prRemapValue.outputMax, prRemapValue.outColor)
+
         prRemapValue.value = rampAttr.createCurveRamp('value', 'value')
         prRemapValue.addAttribute(prRemapValue.value)
         prRemapValue.attributeAffects(prRemapValue.value, prRemapValue.outValue)
@@ -94,7 +102,7 @@ class prRemapValue(om.MPxNode):
 
     def compute(self, plug, dataBlock):
         thisNode = self.thisMObject()
-        if plug not in [self.outValue]:
+        if plug not in [self.outValue, self.outColor]:
             print 'unknown plug: {}'.format(plug)
             return
 
@@ -106,29 +114,42 @@ class prRemapValue(om.MPxNode):
         inputValue_arrayHandle = dataBlock.inputArrayValue(prRemapValue.inputValue)
 
         value_handle = om.MRampAttribute(thisNode, prRemapValue.value)
-
         outValue_arrayHandle = dataBlock.outputArrayValue(prRemapValue.outValue)
         outValue_builder = outValue_arrayHandle.builder()
 
-        values = []
+        color_handle = om.MRampAttribute(thisNode, prRemapValue.color)
+        outColor_arrayHandle = dataBlock.outputArrayValue(prRemapValue.outColor)
+        outColor_builder = outColor_arrayHandle.builder()
+
         for i in range(len(inputValue_arrayHandle)):
             inputValue_arrayHandle.jumpToPhysicalElement(i)
             index = inputValue_arrayHandle.elementLogicalIndex()
-            inputValue = inputValue_arrayHandle.inputValue().asFloat()
             outValue_handle = outValue_builder.addElement(index)
+            outColor_handle = outColor_builder.addElement(index)
 
+            inputValue = inputValue_arrayHandle.inputValue().asFloat()
             if inputMin == inputMax:
                 rampPosition = 0.0
             else:
                 rampPosition = (inputValue - inputMin) / (inputMax - inputMin)
-            rampValue = value_handle.getValueAtPosition(rampPosition)
-            outValue = outputMin * (1 - rampValue) + outputMax * rampValue
 
+            valueRampValue = value_handle.getValueAtPosition(rampPosition)
+            outValue = outputMin * (1 - valueRampValue) + outputMax * valueRampValue
             outValue_handle.setFloat(outValue)
-            values.append([inputValue, outValue])
+
+            colorRampValue = color_handle.getValueAtPosition(rampPosition)
+            for x, colorValue in enumerate(colorRampValue):
+                colorRampValue[x] = outputMin * (1 - colorValue) + outputMax * colorValue
+
+            outColor_handle.set3Float(colorRampValue[0],
+                                      colorRampValue[1],
+                                      colorRampValue[2])
 
         outValue_arrayHandle.set(outValue_builder)
         outValue_arrayHandle.setAllClean()
+        outColor_arrayHandle.set(outColor_builder)
+        outColor_arrayHandle.setAllClean()
+
         dataBlock.setClean(plug)
 
 
@@ -180,4 +201,3 @@ def evalAETemplate():
         editorTemplate -suppress "outColor";
     };
     ''')
-

@@ -9,6 +9,7 @@ Scripts, plugins and posts (tutorials, notes) for Autodesk Maya.
     * __prClosestPoint__: Not tested in production 
     * __prCurveMatrix__: Prototype
     * __prPyMath__: Not tested in production
+    * __prRemapValue__: Not tested in production
 * archive (Unusable. Only good for code/algorithm reference. Made when learning API basics in 2011)
   * plugins
     * __prAttractNode__: Replaced by prClosestPoint. Demo: https://vimeo.com/20002149
