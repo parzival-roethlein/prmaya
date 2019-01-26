@@ -7,7 +7,7 @@ Temporarily sets (Panel > Show > types) while:
  - timeline dragging
  - timeline playback
 The purpose is to have a clear view of the deforming geometry
-Creates a scriptJob (SelectionChanged) and OpenMaya.MConditionMessage (playingBack)
+Technical: Creates a scriptJob (SelectionChanged) and OpenMaya.MConditionMessage (playingBack)
 
 # INSTALLATION
 Copy this file ("prPanelShowCtx.py") into your ".../maya/scripts" folder
@@ -16,6 +16,7 @@ Copy this file ("prPanelShowCtx.py") into your ".../maya/scripts" folder
 import prPanelShowCtx
 prPanelShowCtx.enable()
 prPanelShowCtx.disable()
+prPanelShowCtx.toggle()
 
 # USAGE ANIMATOR (USER DEFINED PANEL SETTINGS)
 import prPanelShowCtx
@@ -52,23 +53,43 @@ MANIP_NODE_TYPE = None
 MANIP_CTX_ID = None
 PLAYBACK_CTX_ID = None
 
+TOGGLE_STATUS = False
 
-def enable(manipulatorCtx=True, playingBackCtx=True, **preCommandKwargs):
+
+def enable(**preCommandKwargs):
     """
-    :param manipulatorCtx: enable manipulator context
-    :param playingBackCtx: enable playingBack context
     :param preCommandKwargs: see def preCommand(..)
     :return:
     """
-    if manipulatorCtx:
-        createManipCtx(**preCommandKwargs)
-    if playingBackCtx:
-        createPlaybackCtx(**preCommandKwargs)
+    global TOGGLE_STATUS
+    TOGGLE_STATUS = True
+    createManipCtx(**preCommandKwargs)
+    createPlaybackCtx(**preCommandKwargs)
 
 
 def disable():
+    global TOGGLE_STATUS
+    TOGGLE_STATUS = False
     deleteManipCtx()
     deletePlaybackCtx()
+
+
+def toggle(printStatus=True, **preCommandKwargs):
+    """
+    :param printStatus: print toggle status
+    :param preCommandKwargs: see def preCommand(..)
+    :return: TOGGLE_STATUS bool
+    """
+    global TOGGLE_STATUS
+    if TOGGLE_STATUS:
+        disable()
+        if printStatus:
+            print('OFF prPanelShowCtx')
+    else:
+        enable(**preCommandKwargs)
+        if printStatus:
+            print('ON prPanelShowCtx')
+    return TOGGLE_STATUS
 
 
 def preCommand(withFocus=False, **flags):
