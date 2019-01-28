@@ -1,0 +1,61 @@
+// to create and delete input1D elements in the attributeEditor
+// TODO: fix maya bug displaying invalid indices of input2D, input3D when deleting item (workaround: de-/reselect node)
+
+global string $AEplusMinusAverageTemplateNode;
+
+global proc AEplusMinusAverageTemplate_input1D_build(string $plug)
+{
+    rowLayout -numberOfColumns 4 -columnWidth4 1 100 100 100;
+    textField -editable 0 "AEplusMinusAverageTemplate_input1DNodeTextField";
+    button -l "Add new Item" -c "AEplusMinusAverageTemplate_input1D_create";
+    button -l "Delete Item:" -c "AEplusMinusAverageTemplate_input1D_delete";
+    intField -minValue 0 -value 0 "AEplusMinusAverageTemplate_input1D_delete_intField";
+    setParent ..;
+    AEplusMinusAverageTemplate_input1D_update($plug);
+};
+
+global proc AEplusMinusAverageTemplate_input1D_update(string $plug)
+{
+    string $nodeAttr[];
+    tokenize($plug, ".", $nodeAttr);
+    global string $AEplusMinusAverageTemplateNode;
+    $AEplusMinusAverageTemplateNode = $nodeAttr[0];
+};
+
+global proc AEplusMinusAverageTemplate_input1D_create()
+{
+    global string $AEplusMinusAverageTemplateNode;
+    string $attribute = $AEplusMinusAverageTemplateNode+".input1D";
+    int $indices[] = `getAttr -multiIndices $attribute`;
+    int $indexSize = size($indices);
+    int $newIndex = 0;
+    if ($indexSize != 0)
+        $newIndex = $indices[$indexSize-1]+1;
+    setAttr ($attribute+"["+$newIndex+"]") 0;
+};
+
+global proc AEplusMinusAverageTemplate_input1D_delete()
+{
+    global string $AEplusMinusAverageTemplateNode;
+    int $index = `intField -q -value "AEplusMinusAverageTemplate_input1D_delete_intField"`;
+    string $attribute = $AEplusMinusAverageTemplateNode+".input1D";
+    removeMultiInstance ($attribute+"["+$index+"]");
+};
+
+global proc AEplusMinusAverageTemplate(string $nodeName)
+{
+	AEswatchDisplay $nodeName;
+	editorTemplate -beginScrollLayout;
+		editorTemplate -beginLayout (uiRes("m_AEplusMinusAverageTemplate.kPlusMinusAverageAttr")) -collapse 0;
+			editorTemplate -addControl "operation";
+			editorTemplate -beginLayout "Input 1D" -collapse 0;
+			editorTemplate -callCustom "AEplusMinusAverageTemplate_input1D_build" "AEplusMinusAverageTemplate_input1D_update" "input1D";
+			editorTemplate -addControl "input1D";
+			editorTemplate -endLayout;
+			editorTemplate -addControl "input2D";
+			editorTemplate -addControl "input3D";
+		editorTemplate -endLayout;
+	AEdependNodeTemplate $nodeName;
+	editorTemplate -addExtraControls;
+	editorTemplate -endScrollLayout;
+}
