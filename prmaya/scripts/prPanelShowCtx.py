@@ -16,18 +16,22 @@ Copy this file ("prPanelShowCtx.py") into your ".../maya/scripts" folder
 import prPanelShowCtx
 prPanelShowCtx.enable()
 prPanelShowCtx.disable()
+# OR
 prPanelShowCtx.toggle()
 
 # USAGE ANIMATOR (USER DEFINED PANEL SETTINGS)
 import prPanelShowCtx
-prPanelShowCtx.enable(manipulators=False, nurbsCurves=False, controllers=False, locators=False)
+prPanelShowCtx.enable(manipulators=False, nurbsCurves=False, controllers=False, locators=False, deformers=False)
+prPanelShowCtx.disable()
+# OR
+prPanelShowCtx.toggle(manipulators=False, nurbsCurves=False, controllers=False, locators=False, deformers=False)
 
 # TODO
 - UI
 - MEvent version of manipScriptjob
 
 # TODO (maybe impossible)
-- camera orbit mode
+- camera orbit ctx
 - component selection support
 - channelBox attribute drag support: mc.draggerContext doesn't seem to trigger from channelBox drag
 - Universal Manipulator support: Doesn't seem to have a command, als tried mc.draggerContext('xformManipContext', ..)
