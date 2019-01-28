@@ -17,8 +17,8 @@ LINKS
 ...
 
 TODO
-- node behavior
 - aetemplate inputValue
+- node behavior
 - icon
 
 """
@@ -26,7 +26,6 @@ TODO
 import sys
 
 import maya.api.OpenMaya as om
-
 
 class prRemapValue(om.MPxNode):
     nodeTypeName = "prRemapValue"
@@ -51,13 +50,8 @@ class prRemapValue(om.MPxNode):
         prRemapValue.addAttribute(prRemapValue.outColor)
         
         # input
-        prRemapValue.inputValue = numericAttr.create('inputValue', 'inputValue', om.MFnNumericData.kFloat)
-        numericAttr.array = True
-        prRemapValue.addAttribute(prRemapValue.inputValue)
-        prRemapValue.attributeAffects(prRemapValue.inputValue, prRemapValue.outValue)
-        prRemapValue.attributeAffects(prRemapValue.inputValue, prRemapValue.outColor)
-
         prRemapValue.inputMin = numericAttr.create('inputMin', 'inputMin', om.MFnNumericData.kFloat, 0.0)
+        numericAttr.keyable = True
         numericAttr.setSoftMin(0.0)
         numericAttr.setSoftMax(1.0)
         prRemapValue.addAttribute(prRemapValue.inputMin)
@@ -65,6 +59,7 @@ class prRemapValue(om.MPxNode):
         prRemapValue.attributeAffects(prRemapValue.inputMin, prRemapValue.outColor)
 
         prRemapValue.inputMax = numericAttr.create('inputMax', 'inputMax', om.MFnNumericData.kFloat, 1.0)
+        numericAttr.keyable = True
         numericAttr.setSoftMin(0.0)
         numericAttr.setSoftMax(1.0)
         prRemapValue.addAttribute(prRemapValue.inputMax)
@@ -72,6 +67,7 @@ class prRemapValue(om.MPxNode):
         prRemapValue.attributeAffects(prRemapValue.inputMax, prRemapValue.outColor)
 
         prRemapValue.outputMin = numericAttr.create('outputMin', 'outputMin', om.MFnNumericData.kFloat, 0.0)
+        numericAttr.keyable = True
         numericAttr.setSoftMin(0.0)
         numericAttr.setSoftMax(1.0)
         prRemapValue.addAttribute(prRemapValue.outputMin)
@@ -79,11 +75,19 @@ class prRemapValue(om.MPxNode):
         prRemapValue.attributeAffects(prRemapValue.outputMin, prRemapValue.outColor)
 
         prRemapValue.outputMax = numericAttr.create('outputMax', 'outputMax', om.MFnNumericData.kFloat, 1.0)
+        numericAttr.keyable = True
         numericAttr.setSoftMin(0.0)
         numericAttr.setSoftMax(1.0)
         prRemapValue.addAttribute(prRemapValue.outputMax)
         prRemapValue.attributeAffects(prRemapValue.outputMax, prRemapValue.outValue)
         prRemapValue.attributeAffects(prRemapValue.outputMax, prRemapValue.outColor)
+
+        prRemapValue.inputValue = numericAttr.create('inputValue', 'inputValue', om.MFnNumericData.kFloat)
+        numericAttr.array = True
+        numericAttr.keyable = True
+        prRemapValue.addAttribute(prRemapValue.inputValue)
+        prRemapValue.attributeAffects(prRemapValue.inputValue, prRemapValue.outValue)
+        prRemapValue.attributeAffects(prRemapValue.inputValue, prRemapValue.outColor)
 
         prRemapValue.value = rampAttr.createCurveRamp('value', 'value')
         prRemapValue.addAttribute(prRemapValue.value)
@@ -93,6 +97,11 @@ class prRemapValue(om.MPxNode):
         prRemapValue.addAttribute(prRemapValue.color)
         prRemapValue.attributeAffects(prRemapValue.color, prRemapValue.outColor)
 
+    def shouldSave(self, plug, result):
+        if plug == self.inputValue:
+            return True
+        return om.MPxNode.shouldSave(self, plug, result)
+    
     @staticmethod
     def creator():
         return prRemapValue()
@@ -184,7 +193,7 @@ def evalAETemplate():
     {
         editorTemplate -beginScrollLayout;
             editorTemplate -beginLayout "prRemapValue Attributes" -collapse 0;
-                editorTemplate -label "inputValue" -addControl "inputValue" -collapse 0;
+                editorTemplate -label "inputValue" -addControl "inputValue";
                 AEaddRampControl ($nodeName+".value");
                 AEaddRampControl ($nodeName+".color");
             editorTemplate -endLayout;
