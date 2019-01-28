@@ -1,4 +1,6 @@
 """
+https://github.com/parzival-roethlein/prmaya
+
 DESCRIPTION
 ...
 "Parallel Transport Approach to Curve Framing"

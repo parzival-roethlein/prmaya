@@ -1,7 +1,8 @@
 """
+https://github.com/parzival-roethlein/prmaya
+
 # DESCRIPTION
 Manage objectSet members (add, remove, reorder, export, import)
-Part of prmaya: https://github.com/parzival-roethlein/prmaya
 
 # USAGE
 import prmaya.scripts.prObjectSetUi.utils

@@ -1,4 +1,6 @@
 """
+https://github.com/parzival-roethlein/prmaya
+
 DESCRIPTION
 Deformer that moves points to closest: matrix (position) / mesh shape (or vertex) / nurbs-curve shape / nurbs-surface shape
 

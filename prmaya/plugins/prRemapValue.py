@@ -1,4 +1,6 @@
 """
+https://github.com/parzival-roethlein/prmaya
+
 DESCRIPTION
 Array version of mayas remapValue node.
 Everything should be the same except inputValue, outValue, outColor are arrays.

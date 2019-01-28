@@ -1,4 +1,7 @@
 """
+https://github.com/parzival-roethlein/prmaya
+
+DESCRIPTION
 the python math module as maya node
 
 ATTRIBUTES

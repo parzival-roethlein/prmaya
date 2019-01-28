@@ -1,3 +1,5 @@
+// https://github.com/parzival-roethlein/prmaya
+//
 // to create and delete input1D elements in the attributeEditor
 // TODO: fix maya bug displaying invalid indices of input2D, input3D when deleting item (workaround: de-/reselect node)
 

@@ -1,4 +1,6 @@
 """
+https://github.com/parzival-roethlein/prmaya
+
 # DESCRIPTION
 A dynamic User Interface (UI) to manage selections and poses in Autodesk Maya.
 Part of prmaya: https://github.com/parzival-roethlein/prmaya
@@ -13,8 +15,6 @@ python("import prSelectionUi;prSelectionUi.UI()");
 # LINKS
 - Demo video
 http://vimeo.com/37670989
-- Latest version
-https://github.com/parzival-roethlein/prmaya
 - Background information on my blog
 http://pazrot3d.blogspot.com/2012/03/prselectionui.html
 - This was written in my spare time. If you use it at work or learned something from the code, consider a donation:
