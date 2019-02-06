@@ -30,6 +30,7 @@ prPanelShowCtx.toggle(manipCtxKwargs={'manipulators': False}, playbackCtxKwargs=
 
 # TODO
 - verify flags on creation
+- DEFAULT_FLAGS for each context
 - UI
 - MEvent version of manipScriptjob
 - playbackCtx to start on timeline mouse down (if that changes the time only or in any case)
