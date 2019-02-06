@@ -37,6 +37,7 @@ class prRemapValue(om.MPxNode):
     def initialize():
         numericAttr = om.MFnNumericAttribute()
         rampAttr = om.MRampAttribute()
+        enumAttr = om.MFnEnumAttribute()
 
         # output
         prRemapValue.outValue = numericAttr.create('outValue', 'outValue', om.MFnNumericData.kFloat)
@@ -84,6 +85,22 @@ class prRemapValue(om.MPxNode):
         prRemapValue.attributeAffects(prRemapValue.outputMax, prRemapValue.outValue)
         prRemapValue.attributeAffects(prRemapValue.outputMax, prRemapValue.outColor)
 
+        prRemapValue.sampleMethod = enumAttr.create('sampleMethod', 'sampleMethod')
+        enumAttr.keyable = True
+        enumAttr.addField('inputValue', 0)
+        enumAttr.addField('counter', 1)
+        prRemapValue.addAttribute(prRemapValue.sampleMethod)
+        prRemapValue.attributeAffects(prRemapValue.sampleMethod, prRemapValue.outValue)
+        prRemapValue.attributeAffects(prRemapValue.sampleMethod, prRemapValue.outColor)
+
+        prRemapValue.counter = numericAttr.create('counter', 'counter', om.MFnNumericData.kInt)
+        numericAttr.keyable = True
+        numericAttr.setMin(0)
+        numericAttr.setSoftMax(20)
+        prRemapValue.addAttribute(prRemapValue.counter)
+        prRemapValue.attributeAffects(prRemapValue.counter, prRemapValue.outValue)
+        prRemapValue.attributeAffects(prRemapValue.counter, prRemapValue.outColor)
+        
         prRemapValue.inputValue = numericAttr.create('inputValue', 'inputValue', om.MFnNumericData.kFloat)
         numericAttr.array = True
         numericAttr.keyable = True
@@ -122,8 +139,6 @@ class prRemapValue(om.MPxNode):
         outputMin = dataBlock.inputValue(prRemapValue.outputMin).asFloat()
         outputMax = dataBlock.inputValue(prRemapValue.outputMax).asFloat()
 
-        inputValue_arrayHandle = dataBlock.inputArrayValue(prRemapValue.inputValue)
-
         value_handle = om.MRampAttribute(thisNode, prRemapValue.value)
         outValue_arrayHandle = dataBlock.outputArrayValue(prRemapValue.outValue)
         outValue_builder = outValue_arrayHandle.builder()
@@ -131,18 +146,30 @@ class prRemapValue(om.MPxNode):
         color_handle = om.MRampAttribute(thisNode, prRemapValue.color)
         outColor_arrayHandle = dataBlock.outputArrayValue(prRemapValue.outColor)
         outColor_builder = outColor_arrayHandle.builder()
-
-        for i in range(len(inputValue_arrayHandle)):
-            inputValue_arrayHandle.jumpToPhysicalElement(i)
-            index = inputValue_arrayHandle.elementLogicalIndex()
+        
+        sampleValues = {}
+        sampleMethod = dataBlock.inputValue(prRemapValue.sampleMethod).asShort()
+        if sampleMethod == 0:
+            inputValue_arrayHandle = dataBlock.inputArrayValue(prRemapValue.inputValue)
+            for i in range(len(inputValue_arrayHandle)):
+                inputValue_arrayHandle.jumpToPhysicalElement(i)
+                index = inputValue_arrayHandle.elementLogicalIndex()
+                inputValue = inputValue_arrayHandle.inputValue().asFloat()
+                sampleValues[index] = inputValue
+        elif sampleMethod == 1:
+            counter = dataBlock.inputValue(prRemapValue.counter).asShort()
+            dividend = 1.0 if counter == 1 else float(counter-1)
+            for index in range(counter):
+                sampleValues[index] = index / dividend
+        
+        for index, value in sampleValues.iteritems():
             outValue_handle = outValue_builder.addElement(index)
             outColor_handle = outColor_builder.addElement(index)
-
-            inputValue = inputValue_arrayHandle.inputValue().asFloat()
+            
             if inputMin == inputMax:
                 rampPosition = 0.0
             else:
-                rampPosition = (inputValue - inputMin) / (inputMax - inputMin)
+                rampPosition = (value - inputMin) / (inputMax - inputMin)
 
             valueRampValue = value_handle.getValueAtPosition(rampPosition)
             outValue = outputMin * (1 - valueRampValue) + outputMax * valueRampValue
@@ -195,7 +222,9 @@ def evalAETemplate():
     {
         editorTemplate -beginScrollLayout;
             editorTemplate -beginLayout "prRemapValue Attributes" -collapse 0;
+                editorTemplate -label "sampleMethod" -addControl "sampleMethod";
                 editorTemplate -label "inputValue" -addControl "inputValue";
+                editorTemplate -label "counter" -addControl "counter";
                 AEaddRampControl ($nodeName+".value");
                 AEaddRampControl ($nodeName+".color");
             editorTemplate -endLayout;
