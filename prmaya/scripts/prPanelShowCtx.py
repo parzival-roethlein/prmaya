@@ -88,11 +88,11 @@ def toggle(printStatus=True, **preCommandKwargs):
     if TOGGLE_STATUS:
         disable()
         if printStatus:
-            print('OFF prPanelShowCtx')
+            om.MGlobal.displayInfo('OFF prPanelShowCtx')
     else:
         enable(**preCommandKwargs)
         if printStatus:
-            print('ON prPanelShowCtx')
+            om.MGlobal.displayInfo('ON prPanelShowCtx: {}'.format(preCommandKwargs))
     return TOGGLE_STATUS
 
 
