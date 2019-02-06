@@ -1,4 +1,5 @@
 """
+# SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 # DESCRIPTION
@@ -6,29 +7,32 @@ Temporarily sets (Panel > Show > types) while:
  - dragging the translate/rotate/scale tools
  - timeline dragging
  - timeline playback
-The purpose is to have a clear view of the deforming geometry
+The purpose is to have a clear view of the deforming geometry (or whatever else you want to focus on)
 Technical: Creates a scriptJob (SelectionChanged) and OpenMaya.MConditionMessage (playingBack)
 
 # INSTALLATION
 Copy this file ("prPanelShowCtx.py") into your ".../maya/scripts" folder
 
-# USAGE
+# USAGE (default settings)
 import prPanelShowCtx
 prPanelShowCtx.enable()
 prPanelShowCtx.disable()
 # OR
 prPanelShowCtx.toggle()
 
-# USAGE ANIMATOR (USER DEFINED PANEL SETTINGS)
+# USAGE ANIMATION (custom settings)
 import prPanelShowCtx
-prPanelShowCtx.enable(manipulators=False, nurbsCurves=False, controllers=False, locators=False, deformers=False)
-prPanelShowCtx.disable()
-# OR
 prPanelShowCtx.toggle(manipulators=False, nurbsCurves=False, controllers=False, locators=False, deformers=False)
 
+# USAGE RIGGING (custom settings for each context)
+import prPanelShowCtx
+prPanelShowCtx.toggle(manipCtxKwargs={'manipulators': False}, playbackCtxKwargs={'nurbsCurves': False, 'controllers': False, 'locators': False, 'deformers': False})
+
 # TODO
+- verify flags on creation
 - UI
 - MEvent version of manipScriptjob
+- playbackCtx to start on timeline mouse down (if that changes the time only or in any case)
 
 # TODO (maybe impossible)
 - camera orbit ctx
@@ -60,15 +64,19 @@ PLAYBACK_CTX_ID = None
 TOGGLE_STATUS = False
 
 
-def enable(**preCommandKwargs):
+def enable(manipCtxKwargs=None, playbackCtxKwargs=None, **globalCtxKwargs):
     """
-    :param preCommandKwargs: see def preCommand(..)
-    :return:
+    :param manipCtxKwargs: see def createManipCtx(..)
+    :param playbackCtxKwargs: see def createPlaybackCtx(..)
+    :param globalCtxKwargs: for either Ctx
+    :return: 
     """
     global TOGGLE_STATUS
     TOGGLE_STATUS = True
-    createManipCtx(**preCommandKwargs)
-    createPlaybackCtx(**preCommandKwargs)
+    manipCtxKwargs = dict(globalCtxKwargs.items() + (manipCtxKwargs or {}).items())
+    playbackCtxKwargs = dict(globalCtxKwargs.items() + (playbackCtxKwargs or {}).items())
+    createManipCtx(**manipCtxKwargs)
+    createPlaybackCtx(**playbackCtxKwargs)
 
 
 def disable():
@@ -78,21 +86,21 @@ def disable():
     deletePlaybackCtx()
 
 
-def toggle(printStatus=True, **preCommandKwargs):
+def toggle(displayStatus=True, **enableKwargs):
     """
-    :param printStatus: print toggle status
-    :param preCommandKwargs: see def preCommand(..)
+    :param displayStatus: display toggle status
+    :param enableKwargs: see def enable(..)
     :return: TOGGLE_STATUS bool
     """
     global TOGGLE_STATUS
-    if TOGGLE_STATUS:
-        disable()
-        if printStatus:
-            om.MGlobal.displayInfo('OFF prPanelShowCtx')
+    if not TOGGLE_STATUS:
+        enable(**enableKwargs)
+        if displayStatus:
+            om.MGlobal.displayInfo('ENABLE prPanelShowCtx: {}'.format(enableKwargs))
     else:
-        enable(**preCommandKwargs)
-        if printStatus:
-            om.MGlobal.displayInfo('ON prPanelShowCtx: {}'.format(preCommandKwargs))
+        disable()
+        if displayStatus:
+            om.MGlobal.displayInfo('DISABLE prPanelShowCtx')
     return TOGGLE_STATUS
 
 
