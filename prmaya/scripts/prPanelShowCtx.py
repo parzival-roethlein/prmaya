@@ -29,11 +29,12 @@ import prPanelShowCtx
 prPanelShowCtx.toggle(manipCtxKwargs={'manipulators': False}, playbackCtxKwargs={'nurbsCurves': False, 'controllers': False, 'locators': False, 'deformers': False})
 
 # TODO
-- verify flags on creation
-- DEFAULT_FLAGS for each context
-- UI
-- MEvent version of manipScriptjob
 - playbackCtx to start on timeline mouse down (if that changes the time only or in any case)
+- DEFAULT_FLAGS for each context
+- shading menu context (xray joints, default material, ...)
+- UI
+- verify flags on creation
+- compare MEvent version of manipScriptjob
 
 # TODO (maybe impossible)
 - camera orbit ctx
