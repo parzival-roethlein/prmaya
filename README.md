@@ -3,14 +3,14 @@ Scripts, plugins and posts (tutorials, notes) for Autodesk Maya. Any feedback is
 * prmaya (structured like the default maya user folder) 
   * scripts
     * __AEplusMinusAverageTemplate__: Used in production
-    * __prPanelShowCtx__: Used in production
+    * __prPanelCtx__: Used in production, WIP
     * __prObjectSetUi__: Used in production
     * __prSelectionUi__: Used in production. Demo: https://vimeo.com/37670989
   * plugins
     * __prClosestPoint__: Not tested in production 
     * __prCurveMatrix__: Prototype
     * __prPyMath__: Not tested in production
-    * __prRemapValue__: Not tested in production
+    * __prRemapValue__: Not tested in production, WIP
 * archive (Unusable. Only good for code/algorithm reference. Made when learning API basics in 2011)
   * plugins
     * __prAttractNode__: Replaced by prClosestPoint. Demo: https://vimeo.com/20002149
