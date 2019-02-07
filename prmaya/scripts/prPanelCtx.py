@@ -11,34 +11,44 @@ The purpose is to have a clear view of the deforming geometry (or whatever else 
 Technical: Creates a scriptJob (SelectionChanged) and OpenMaya.MConditionMessage (playingBack)
 
 # INSTALLATION
-Copy this file ("prPanelShowCtx.py") into your ".../maya/scripts" folder
+Copy this file ("prPanelCtx.py") into your ".../maya/scripts" folder
 
-# USAGE (default settings)
-import prPanelShowCtx
-prPanelShowCtx.enable()
-prPanelShowCtx.disable()
+# USAGE
+import prPanelCtx
+# WITH EITHER
+prPanelCtx.enable()
+prPanelCtx.disable()
 # OR
-prPanelShowCtx.toggle()
+prPanelCtx.toggle()
 
-# USAGE ANIMATION (custom settings)
-import prPanelShowCtx
-prPanelShowCtx.toggle(manipulators=False, nurbsCurves=False, controllers=False, locators=False, deformers=False)
+# USAGE ANIMATION
+import prPanelCtx
+prPanelCtx.setAnimationDefaults()
+prPanelCtx.toggle()
 
-# USAGE RIGGING (custom settings for each context)
-import prPanelShowCtx
-prPanelShowCtx.toggle(manipCtxKwargs={'manipulators': False}, playbackCtxKwargs={'nurbsCurves': False, 'controllers': False, 'locators': False, 'deformers': False})
+# USAGE RIGGING
+import prPanelCtx
+prPanelCtx.setRiggingDefaults()
+prPanelCtx.toggle()
+
+# USAGE CUSTOM
+import prPanelCtx
+prPanelCtx.toggle(manipCtxKwargs={'manipulators': False}, playbackCtxKwargs={'nurbsCurves': False, 'locators': False})
+
 
 # TODO
-- playbackCtx to start on timeline mouse down (if that changes the time only or in any case)
-- DEFAULT_FLAGS for each context
-- shading menu context (xray joints, default material, ...)
+- DEFAULT_FLAGS for each context, remove arguments from enable/toggle. they should use global vars. add global vars setters that check args (verify flags)
+- instead of toggleRigging / toggleAnimation use function examples to set those missing context global vars
+- shadingCtx (xray joints, default material, ...)
+- LightingCtx
+- compare and maybe switch to MEvent version of manipScriptjob
+- hotkey "context" option
 - UI
-- verify flags on creation
-- compare MEvent version of manipScriptjob
 
-# TODO (maybe impossible)
-- camera orbit ctx
-- component selection support
+# TODO (maybe)
+- playbackCtx to start on timeline mouse down (if that changes the time only or in any case)
+- camera orbit ctx (orbitCtx, draggerContext, panZoomCtx)
+- manipCtx component selection support
 - channelBox attribute drag support: mc.draggerContext doesn't seem to trigger from channelBox drag
 - Universal Manipulator support: Doesn't seem to have a command, als tried mc.draggerContext('xformManipContext', ..)
 
@@ -64,6 +74,17 @@ MANIP_CTX_ID = None
 PLAYBACK_CTX_ID = None
 
 TOGGLE_STATUS = False
+
+
+def setAnimationDefaults():
+    # global GLOBAL_SETTINGS = {'show': {manipulators=False, nurbsCurves=False, controllers=False, locators=False, deformers=False, joints=False}}
+    return
+
+
+def setRiggingDefaults():
+    # global MANIP_SETTINGS = {'show': {manipulators=False}}
+    # global PLAYBACK_SETTINGS = {'show': {'nurbsCurves': False, 'controllers': False, 'locators': False, 'deformers': False, 'joints': False}}
+    return
 
 
 def enable(manipCtxKwargs=None, playbackCtxKwargs=None, **globalCtxKwargs):
@@ -92,18 +113,17 @@ def toggle(displayStatus=True, **enableKwargs):
     """
     :param displayStatus: display toggle status
     :param enableKwargs: see def enable(..)
-    :return: TOGGLE_STATUS bool
+    :return:
     """
     global TOGGLE_STATUS
     if not TOGGLE_STATUS:
         enable(**enableKwargs)
         if displayStatus:
-            om.MGlobal.displayInfo('ENABLE prPanelShowCtx: {}'.format(enableKwargs))
+            om.MGlobal.displayInfo('ENABLE prPanelCtx')
     else:
         disable()
         if displayStatus:
-            om.MGlobal.displayInfo('DISABLE prPanelShowCtx')
-    return TOGGLE_STATUS
+            om.MGlobal.displayInfo('DISABLE prPanelCtx')
 
 
 def preCommand(withFocus=False, **flags):
@@ -178,14 +198,14 @@ def createManipCtx(**preCommandKwargs):
     def createManipCtxDeferred():
         deleteManipCtx()
 
-        def prPanelShowCtxManipScriptJob():
+        def prPanelCtxManipScriptJob():
             if manipCtxNodeTypeChange():
                 global MANIP_NODE_TYPE
                 setManipCommands(nodeType=MANIP_NODE_TYPE, preFunc=lambda: preCommand(**preCommandKwargs), postFunc=postCommand)
-        prPanelShowCtxManipScriptJob()
+        prPanelCtxManipScriptJob()
 
         global MANIP_CTX_ID
-        MANIP_CTX_ID = mc.scriptJob(event=["SelectionChanged", prPanelShowCtxManipScriptJob])
+        MANIP_CTX_ID = mc.scriptJob(event=["SelectionChanged", prPanelCtxManipScriptJob])
     mc.evalDeferred(createManipCtxDeferred)
 
 
@@ -193,7 +213,7 @@ def createManipCtx(**preCommandKwargs):
 def getManipCtx():
     scriptJob_ids = []
     for scriptJob in mc.scriptJob(listJobs=True):
-        if 'prPanelShowCtxManipScriptJob' in scriptJob:
+        if 'prPanelCtxManipScriptJob' in scriptJob:
             scriptJobId = int(scriptJob[:scriptJob.find(':')])
             scriptJob_ids.append(scriptJobId)
     return scriptJob_ids
@@ -220,13 +240,13 @@ def createPlaybackCtx(**preCommandKwargs):
     def createPlaybackCtxDeferred():
         deletePlaybackCtx()
 
-        def prPanelShowCtxCondition(state, **preCommandKwargs):
+        def prPanelCtxCondition(state, **preCommandKwargs):
             if state:
                 preCommand(**preCommandKwargs)
             else:
                 postCommand()
         global PLAYBACK_CTX_ID
-        PLAYBACK_CTX_ID = om.MConditionMessage.addConditionCallback('playingBack', lambda state, *args: prPanelShowCtxCondition(state, **preCommandKwargs))
+        PLAYBACK_CTX_ID = om.MConditionMessage.addConditionCallback('playingBack', lambda state, *args: prPanelCtxCondition(state, **preCommandKwargs))
     mc.evalDeferred(createPlaybackCtxDeferred)
 
 
