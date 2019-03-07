@@ -44,6 +44,7 @@ prPanelCtx.toggle(manipCtxKwargs={'manipulators': False}, playbackCtxKwargs={'nu
 - compare and maybe switch to MEvent version of manipScriptjob
 - hotkey "context" option
 - UI
+- switch scriptJob creation to onFileOpen and delete onFileClose? so playbackId does not get lost / multiple playback scriptjobs created
 
 # TODO (maybe)
 - playbackCtx to start on timeline mouse down (if that changes the time only or in any case)
