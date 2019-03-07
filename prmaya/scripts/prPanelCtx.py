@@ -37,6 +37,7 @@ prPanelCtx.toggle(manipCtxKwargs={'manipulators': False}, playbackCtxKwargs={'nu
 
 
 # TODO
+- maya tools that change selection sometimes get broken: curve tool, edit membership. because they have a change in selection type (temp fix could be to ignore component selection?!)
 - DEFAULT_FLAGS for each context, remove arguments from enable/toggle. they should use global vars. add global vars setters that check args (verify flags)
 - instead of toggleRigging / toggleAnimation use function examples to set those missing context global vars
 - shadingCtx (xray joints, default material, ...)
