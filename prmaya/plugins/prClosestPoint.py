@@ -44,13 +44,13 @@ https://pazrot3d.blogspot.com/2018/10/prclosestpointpy-making-of.html
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
-nodeState / frozen
+- implement nodeState / frozen
 - make fromSelection() work with vertex selection
 
 TODO optional
 - consider scale of target matrix input?
-- delete maxDistanceScaleU/V?
-- can maxDistanceWeight be a child of weightList?
+- delete maxDistanceScaleU/V because maxDistance is paintable on driven
+- can maxDistanceWeight be a child of weightList? probably not
 - weightMap should show up in node editor
 - caching, frozen, nodeState should not show up twice in connection editor
 - input shape closest point texture value based maxDistance?
@@ -507,7 +507,7 @@ def evalAETemplate():
 def fromSelection(nodes=None):
     """
     :param nodes: [driver1, ... driverN, driven]
-    :return:
+    :return: created deformer
     """
     nodes = nodes or mc.ls(sl=True)
     if not nodes:
@@ -532,6 +532,7 @@ def fromSelection(nodes=None):
         inputParentAttr = '{0}.inputTarget'.format(deformer)
         inputAttr = '{0}[{1}].target'.format(inputParentAttr, mc.getAttr(inputParentAttr, size=True))
         mc.connectAttr(outputAttr, inputAttr)
+    return deformer
 
 
 def JumpToElement(arrayHandle, index):
