@@ -15,7 +15,7 @@ Copy this file ("prPanelCtx.py") into your ".../maya/scripts" folder
 
 # USAGE
 import prPanelCtx
-# WITH EITHER
+# AND EITHER
 prPanelCtx.enable()
 prPanelCtx.disable()
 # OR
@@ -66,7 +66,9 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-DEFAULT_FLAGS = {'manipulators': False}
+GLOBAL_SETTINGS = None
+MANIP_SETTINGS = None
+PLAYBACK_SETTINGS = None
 
 SCENE_PANEL_VALUES = defaultdict(dict)
 MANIP_NODE_TYPE = None
@@ -77,6 +79,7 @@ TOGGLE_STATUS = False
 
 
 def setAnimationDefaults():
+    #  {'show': {'manipulators': False}}
     # global GLOBAL_SETTINGS = {'show': {manipulators=False, nurbsCurves=False, controllers=False, locators=False, deformers=False, joints=False}}
     return
 
