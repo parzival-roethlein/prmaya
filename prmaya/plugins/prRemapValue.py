@@ -2,9 +2,9 @@
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Array version of mayas remapValue node.
-Everything should be the same except inputValue, outValue, outColor are arrays.
-The purpose is to have fewer nodes and avoid repetition.
+Same as Mayas remapValue node but with array attribute versions: inputValue, outValue, outColor.
+Also counter based sampling.
+Purpose: Scalable, convenient, procedural graphs
 
 USE CASES
 ...
@@ -19,9 +19,9 @@ LINKS
 ...
 
 TODO
-- aetemplate inputValue
 - node behavior
 - icon
+- improved custom aetemplate inputValue
 
 """
 
