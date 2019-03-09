@@ -42,6 +42,7 @@ https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUS
 2012-03-01 / 0.9.0: first version
 
 # TODO
+- replace selection option next to 'add to selection', 'remove', ...
 - export/import set UI button (right click menu?)
 - add color option in create new button window
 - improve default name of tab/button (from selection)

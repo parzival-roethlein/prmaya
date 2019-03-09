@@ -37,6 +37,7 @@ prPanelCtx.toggle(manipCtxKwargs={'manipulators': False}, playbackCtxKwargs={'nu
 
 
 # TODO
+- some or all maya tools that change selection get broken: curve tool, edit membership. because they have a change in selection type (temp fix could be to ignore component selection?!)
 - DEFAULT_FLAGS for each context, remove arguments from enable/toggle. they should use global vars. add global vars setters that check args (verify flags)
 - instead of toggleRigging / toggleAnimation use function examples to set those missing context global vars
 - shadingCtx (xray joints, default material, ...)
@@ -44,6 +45,7 @@ prPanelCtx.toggle(manipCtxKwargs={'manipulators': False}, playbackCtxKwargs={'nu
 - compare and maybe switch to MEvent version of manipScriptjob
 - hotkey "context" option
 - UI
+- switch scriptJob creation to onFileOpen and delete onFileClose? so playbackId does not get lost / multiple playback scriptjobs created
 
 # TODO (maybe)
 - playbackCtx to start on timeline mouse down (if that changes the time only or in any case)
