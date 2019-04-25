@@ -217,7 +217,7 @@ def createManipCtx(**preCommandKwargs):
 @log
 def getManipCtx():
     scriptJob_ids = []
-    for scriptJob in mc.scriptJob(listJobs=True):
+    for scriptJob in mc.scriptJob(listJobs=True) or []:
         if 'prPanelCtxManipScriptJob' in scriptJob:
             scriptJobId = int(scriptJob[:scriptJob.find(':')])
             scriptJob_ids.append(scriptJobId)
