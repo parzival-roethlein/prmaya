@@ -186,12 +186,15 @@ def setManipCommands(nodeType='transform', preFunc=str, postFunc=str):
     mc.manipScaleContext('Scale', e=True, preDragCommand=[preFunc, nodeType])
     mc.manipScaleContext('Scale', e=True, postDragCommand=[postFunc, nodeType])
     # the drag commands are only active on reentering the context
-    mc.setToolTo(mc.currentCtx())
+    currentCtx = mc.currentCtx()
+    if currentCtx in ['moveSuperContext', 'RotateSuperContext', 'scaleSuperContext']:
+        # only set context if needed
+        mc.setToolTo(currentCtx)
 
 
 def manipCtxNodeTypeChange():
     global MANIP_NODE_TYPE
-    selectedNodeTypes = mc.ls(sl=True, showType=True)[1::2]
+    selectedNodeTypes = mc.ls(sl=True, showType=True, type='transform')[1::2]
     if not selectedNodeTypes or MANIP_NODE_TYPE in selectedNodeTypes:
         return False
     MANIP_NODE_TYPE = selectedNodeTypes[0]
@@ -217,7 +220,7 @@ def createManipCtx(**preCommandKwargs):
 @log
 def getManipCtx():
     scriptJob_ids = []
-    for scriptJob in mc.scriptJob(listJobs=True):
+    for scriptJob in mc.scriptJob(listJobs=True) or []:
         if 'prPanelCtxManipScriptJob' in scriptJob:
             scriptJobId = int(scriptJob[:scriptJob.find(':')])
             scriptJob_ids.append(scriptJobId)
