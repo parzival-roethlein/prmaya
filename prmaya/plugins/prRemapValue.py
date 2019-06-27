@@ -3,8 +3,7 @@ https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
 Same as Mayas remapValue node but with array attribute versions: inputValue, outValue, outColor.
-Also counter based sampling.
-Purpose: Scalable, convenient, procedural graphs
+Purpose: Scalable, procedural, convenient, simplify
 
 USE CASES
 ...
@@ -29,6 +28,7 @@ import sys
 
 import maya.api.OpenMaya as om
 
+
 class prRemapValue(om.MPxNode):
     nodeTypeName = "prRemapValue"
     nodeTypeId = om.MTypeId(0x0004C263)  # local, not save
@@ -37,7 +37,6 @@ class prRemapValue(om.MPxNode):
     def initialize():
         numericAttr = om.MFnNumericAttribute()
         rampAttr = om.MRampAttribute()
-        enumAttr = om.MFnEnumAttribute()
 
         # output
         prRemapValue.outValue = numericAttr.create('outValue', 'outValue', om.MFnNumericData.kFloat)
@@ -85,22 +84,6 @@ class prRemapValue(om.MPxNode):
         prRemapValue.attributeAffects(prRemapValue.outputMax, prRemapValue.outValue)
         prRemapValue.attributeAffects(prRemapValue.outputMax, prRemapValue.outColor)
 
-        prRemapValue.sampleMethod = enumAttr.create('sampleMethod', 'sampleMethod')
-        enumAttr.keyable = True
-        enumAttr.addField('inputValue', 0)
-        enumAttr.addField('counter', 1)
-        prRemapValue.addAttribute(prRemapValue.sampleMethod)
-        prRemapValue.attributeAffects(prRemapValue.sampleMethod, prRemapValue.outValue)
-        prRemapValue.attributeAffects(prRemapValue.sampleMethod, prRemapValue.outColor)
-
-        prRemapValue.counter = numericAttr.create('counter', 'counter', om.MFnNumericData.kInt)
-        numericAttr.keyable = True
-        numericAttr.setMin(0)
-        numericAttr.setSoftMax(20)
-        prRemapValue.addAttribute(prRemapValue.counter)
-        prRemapValue.attributeAffects(prRemapValue.counter, prRemapValue.outValue)
-        prRemapValue.attributeAffects(prRemapValue.counter, prRemapValue.outColor)
-        
         prRemapValue.inputValue = numericAttr.create('inputValue', 'inputValue', om.MFnNumericData.kFloat)
         numericAttr.array = True
         numericAttr.keyable = True
@@ -148,20 +131,13 @@ class prRemapValue(om.MPxNode):
         outColor_builder = outColor_arrayHandle.builder()
         
         sampleValues = {}
-        sampleMethod = dataBlock.inputValue(prRemapValue.sampleMethod).asShort()
-        if sampleMethod == 0:
-            inputValue_arrayHandle = dataBlock.inputArrayValue(prRemapValue.inputValue)
-            for i in range(len(inputValue_arrayHandle)):
-                inputValue_arrayHandle.jumpToPhysicalElement(i)
-                index = inputValue_arrayHandle.elementLogicalIndex()
-                inputValue = inputValue_arrayHandle.inputValue().asFloat()
-                sampleValues[index] = inputValue
-        elif sampleMethod == 1:
-            counter = dataBlock.inputValue(prRemapValue.counter).asShort()
-            dividend = 1.0 if counter == 1 else float(counter-1)
-            for index in range(counter):
-                sampleValues[index] = index / dividend
-        
+        inputValue_arrayHandle = dataBlock.inputArrayValue(prRemapValue.inputValue)
+        for i in range(len(inputValue_arrayHandle)):
+            inputValue_arrayHandle.jumpToPhysicalElement(i)
+            index = inputValue_arrayHandle.elementLogicalIndex()
+            inputValue = inputValue_arrayHandle.inputValue().asFloat()
+            sampleValues[index] = inputValue
+
         for index, value in sampleValues.iteritems():
             outValue_handle = outValue_builder.addElement(index)
             outColor_handle = outColor_builder.addElement(index)
@@ -222,9 +198,7 @@ def evalAETemplate():
     {
         editorTemplate -beginScrollLayout;
             editorTemplate -beginLayout "prRemapValue Attributes" -collapse 0;
-                editorTemplate -label "sampleMethod" -addControl "sampleMethod";
                 editorTemplate -label "inputValue" -addControl "inputValue";
-                editorTemplate -label "counter" -addControl "counter";
                 AEaddRampControl ($nodeName+".value");
                 AEaddRampControl ($nodeName+".color");
             editorTemplate -endLayout;
