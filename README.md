@@ -1,6 +1,6 @@
 ## DESCRIPTION
 Scripts, plugins and posts (tutorials, notes) for Autodesk Maya. Any feedback is welcome.
-* prmaya (structured like the default maya user folder) 
+* prmaya (folder structure similar to maya user folder) 
   * scripts
     * __AEplusMinusAverageTemplate__: Used in production
     * __prPanelCtx__: Used in production, WIP
