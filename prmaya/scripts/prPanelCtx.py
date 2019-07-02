@@ -7,7 +7,7 @@ Temporarily sets (Panel > Show > types) while:
  - dragging the translate/rotate/scale tools
  - timeline dragging
  - timeline playback
-The purpose is to have a clear view of the deforming geometry (or whatever else you want to focus on)
+The purpose is to have a clear view of the deforming geometry
 Technical: Creates a scriptJob (SelectionChanged) and OpenMaya.MConditionMessage (playingBack)
 
 # INSTALLATION
@@ -21,25 +21,23 @@ prPanelCtx.disable()
 # OR
 prPanelCtx.toggle()
 
-# USAGE ANIMATION
+# USAGE EXAMPLE: ANIMATION
 import prPanelCtx
 prPanelCtx.setAnimationDefaults()
 prPanelCtx.toggle()
 
-# USAGE RIGGING
+# USAGE EXAMPLE: RIGGING
 import prPanelCtx
 prPanelCtx.setRiggingDefaults()
 prPanelCtx.toggle()
 
-# USAGE CUSTOM
+# USAGE EXAMPLE: CUSTOM
 import prPanelCtx
 prPanelCtx.toggle(manipCtxKwargs={'manipulators': False}, playbackCtxKwargs={'nurbsCurves': False, 'locators': False})
 
 
 # TODO
-- some or all maya tools that change selection get broken: curve tool, edit membership. because they have a change in selection type (temp fix could be to ignore component selection?!)
 - DEFAULT_FLAGS for each context, remove arguments from enable/toggle. they should use global vars. add global vars setters that check args (verify flags)
-- instead of toggleRigging / toggleAnimation use function examples to set those missing context global vars
 - shadingCtx (xray joints, default material, ...)
 - LightingCtx
 - compare and maybe switch to MEvent version of manipScriptjob
@@ -124,11 +122,11 @@ def toggle(displayStatus=True, **enableKwargs):
     if not TOGGLE_STATUS:
         enable(**enableKwargs)
         if displayStatus:
-            om.MGlobal.displayInfo('ENABLE prPanelCtx')
+            om.MGlobal.displayInfo('ENABLED prPanelCtx')
     else:
         disable()
         if displayStatus:
-            om.MGlobal.displayInfo('DISABLE prPanelCtx')
+            om.MGlobal.displayInfo('DISABLED prPanelCtx')
 
 
 def preCommand(withFocus=False, **flags):

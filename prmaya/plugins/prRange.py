@@ -15,7 +15,10 @@ ATTRIBUTES
 ...
 
 LINKS
-...
+- Demo: TODO
+- Making-of: TODO
+- Donate: (This was written in my spare time. If you found it useful in Maya or for coding, consider supporting the author)
+https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
 ...
@@ -53,12 +56,12 @@ class prRange(om.MPxNode):
         prRange.addAttribute(prRange.inputMax)
         prRange.attributeAffects(prRange.inputMax, prRange.output)
 
-        prRange.inputSampleCount = numericAttr.create('inputSampleCount', 'inputSampleCount', om.MFnNumericData.kInt)
+        prRange.inputStepCount = numericAttr.create('inputStepCount', 'inputStepCount', om.MFnNumericData.kInt)
         numericAttr.keyable = True
         numericAttr.setMin(0)
         numericAttr.setSoftMax(20)
-        prRange.addAttribute(prRange.inputSampleCount)
-        prRange.attributeAffects(prRange.inputSampleCount, prRange.output)
+        prRange.addAttribute(prRange.inputStepCount)
+        prRange.attributeAffects(prRange.inputStepCount, prRange.output)
 
     @staticmethod
     def creator():
@@ -78,10 +81,10 @@ class prRange(om.MPxNode):
         output_arrayHandle = dataBlock.outputArrayValue(prRange.output)
         output_builder = output_arrayHandle.builder()
 
-        inputSampleCount = dataBlock.inputValue(prRange.inputSampleCount).asShort()
-        for index in range(inputSampleCount):
+        inputStepCount = dataBlock.inputValue(prRange.inputStepCount).asShort()
+        for index in range(inputStepCount):
             output_handle = output_builder.addElement(index)
-            output = inputMin + ((inputMax - inputMin) / ((inputSampleCount - 1) or 1)) * index
+            output = inputMin + ((inputMax - inputMin) / ((inputStepCount - 1) or 1)) * index
             output_handle.setFloat(output)
 
         output_arrayHandle.set(output_builder)
@@ -123,7 +126,7 @@ def evalAETemplate():
             editorTemplate -beginLayout "prRange Attributes" -collapse 0;
                 editorTemplate -label "inputMin" -addControl "inputMin";
                 editorTemplate -label "inputMax" -addControl "inputMax";
-                editorTemplate -label "inputSampleCount" -addControl "inputSampleCount";
+                editorTemplate -label "inputStepCount" -addControl "inputStepCount";
             editorTemplate -endLayout;
             AEdependNodeTemplate $nodeName;
             editorTemplate -addExtraControls;

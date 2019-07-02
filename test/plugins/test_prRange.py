@@ -14,21 +14,9 @@ test_prRange.SETTINGS['plugin_path'] = r'C:\Users\paz\Documents\git\prmaya\prmay
 test_prRange.SETTINGS['file'] = r'C:\Users\paz\Documents\git\prmaya\test\plugins\test_prRange.ma'
 test_prRange.run()
 
-import maya.cmds as mc
-mc.file(new=True, force=True)
-mc.file(rename='/home/prthlein/private/Documents/asdf.ma')
-mc.createNode('prRange')
-mc.createNode('prRange')
-#mc.getAttr('prRange1.outValue')
-mc.connectAttr('prRange1.outValue', 'prRange2.inputValue')
-mc.file(save=True, typ='mayaAscii')
-mc.file(new=True, force=True)
-mc.file('/home/prthlein/private/Documents/asdf.ma', open=True, force=True)
-
 """
 
 import maya.cmds as mc
-import pymel.core as pm
 
 from prmaya.plugins import prRange
 
@@ -51,14 +39,10 @@ def run():
     mc.createNode('prRange')
     mc.connectAttr('inputMin.tx', 'prRange1.inputMin')
     mc.connectAttr('inputMax.tx', 'prRange1.inputMax')
-    mc.setAttr("prRange1.inputSampleCount", 5)
+    mc.setAttr("prRange1.inputStepCount", 5)
 
     for x in range(5):
         transform = 'cube{}'.format(x)
         mc.connectAttr('prRange1.output[{}]'.format(x), '{}.tx'.format(transform))
 
-    #for panel in mc.getPanel(type='modelPanel'):
-    #    mc.modelEditor(panel, e=True, displayTextures=True)
-
     print(mc.getAttr('prRange1.output'))
-

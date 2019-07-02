@@ -1,0 +1,22 @@
+// SOURCE
+// https://github.com/parzival-roethlein/prmaya
+//
+// DESCRIPTION
+// Maya does not have an aeTemplate for this default Maya node
+//
+// INSTALLATION
+// Like any AETemplate file (put it in a folder that your Maya knows about)
+
+
+global proc AEmultDoubleLinearTemplate(string $nodeName)
+{
+	AEswatchDisplay $nodeName;
+	editorTemplate -beginScrollLayout;
+		editorTemplate -beginLayout "multDoubleLinear Attributes" -collapse 0;
+			editorTemplate -label "input1" -addControl "input1";
+			editorTemplate -label "input2" -addControl "input2";
+		editorTemplate -endLayout;
+	AEdependNodeTemplate $nodeName;
+	editorTemplate -addExtraControls;
+	editorTemplate -endScrollLayout;
+}

@@ -1,7 +1,14 @@
+// SOURCE
 // https://github.com/parzival-roethlein/prmaya
 //
-// to create and delete input1D elements in the attributeEditor
-// TODO: fix maya bug displaying invalid indices of input2D, input3D when deleting item (workaround: de-/reselect node)
+// DESCRIPTION
+// This aeTemplate adds the features to create and delete input1D elements in the attributeEditor
+//
+// INSTALLATION
+// Like any AETemplate file (put it in a folder that your Maya knows about)
+//
+// TODO
+// fix maya bug displaying invalid indices of input2D, input3D when deleting item (workaround: de-/reselect node)
 
 global string $AEplusMinusAverageTemplateNode;
 

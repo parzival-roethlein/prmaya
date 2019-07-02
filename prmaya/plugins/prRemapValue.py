@@ -1,4 +1,5 @@
 """
+SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
@@ -15,12 +16,15 @@ ATTRIBUTES
 ...
 
 LINKS
-...
+- Demo: TODO
+- Making-of: TODO
+- Donate: (This was written in my spare time. If you found it useful in Maya or for coding, consider supporting the author)
+https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
-- node behavior
-- icon
 - improved custom aetemplate inputValue
+- node behavior attrs
+- icon
 
 """
 
@@ -99,10 +103,10 @@ class prRemapValue(om.MPxNode):
         prRemapValue.addAttribute(prRemapValue.color)
         prRemapValue.attributeAffects(prRemapValue.color, prRemapValue.outColor)
 
-    def shouldSave(self, plug, result):
-        if plug == self.inputValue:
-            return True
-        return om.MPxNode.shouldSave(self, plug, result)
+    # def shouldSave(self, plug, result):
+    #     if plug == self.inputValue:
+    #         return True
+    #     return om.MPxNode.shouldSave(self, plug, result)
     
     @staticmethod
     def creator():

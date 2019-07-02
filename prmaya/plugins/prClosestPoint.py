@@ -36,8 +36,7 @@ inherited:
 - weights: Paintable per vertex envelope
 
 LINKS
-- Demo:
-TODO
+- Demo: TODO
 - Making-of:
 https://pazrot3d.blogspot.com/2018/10/prclosestpointpy-making-of.html
 - Donate: (This was written in my spare time. If you found it useful in Maya or for coding, consider supporting the author)
