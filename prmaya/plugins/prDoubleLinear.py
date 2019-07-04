@@ -11,13 +11,13 @@ USE CASES
 ...
 
 USAGE
-(MEL): createNode prBinaryOperation
+(MEL): createNode prDoubleLinear
 
 ATTRIBUTES
-prBinaryOperation1.operation
-prBinaryOperation1.input[0].input1
-prBinaryOperation1.input[0].input2
-prBinaryOperation1.output[0]
+prDoubleLinear1.operation
+prDoubleLinear1.input[0].input1
+prDoubleLinear1.input[0].input2
+prDoubleLinear1.output[0]
 
 LINKS
 - Demo: TODO
@@ -27,7 +27,7 @@ https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUS
 
 TODO
 - node behavior attrs
-- custom aeTemplate for prBinaryOperation.input
+- custom aeTemplate for prDoubleLinear.input
 
 """
 
@@ -36,8 +36,8 @@ import sys
 import maya.api.OpenMaya as om
 
 
-class prBinaryOperation(om.MPxNode):
-    nodeTypeName = "prBinaryOperation"
+class prDoubleLinear(om.MPxNode):
+    nodeTypeName = "prDoubleLinear"
     nodeTypeId = om.MTypeId(0x0004C266)  # local, not save
 
     @staticmethod
@@ -47,14 +47,14 @@ class prBinaryOperation(om.MPxNode):
         enumAttr = om.MFnEnumAttribute()
 
         # output
-        prBinaryOperation.output = numericAttr.create('output', 'output', om.MFnNumericData.kFloat)
+        prDoubleLinear.output = numericAttr.create('output', 'output', om.MFnNumericData.kFloat)
         numericAttr.array = True
         numericAttr.usesArrayDataBuilder = True
         numericAttr.writable = False
-        prBinaryOperation.addAttribute(prBinaryOperation.output)
+        prDoubleLinear.addAttribute(prDoubleLinear.output)
 
         # input
-        prBinaryOperation.operation = enumAttr.create('operation', 'operation', 1)
+        prDoubleLinear.operation = enumAttr.create('operation', 'operation', 1)
         enumAttr.keyable = True
         enumAttr.addField('No operation', 0)
         enumAttr.addField('Sum', 1)
@@ -63,26 +63,26 @@ class prBinaryOperation(om.MPxNode):
         enumAttr.addField('Multiply', 4)
         enumAttr.addField('Divide', 5)
         enumAttr.addField('Power', 6)
-        prBinaryOperation.addAttribute(prBinaryOperation.operation)
-        prBinaryOperation.attributeAffects(prBinaryOperation.operation, prBinaryOperation.output)
+        prDoubleLinear.addAttribute(prDoubleLinear.operation)
+        prDoubleLinear.attributeAffects(prDoubleLinear.operation, prDoubleLinear.output)
 
-        prBinaryOperation.input1 = numericAttr.create('input1', 'input1', om.MFnNumericData.kFloat, 0.0)
+        prDoubleLinear.input1 = numericAttr.create('input1', 'input1', om.MFnNumericData.kFloat, 0.0)
         numericAttr.keyable = True
 
-        prBinaryOperation.input2 = numericAttr.create('input2', 'input2', om.MFnNumericData.kFloat, 0.0)
+        prDoubleLinear.input2 = numericAttr.create('input2', 'input2', om.MFnNumericData.kFloat, 0.0)
         numericAttr.keyable = True
 
-        prBinaryOperation.input = compoundAttr.create('input', 'input')
-        compoundAttr.addChild(prBinaryOperation.input1)
-        compoundAttr.addChild(prBinaryOperation.input2)
+        prDoubleLinear.input = compoundAttr.create('input', 'input')
+        compoundAttr.addChild(prDoubleLinear.input1)
+        compoundAttr.addChild(prDoubleLinear.input2)
         compoundAttr.array = True
-        prBinaryOperation.addAttribute(prBinaryOperation.input)
-        prBinaryOperation.attributeAffects(prBinaryOperation.input1, prBinaryOperation.output)
-        prBinaryOperation.attributeAffects(prBinaryOperation.input2, prBinaryOperation.output)
+        prDoubleLinear.addAttribute(prDoubleLinear.input)
+        prDoubleLinear.attributeAffects(prDoubleLinear.input1, prDoubleLinear.output)
+        prDoubleLinear.attributeAffects(prDoubleLinear.input2, prDoubleLinear.output)
 
     @staticmethod
     def creator():
-        return prBinaryOperation()
+        return prDoubleLinear()
 
     def __init__(self):
         om.MPxNode.__init__(self)
@@ -131,7 +131,7 @@ class prBinaryOperation(om.MPxNode):
                 try:
                     output = in1 ** in2
                 except ValueError as er:
-                    self.displayError(er, index)
+                    # self.displayError(er, index) # disabled because multiplyDivide does not error
                     output = 0.0
             else:
                 raise ValueError('Invalid operation value: {}'.format(operation))
@@ -144,10 +144,10 @@ class prBinaryOperation(om.MPxNode):
 def initializePlugin(obj):
     pluginFn = om.MFnPlugin(obj, 'Parzival Roethlein', '0.0.1')
     try:
-        pluginFn.registerNode(prBinaryOperation.nodeTypeName, prBinaryOperation.nodeTypeId,
-                              prBinaryOperation.creator, prBinaryOperation.initialize)
+        pluginFn.registerNode(prDoubleLinear.nodeTypeName, prDoubleLinear.nodeTypeId,
+                              prDoubleLinear.creator, prDoubleLinear.initialize)
     except:
-        sys.stderr.write('Failed to register node: {0}'.format(prBinaryOperation.nodeTypeName))
+        sys.stderr.write('Failed to register node: {0}'.format(prDoubleLinear.nodeTypeName))
         raise
     evalAETemplate()
 
@@ -155,9 +155,9 @@ def initializePlugin(obj):
 def uninitializePlugin(obj):
     pluginFn = om.MFnPlugin(obj)
     try:
-        pluginFn.deregisterNode(prBinaryOperation.nodeTypeId)
+        pluginFn.deregisterNode(prDoubleLinear.nodeTypeId)
     except:
-        sys.stderr.write('Failed to deregister node: {0}'.format(prBinaryOperation.nodeTypeName))
+        sys.stderr.write('Failed to deregister node: {0}'.format(prDoubleLinear.nodeTypeName))
         raise
 
 
@@ -168,10 +168,10 @@ def maya_useNewAPI():
 def evalAETemplate():
     import maya.mel as mm
     mm.eval('''
-    global proc AEprBinaryOperationTemplate(string $nodeName)
+    global proc AEprDoubleLinearTemplate(string $nodeName)
     {
         editorTemplate -beginScrollLayout;
-            editorTemplate -beginLayout "prBinaryOperation Attributes" -collapse 0;
+            editorTemplate -beginLayout "prDoubleLinear Attributes" -collapse 0;
                 editorTemplate -label "operation" -addControl "operation";
                 editorTemplate -label "input" -addControl "input";
             editorTemplate -endLayout;

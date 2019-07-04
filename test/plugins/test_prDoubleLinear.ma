@@ -1,6 +1,6 @@
 //Maya ASCII 2018 scene
-//Name: test_prBinaryOperation.ma
-//Last modified: Wed, Jul 03, 2019 01:11:20 AM
+//Name: test_prDoubleLinear.ma
+//Last modified: Thu, Jul 04, 2019 12:26:56 AM
 //Codeset: 1252
 requires maya "2018";
 requires "stereoCamera" "10.0";
@@ -13,13 +13,13 @@ fileInfo "osv" "Microsoft Windows 8 Business Edition, 64-bit  (Build 9200)\n";
 createNode transform -s -n "persp";
 	rename -uid "ACBC7512-43CF-63C7-37F5-0E9B7673477B";
 	setAttr ".v" no;
-	setAttr ".t" -type "double3" 4.065377765044162 10.719574525896508 7.5808208174631773 ;
-	setAttr ".r" -type "double3" -41.738352729604422 24.2000000000013 0 ;
+	setAttr ".t" -type "double3" 7.0410766943519993 13.301700371912837 11.855262755202439 ;
+	setAttr ".r" -type "double3" -38.738352729606824 33.800000000001937 0 ;
 createNode camera -s -n "perspShape" -p "persp";
 	rename -uid "1789FA75-42C6-41C7-5B04-A397F3DE65A6";
 	setAttr -k off ".v" no;
 	setAttr ".fl" 34.999999999999993;
-	setAttr ".coi" 15.893286869377263;
+	setAttr ".coi" 24.581369961623803;
 	setAttr ".imn" -type "string" "persp";
 	setAttr ".den" -type "string" "persp_depth";
 	setAttr ".man" -type "string" "persp_mask";
@@ -105,9 +105,9 @@ createNode transform -n "cubes";
 	setAttr -l on ".sz";
 createNode transform -n "noOperation" -p "cubes";
 	rename -uid "2B34EA4C-4F86-91A2-FBEF-7B9B6906012E";
-	setAttr ".t" -type "double3" -4 0 0 ;
-createNode transform -n "noOperation_maya_0" -p "noOperation";
-	rename -uid "6190A7CE-4087-17B9-FC07-7C93A00E04FB";
+	setAttr ".t" -type "double3" -6 0 0 ;
+createNode transform -n "noOperation_pma_maya_0" -p "noOperation";
+	rename -uid "871AD767-423C-DD35-C8C0-ACAE151F0F7A";
 	setAttr -l on ".v";
 	setAttr ".t" -type "double3" -1 0 -1 ;
 	setAttr -l on ".tx";
@@ -118,12 +118,15 @@ createNode transform -n "noOperation_maya_0" -p "noOperation";
 	setAttr -l on ".sx";
 	setAttr -l on ".sy";
 	setAttr -l on ".sz";
-createNode mesh -n "noOperation_maya_0Shape" -p "noOperation_maya_0";
-	rename -uid "DBDF30ED-4BF9-E69F-DF53-05873209C1CD";
+createNode mesh -n "noOperation_pma_maya_0Shape" -p "noOperation_pma_maya_0";
+	rename -uid "94AF3339-4B2E-7202-300F-E8AB9CB84A0D";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
 	setAttr ".vif" yes;
 	setAttr ".uvst[0].uvsn" -type "string" "map1";
+	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
+		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
+		 0.875 0.25 0.125 0 0.125 0.25;
 	setAttr ".cuvs" -type "string" "map1";
 	setAttr ".dcc" -type "string" "Ambient+Diffuse";
 	setAttr ".covm[0]"  0 1 1;
@@ -131,8 +134,29 @@ createNode mesh -n "noOperation_maya_0Shape" -p "noOperation_maya_0";
 	setAttr -s 8 ".pt[0:7]" -type "float3"  0 0 -0.16473003 0 0 -0.16473003 
 		0 0 -0.16473003 0 0 -0.16473003 0 0 0.16473003 0 0 0.16473003 0 0 0.16473003 0 0 
 		0.16473003;
-createNode transform -n "noOperation_maya_1" -p "noOperation";
-	rename -uid "84B47BD6-44AA-271E-37C9-7BBB38A78832";
+	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
+		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
+	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
+		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
+	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
+		f 4 0 5 -2 -5
+		mu 0 4 0 1 3 2
+		f 4 1 7 -3 -7
+		mu 0 4 2 3 5 4
+		f 4 2 9 -4 -9
+		mu 0 4 4 5 7 6
+		f 4 3 11 -1 -11
+		mu 0 4 6 7 9 8
+		f 4 -12 -10 -8 -6
+		mu 0 4 1 10 11 3
+		f 4 10 4 6 8
+		mu 0 4 12 0 2 13;
+	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
+	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
+	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
+	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
+createNode transform -n "noOperation_pma_maya_1" -p "noOperation";
+	rename -uid "5F23B4C4-4634-3E3F-A59B-3EB441551C68";
 	setAttr -l on ".v";
 	setAttr ".t" -type "double3" -1 0 -2 ;
 	setAttr -l on ".tx";
@@ -143,7 +167,105 @@ createNode transform -n "noOperation_maya_1" -p "noOperation";
 	setAttr -l on ".sx";
 	setAttr -l on ".sy";
 	setAttr -l on ".sz";
-createNode mesh -n "noOperation_maya_1Shape" -p "noOperation_maya_1";
+createNode mesh -n "noOperation_pma_maya_1Shape" -p "noOperation_pma_maya_1";
+	rename -uid "0706BBB0-43E9-693B-7B39-F59E0B8865D9";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".uvst[0].uvsn" -type "string" "map1";
+	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
+		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
+		 0.875 0.25 0.125 0 0.125 0.25;
+	setAttr ".cuvs" -type "string" "map1";
+	setAttr ".dcc" -type "string" "Ambient+Diffuse";
+	setAttr ".covm[0]"  0 1 1;
+	setAttr ".cdvm[0]"  0 1 1;
+	setAttr -s 8 ".pt[0:7]" -type "float3"  0 0 -0.16473003 0 0 -0.16473003 
+		0 0 -0.16473003 0 0 -0.16473003 0 0 0.16473003 0 0 0.16473003 0 0 0.16473003 0 0 
+		0.16473003;
+	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
+		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
+	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
+		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
+	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
+		f 4 0 5 -2 -5
+		mu 0 4 0 1 3 2
+		f 4 1 7 -3 -7
+		mu 0 4 2 3 5 4
+		f 4 2 9 -4 -9
+		mu 0 4 4 5 7 6
+		f 4 3 11 -1 -11
+		mu 0 4 6 7 9 8
+		f 4 -12 -10 -8 -6
+		mu 0 4 1 10 11 3
+		f 4 10 4 6 8
+		mu 0 4 12 0 2 13;
+	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
+	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
+	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
+	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
+createNode transform -n "noOperation_md_maya_0" -p "noOperation";
+	rename -uid "6190A7CE-4087-17B9-FC07-7C93A00E04FB";
+	setAttr -l on ".v";
+	setAttr ".t" -type "double3" -4 0 -1 ;
+	setAttr -l on ".tx";
+	setAttr -l on ".tz";
+	setAttr -l on ".rx";
+	setAttr -l on ".ry";
+	setAttr -l on ".rz";
+	setAttr -l on ".sx";
+	setAttr -l on ".sy";
+	setAttr -l on ".sz";
+createNode mesh -n "noOperation_md_maya_0Shape" -p "noOperation_md_maya_0";
+	rename -uid "DBDF30ED-4BF9-E69F-DF53-05873209C1CD";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".uvst[0].uvsn" -type "string" "map1";
+	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
+		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
+		 0.875 0.25 0.125 0 0.125 0.25;
+	setAttr ".cuvs" -type "string" "map1";
+	setAttr ".dcc" -type "string" "Ambient+Diffuse";
+	setAttr ".covm[0]"  0 1 1;
+	setAttr ".cdvm[0]"  0 1 1;
+	setAttr -s 8 ".pt[0:7]" -type "float3"  0 0 -0.16473003 0 0 -0.16473003 
+		0 0 -0.16473003 0 0 -0.16473003 0 0 0.16473003 0 0 0.16473003 0 0 0.16473003 0 0 
+		0.16473003;
+	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
+		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
+	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
+		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
+	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
+		f 4 0 5 -2 -5
+		mu 0 4 0 1 3 2
+		f 4 1 7 -3 -7
+		mu 0 4 2 3 5 4
+		f 4 2 9 -4 -9
+		mu 0 4 4 5 7 6
+		f 4 3 11 -1 -11
+		mu 0 4 6 7 9 8
+		f 4 -12 -10 -8 -6
+		mu 0 4 1 10 11 3
+		f 4 10 4 6 8
+		mu 0 4 12 0 2 13;
+	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
+	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
+	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
+	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
+createNode transform -n "noOperation_md_maya_1" -p "noOperation";
+	rename -uid "84B47BD6-44AA-271E-37C9-7BBB38A78832";
+	setAttr -l on ".v";
+	setAttr ".t" -type "double3" -4 0 -2 ;
+	setAttr -l on ".tx";
+	setAttr -l on ".tz";
+	setAttr -l on ".rx";
+	setAttr -l on ".ry";
+	setAttr -l on ".rz";
+	setAttr -l on ".sx";
+	setAttr -l on ".sy";
+	setAttr -l on ".sz";
+createNode mesh -n "noOperation_md_maya_1Shape" -p "noOperation_md_maya_1";
 	rename -uid "25C647BD-4147-3673-318F-3DAD7D88E28E";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
@@ -281,10 +403,11 @@ createNode mesh -n "noOperation_pr_1Shape" -p "noOperation_pr_1";
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -n "sum1" -p "cubes";
 	rename -uid "416A9B63-4AA9-9327-5986-6C931DD14A40";
+	setAttr ".t" -type "double3" -2 0 0 ;
 createNode transform -n "sum_maya_0" -p "sum1";
 	rename -uid "568EA178-486F-3B80-CA94-06AFA8526F28";
 	setAttr -l on ".v";
-	setAttr ".t" -type "double3" -1 0 -1 ;
+	setAttr ".t" -type "double3" -1 0.5 -1 ;
 	setAttr -l on ".tx";
 	setAttr -l on ".tz";
 	setAttr -l on ".rx";
@@ -333,7 +456,7 @@ createNode mesh -n "sum_maya_0Shape" -p "sum_maya_0";
 createNode transform -n "sum_maya_1" -p "sum1";
 	rename -uid "11C6216C-4146-7306-1A21-93A2A0522023";
 	setAttr -l on ".v";
-	setAttr ".t" -type "double3" -1 0 -2 ;
+	setAttr ".t" -type "double3" -1 1.1 -2 ;
 	setAttr -l on ".tx";
 	setAttr -l on ".tz";
 	setAttr -l on ".rx";
@@ -480,11 +603,11 @@ createNode mesh -n "sum_pr_1Shape" -p "sum_pr_1";
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -n "subtract1" -p "cubes";
 	rename -uid "2A741F10-4FFC-8B25-09BA-E38220CC5A90";
-	setAttr ".t" -type "double3" 0 0 -3 ;
+	setAttr ".t" -type "double3" -2 0 -3 ;
 createNode transform -n "subtract_maya_0" -p "subtract1";
 	rename -uid "FE0AC7CB-4CA2-48A4-8092-F290D53F4EED";
 	setAttr -l on ".v";
-	setAttr ".t" -type "double3" -1 0 -1 ;
+	setAttr ".t" -type "double3" -1 -0.5 -1 ;
 	setAttr -l on ".tx";
 	setAttr -l on ".tz";
 	setAttr -l on ".rx";
@@ -533,7 +656,7 @@ createNode mesh -n "subtract_maya_0Shape" -p "subtract_maya_0";
 createNode transform -n "subtract_maya_1" -p "subtract1";
 	rename -uid "0390AB07-45B6-2EAD-F41D-EEA8EE8F3F0E";
 	setAttr -l on ".v";
-	setAttr ".t" -type "double3" -1 0 -2 ;
+	setAttr ".t" -type "double3" -1 -1.1000000238418579 -2 ;
 	setAttr -l on ".tx";
 	setAttr -l on ".tz";
 	setAttr -l on ".rx";
@@ -680,11 +803,11 @@ createNode mesh -n "subtract_pr_1Shape" -p "subtract_pr_1";
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -n "average2" -p "cubes";
 	rename -uid "8A650DAC-4214-6327-ECD7-EFB99D98D063";
-	setAttr ".t" -type "double3" 0 0 -6 ;
+	setAttr ".t" -type "double3" -2 0 -6 ;
 createNode transform -n "average_maya_0" -p "average2";
 	rename -uid "7B3E94AA-42C0-4AD3-014C-C1B43692276C";
 	setAttr -l on ".v";
-	setAttr ".t" -type "double3" -1 0 -1 ;
+	setAttr ".t" -type "double3" -1 0.25 -1 ;
 	setAttr -l on ".tx";
 	setAttr -l on ".tz";
 	setAttr -l on ".rx";
@@ -733,7 +856,7 @@ createNode mesh -n "average_maya_0Shape" -p "average_maya_0";
 createNode transform -n "average_maya_1" -p "average2";
 	rename -uid "377494EF-4500-7D19-2A43-51AEF40EA55B";
 	setAttr -l on ".v";
-	setAttr ".t" -type "double3" -1 0 -2 ;
+	setAttr ".t" -type "double3" -1 0.55000001192092896 -2 ;
 	setAttr -l on ".tx";
 	setAttr -l on ".tz";
 	setAttr -l on ".rx";
@@ -880,7 +1003,7 @@ createNode mesh -n "average_pr_1Shape" -p "average_pr_1";
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -n "multiply3" -p "cubes";
 	rename -uid "09BD4D61-4DF4-8349-CB4B-75ADF0EC3D0D";
-	setAttr ".t" -type "double3" 4 0 0 ;
+	setAttr ".t" -type "double3" 2 0 0 ;
 createNode transform -n "multiply_maya_0" -p "multiply3";
 	rename -uid "DA33DB09-49E3-3587-63B4-52A65759F4F1";
 	setAttr -l on ".v";
@@ -1080,7 +1203,7 @@ createNode mesh -n "multiply_pr_1Shape" -p "multiply_pr_1";
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -n "divide4" -p "cubes";
 	rename -uid "4D7F2202-44DF-DD2D-C6F5-87BAF69CD97D";
-	setAttr ".t" -type "double3" 4 0 -3 ;
+	setAttr ".t" -type "double3" 2 0 -3 ;
 createNode transform -n "divide_maya_0" -p "divide4";
 	rename -uid "4694B681-4200-7FF4-008E-D4B547529CCA";
 	setAttr -l on ".v";
@@ -1280,7 +1403,7 @@ createNode mesh -n "divide_pr_1Shape" -p "divide_pr_1";
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -n "power5" -p "cubes";
 	rename -uid "504BA888-47D1-A68B-C36B-DCBDC67CD62D";
-	setAttr ".t" -type "double3" 4 0 -6 ;
+	setAttr ".t" -type "double3" 2 0 -6 ;
 createNode transform -n "power_maya_0" -p "power5";
 	rename -uid "1A250F85-4DB3-E4DC-6073-32831F61AC40";
 	setAttr -l on ".v";
@@ -1479,59 +1602,217 @@ createNode mesh -n "power_pr_1Shape" -p "power_pr_1";
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode lightLinker -s -n "lightLinker1";
-	rename -uid "80B4D125-4766-106C-D95A-7881A59438BA";
-	setAttr -s 2 ".lnk";
-	setAttr -s 2 ".slnk";
+	rename -uid "D3E99E77-4DB2-9D5E-FCFA-6FBF85A848F8";
+	setAttr -s 9 ".lnk";
+	setAttr -s 9 ".slnk";
 createNode shapeEditorManager -n "shapeEditorManager";
-	rename -uid "56DCCD27-496F-8AF5-D273-67A5B4A46FBA";
+	rename -uid "EEB4BD36-49AE-A40E-DF32-DF8092E83C94";
 createNode poseInterpolatorManager -n "poseInterpolatorManager";
-	rename -uid "F8F28866-4599-83F6-082F-1F82179DD994";
+	rename -uid "A39F997B-43BB-395A-A30B-8EB5AF35D5DD";
 createNode displayLayerManager -n "layerManager";
-	rename -uid "C487A91F-4732-254C-9E57-F99281D80B0B";
+	rename -uid "5C8BA1C3-40FD-F6A1-E75D-25AB599FD9AC";
 createNode displayLayer -n "defaultLayer";
 	rename -uid "66A8DFEB-4F0A-3D0A-BBD2-A0B1083D0264";
 createNode renderLayerManager -n "renderLayerManager";
-	rename -uid "8A9CEFF7-4404-590E-B13C-E1B13C9C191F";
+	rename -uid "DBD35E6F-4503-062F-12F8-4980CF2A8C5F";
 createNode renderLayer -n "defaultRenderLayer";
 	rename -uid "660A3E10-4A84-4A0F-46F0-23B959BC1E69";
 	setAttr ".g" yes;
-createNode polyCube -n "polyCube1";
-	rename -uid "9ACCFD1D-4B9B-E11D-6D18-62B12445F10F";
-	setAttr ".cuv" 4;
 createNode script -n "sceneConfigurationScriptNode";
 	rename -uid "281A2647-42D8-3C7E-D68D-D3A9356B2851";
 	setAttr ".b" -type "string" "playbackOptions -min 1 -max 120 -ast 1 -aet 200 ";
 	setAttr ".st" 6;
-createNode nodeGraphEditorInfo -n "MayaNodeEditorSavedTabsInfo";
-	rename -uid "611CF643-42E3-2D58-543E-7581F5498E45";
+createNode blinn -n "noOperation_blinn1";
+	rename -uid "019E6A86-4ED7-20C2-5308-1294CECC52F8";
+	setAttr ".c" -type "float3" 0.077922076 0.077922076 0.077922076 ;
+	setAttr ".sc" -type "float3" 0.19480519 0.19480519 0.19480519 ;
+createNode shadingEngine -n "blinn1SG";
+	rename -uid "5E912564-4F20-05EF-5E69-1792DF01E093";
+	setAttr ".ihi" 0;
+	setAttr -s 6 ".dsm";
+	setAttr ".ro" yes;
+createNode materialInfo -n "materialInfo1";
+	rename -uid "1ED4D643-4D79-6679-FAF0-77B72620C098";
+createNode blinn -n "sum_blinn2";
+	rename -uid "89922247-4C55-7935-FB13-F5BAE98ACAE7";
+	setAttr ".c" -type "float3" 1 0 0 ;
+	setAttr ".sc" -type "float3" 0.19480519 0.19480519 0.19480519 ;
+createNode shadingEngine -n "blinn2SG";
+	rename -uid "A0C357D8-464F-A2CE-AD44-ECA0EBD926D2";
+	setAttr ".ihi" 0;
+	setAttr -s 4 ".dsm";
+	setAttr ".ro" yes;
+createNode materialInfo -n "materialInfo2";
+	rename -uid "E48EB726-43BD-B8EC-8869-D0864FF4CF44";
+createNode blinn -n "subtract_blinn3";
+	rename -uid "A9AD78D1-4D37-9848-8458-1F88D4D281EB";
+	setAttr ".c" -type "float3" 0 1 0 ;
+	setAttr ".sc" -type "float3" 0.19480519 0.19480519 0.19480519 ;
+createNode shadingEngine -n "blinn3SG";
+	rename -uid "BA17B37B-4187-5088-DB27-9D8E2B45B243";
+	setAttr ".ihi" 0;
+	setAttr -s 4 ".dsm";
+	setAttr ".ro" yes;
+createNode materialInfo -n "materialInfo3";
+	rename -uid "3D01DB63-48F8-38EC-EFE8-DAAF869A790C";
+createNode blinn -n "average_blinn4";
+	rename -uid "3F22286C-43B0-3E83-2711-999F7902C7E6";
+	setAttr ".c" -type "float3" 0 0 1 ;
+	setAttr ".sc" -type "float3" 0.19480519 0.19480519 0.19480519 ;
+createNode shadingEngine -n "blinn4SG";
+	rename -uid "777256DA-4C54-8883-FD79-1CA29D5FE9EB";
+	setAttr ".ihi" 0;
+	setAttr -s 4 ".dsm";
+	setAttr ".ro" yes;
+createNode materialInfo -n "materialInfo4";
+	rename -uid "2EC6A7D7-4700-A58B-4310-D2958FCD941E";
+createNode blinn -n "multiply_blinn3";
+	rename -uid "CAE84E5C-45FA-318C-0DF4-EEBC9FD06D39";
+	setAttr ".c" -type "float3" 0.17482518 0 0 ;
+	setAttr ".sc" -type "float3" 0.19480519 0.19480519 0.19480519 ;
+createNode blinn -n "divide_blinn4";
+	rename -uid "23358DBE-4B12-6B9D-5924-0D85DFA3F05C";
+	setAttr ".c" -type "float3" 0 0.16783217 0 ;
+	setAttr ".sc" -type "float3" 0.19480519 0.19480519 0.19480519 ;
+createNode blinn -n "power_blinn5";
+	rename -uid "DAE6CA28-43B0-BD88-E3E6-31A255F7884D";
+	setAttr ".c" -type "float3" 0 0 0.23076923 ;
+	setAttr ".sc" -type "float3" 0.19480519 0.19480519 0.19480519 ;
+createNode shadingEngine -n "subtract_blinn4SG";
+	rename -uid "A0FBCF54-489F-6D9D-C7E0-67BD8C76CD71";
+	setAttr ".ihi" 0;
+	setAttr -s 4 ".dsm";
+	setAttr ".ro" yes;
+createNode materialInfo -n "materialInfo5";
+	rename -uid "20BAC9C2-4797-ADFF-D5FA-A080BAA42DCC";
+createNode shadingEngine -n "sum_blinn3SG";
+	rename -uid "EDFE1DF7-4019-648A-F2D9-00B3544C4BAD";
+	setAttr ".ihi" 0;
+	setAttr -s 4 ".dsm";
+	setAttr ".ro" yes;
+createNode materialInfo -n "materialInfo6";
+	rename -uid "73E2249D-4467-3B93-E711-DFB2FBA4EE24";
+createNode shadingEngine -n "power_blinn5SG";
+	rename -uid "580525C0-4B6F-74FD-6241-08853E780029";
+	setAttr ".ihi" 0;
+	setAttr -s 4 ".dsm";
+	setAttr ".ro" yes;
+createNode materialInfo -n "materialInfo7";
+	rename -uid "EA446CD0-427C-BBF9-834E-A2AE9876021F";
+createNode nodeGraphEditorInfo -n "hyperShadePrimaryNodeEditorSavedTabsInfo";
+	rename -uid "FF7E2C28-497C-3FB7-6C0F-CC86A5E1B99E";
 	setAttr ".tgi[0].tn" -type "string" "Untitled_1";
-	setAttr ".tgi[0].vl" -type "double2" -1213.5541872002705 -791.62441331548712 ;
-	setAttr ".tgi[0].vh" -type "double2" -48.687663226724652 464.08032583030837 ;
-	setAttr -s 8 ".tgi[0].ni";
-	setAttr ".tgi[0].ni[0].x" -1058.74609375;
-	setAttr ".tgi[0].ni[0].y" -424.38723754882813;
-	setAttr ".tgi[0].ni[0].nvs" 18304;
-	setAttr ".tgi[0].ni[1].x" -474.029296875;
-	setAttr ".tgi[0].ni[1].y" 421.36581420898438;
+	setAttr ".tgi[0].vl" -type "double2" -176.38370763036093 -794.08350135732758 ;
+	setAttr ".tgi[0].vh" -type "double2" 768.97492777935383 657.90379501781445 ;
+	setAttr -s 12 ".tgi[0].ni";
+	setAttr ".tgi[0].ni[0].x" -250;
+	setAttr ".tgi[0].ni[0].y" 190;
+	setAttr ".tgi[0].ni[0].nvs" 1923;
+	setAttr ".tgi[0].ni[1].x" 51.428569793701172;
+	setAttr ".tgi[0].ni[1].y" -307.14285278320313;
+	setAttr ".tgi[0].ni[1].nvs" 1923;
+	setAttr ".tgi[0].ni[2].x" -250;
+	setAttr ".tgi[0].ni[2].y" 190;
+	setAttr ".tgi[0].ni[2].nvs" 1923;
+	setAttr ".tgi[0].ni[3].x" 57.142856597900391;
+	setAttr ".tgi[0].ni[3].y" 190;
+	setAttr ".tgi[0].ni[3].nvs" 1923;
+	setAttr ".tgi[0].ni[4].x" 264.28570556640625;
+	setAttr ".tgi[0].ni[4].y" 264.28570556640625;
+	setAttr ".tgi[0].ni[4].nvs" 1923;
+	setAttr ".tgi[0].ni[5].x" 51.428569793701172;
+	setAttr ".tgi[0].ni[5].y" 608.5714111328125;
+	setAttr ".tgi[0].ni[5].nvs" 1923;
+	setAttr ".tgi[0].ni[6].x" 358.57144165039063;
+	setAttr ".tgi[0].ni[6].y" 610;
+	setAttr ".tgi[0].ni[6].nvs" 1923;
+	setAttr ".tgi[0].ni[7].x" 571.4285888671875;
+	setAttr ".tgi[0].ni[7].y" 265.71429443359375;
+	setAttr ".tgi[0].ni[7].nvs" 1923;
+	setAttr ".tgi[0].ni[8].x" 358.57144165039063;
+	setAttr ".tgi[0].ni[8].y" -305.71429443359375;
+	setAttr ".tgi[0].ni[8].nvs" 1923;
+	setAttr ".tgi[0].ni[9].x" 57.142856597900391;
+	setAttr ".tgi[0].ni[9].y" 190;
+	setAttr ".tgi[0].ni[9].nvs" 1923;
+	setAttr ".tgi[0].ni[10].x" 57.142856597900391;
+	setAttr ".tgi[0].ni[10].y" 190;
+	setAttr ".tgi[0].ni[10].nvs" 1923;
+	setAttr ".tgi[0].ni[11].x" -250;
+	setAttr ".tgi[0].ni[11].y" 190;
+	setAttr ".tgi[0].ni[11].nvs" 1923;
+createNode multiplyDivide -n "noOperation_multiplyDivide1";
+	rename -uid "EE297CE7-454B-0CE6-B02F-89BE5401EDEC";
+	setAttr ".op" 0;
+	setAttr ".i2" -type "float3" 0.5 1.1 1 ;
+createNode multiplyDivide -n "multiply_multiplyDivide2";
+	rename -uid "125B4CAC-4D84-B853-747A-90B30DA18A52";
+	setAttr ".i2" -type "float3" 0.5 1.1 1 ;
+createNode multiplyDivide -n "divide_multiplyDivide3";
+	rename -uid "9582DF9C-4220-17AC-947D-9491900D5F56";
+	setAttr ".op" 2;
+	setAttr ".i2" -type "float3" 0.5 1.1 1 ;
+createNode multiplyDivide -n "power_multiplyDivide4";
+	rename -uid "C60844EA-40F7-E536-8315-C58AB92BADF3";
+	setAttr ".op" 3;
+	setAttr ".i2" -type "float3" 0.5 1.1 1 ;
+createNode plusMinusAverage -n "noOperation_plusMinusAverage_0";
+	rename -uid "C389AA14-4BEE-8F5B-A0B0-E0BD753D131D";
+	setAttr ".op" 0;
+	setAttr -s 2 ".i1[1]"  0.5;
+	setAttr ".i2[0]" -type "float2" 0 0;
+createNode plusMinusAverage -n "noOperation_plusMinusAverage_1";
+	rename -uid "A5F8B8B7-4B95-79C2-AC05-4CA9C9FBA140";
+	setAttr ".op" 0;
+	setAttr -s 2 ".i1[1]"  1.10000002;
+	setAttr ".i2[0]" -type "float2" 0 0;
+createNode plusMinusAverage -n "average_plusMinusAverage_1";
+	rename -uid "67F3F055-41C9-CD36-D7EA-678FB34E978F";
+	setAttr ".op" 3;
+	setAttr -s 2 ".i1[1]"  1.10000002;
+	setAttr ".i2[0]" -type "float2" 0 0;
+createNode plusMinusAverage -n "average_plusMinusAverage_0";
+	rename -uid "1886D9B4-4C51-5445-6820-5FADE98285ED";
+	setAttr ".op" 3;
+	setAttr -s 2 ".i1[1]"  0.5;
+	setAttr ".i2[0]" -type "float2" 0 0;
+createNode plusMinusAverage -n "subtract_plusMinusAverage_1";
+	rename -uid "04563C1E-4129-73D0-F1FF-6C84B902405B";
+	setAttr ".op" 2;
+	setAttr -s 2 ".i1[1]"  1.10000002;
+	setAttr ".i2[0]" -type "float2" 0 0;
+createNode plusMinusAverage -n "subtract_plusMinusAverage_0";
+	rename -uid "63A0C01E-43B7-D4A7-41C8-919F23ABB31D";
+	setAttr ".op" 2;
+	setAttr -s 2 ".i1[1]"  0.5;
+	setAttr ".i2[0]" -type "float2" 0 0;
+createNode addDoubleLinear -n "addDoubleLinear_1";
+	rename -uid "3DA81245-422F-1ADA-3D3C-F080CF6D2A52";
+	setAttr ".i2" 1.1;
+createNode addDoubleLinear -n "addDoubleLinear_0";
+	rename -uid "D2B39C82-4C20-B92E-48A2-D088BDF06255";
+	setAttr ".i2" 0.5;
+createNode nodeGraphEditorInfo -n "MayaNodeEditorSavedTabsInfo";
+	rename -uid "79F2FFF6-4127-5992-90DE-03AB8A22B797";
+	setAttr ".tgi[0].tn" -type "string" "Untitled_1";
+	setAttr ".tgi[0].vl" -type "double2" -296.37436690938608 1222.6254436126101 ;
+	setAttr ".tgi[0].vh" -type "double2" 1958.8766194147036 2324.1923644536832 ;
+	setAttr -s 5 ".tgi[0].ni";
+	setAttr ".tgi[0].ni[0].x" 1100.58837890625;
+	setAttr ".tgi[0].ni[0].y" 1915.5216064453125;
+	setAttr ".tgi[0].ni[0].nvs" 18305;
+	setAttr ".tgi[0].ni[1].x" 794.858642578125;
+	setAttr ".tgi[0].ni[1].y" 1836.6268310546875;
 	setAttr ".tgi[0].ni[1].nvs" 18306;
-	setAttr ".tgi[0].ni[2].x" -474.029296875;
-	setAttr ".tgi[0].ni[2].y" -280.42724609375;
+	setAttr ".tgi[0].ni[2].x" 781.13665771484375;
+	setAttr ".tgi[0].ni[2].y" 2226.800537109375;
 	setAttr ".tgi[0].ni[2].nvs" 18306;
-	setAttr ".tgi[0].ni[3].x" -107.14286041259766;
-	setAttr ".tgi[0].ni[3].y" 97.142860412597656;
-	setAttr ".tgi[0].ni[3].nvs" 18304;
-	setAttr ".tgi[0].ni[4].x" -867.12957763671875;
-	setAttr ".tgi[0].ni[4].y" -42.539302825927734;
+	setAttr ".tgi[0].ni[3].x" 1106.5107421875;
+	setAttr ".tgi[0].ni[3].y" 2209.449951171875;
+	setAttr ".tgi[0].ni[3].nvs" 18305;
+	setAttr ".tgi[0].ni[4].x" 461.42855834960938;
+	setAttr ".tgi[0].ni[4].y" 1897.142822265625;
 	setAttr ".tgi[0].ni[4].nvs" 18306;
-	setAttr ".tgi[0].ni[5].x" -826.9599609375;
-	setAttr ".tgi[0].ni[5].y" 368.44842529296875;
-	setAttr ".tgi[0].ni[5].nvs" 18306;
-	setAttr ".tgi[0].ni[6].x" -1149.5843505859375;
-	setAttr ".tgi[0].ni[6].y" 188.30209350585938;
-	setAttr ".tgi[0].ni[6].nvs" 18306;
-	setAttr ".tgi[0].ni[7].x" -107.14286041259766;
-	setAttr ".tgi[0].ni[7].y" 357.14285278320313;
-	setAttr ".tgi[0].ni[7].nvs" 18304;
 select -ne :time1;
 	setAttr ".o" 1;
 	setAttr ".unw" 1;
@@ -1542,15 +1823,16 @@ select -ne :hardwareRenderingGlobals;
 		 0 0 0 0 ;
 	setAttr ".fprt" yes;
 select -ne :renderPartition;
-	setAttr -s 2 ".st";
+	setAttr -s 9 ".st";
 select -ne :renderGlobalsList1;
 select -ne :defaultShaderList1;
-	setAttr -s 4 ".s";
+	setAttr -s 11 ".s";
 select -ne :postProcessList1;
 	setAttr -s 2 ".p";
+select -ne :defaultRenderUtilityList1;
+	setAttr -s 12 ".u";
 select -ne :defaultRenderingList1;
 select -ne :initialShadingGroup;
-	setAttr -s 28 ".dsm";
 	setAttr ".ro" yes;
 select -ne :initialParticleSE;
 	setAttr ".ro" yes;
@@ -1559,50 +1841,170 @@ select -ne :defaultResolution;
 select -ne :hardwareRenderGlobals;
 	setAttr ".ctrs" 256;
 	setAttr ".btrs" 512;
-connectAttr "polyCube1.out" "noOperation_maya_0Shape.i";
+connectAttr "noOperation_plusMinusAverage_0.o1" "noOperation_pma_maya_0.ty";
+connectAttr "noOperation_plusMinusAverage_1.o1" "noOperation_pma_maya_1.ty";
+connectAttr "noOperation_multiplyDivide1.ox" "noOperation_md_maya_0.ty";
+connectAttr "noOperation_multiplyDivide1.oy" "noOperation_md_maya_1.ty";
+connectAttr "addDoubleLinear_0.o" "sum_maya_0.ty";
+connectAttr "addDoubleLinear_1.o" "sum_maya_1.ty";
+connectAttr "subtract_plusMinusAverage_0.o1" "subtract_maya_0.ty";
+connectAttr "subtract_plusMinusAverage_1.o1" "subtract_maya_1.ty";
+connectAttr "average_plusMinusAverage_0.o1" "average_maya_0.ty";
+connectAttr "average_plusMinusAverage_1.o1" "average_maya_1.ty";
+connectAttr "multiply_multiplyDivide2.ox" "multiply_maya_0.ty";
+connectAttr "multiply_multiplyDivide2.oy" "multiply_maya_1.ty";
+connectAttr "divide_multiplyDivide3.ox" "divide_maya_0.ty";
+connectAttr "divide_multiplyDivide3.oy" "divide_maya_1.ty";
+connectAttr "power_multiplyDivide4.ox" "power_maya_0.ty";
+connectAttr "power_multiplyDivide4.oy" "power_maya_1.ty";
 relationship "link" ":lightLinker1" ":initialShadingGroup.message" ":defaultLightSet.message";
 relationship "link" ":lightLinker1" ":initialParticleSE.message" ":defaultLightSet.message";
+relationship "link" ":lightLinker1" "blinn1SG.message" ":defaultLightSet.message";
+relationship "link" ":lightLinker1" "blinn2SG.message" ":defaultLightSet.message";
+relationship "link" ":lightLinker1" "blinn3SG.message" ":defaultLightSet.message";
+relationship "link" ":lightLinker1" "blinn4SG.message" ":defaultLightSet.message";
+relationship "link" ":lightLinker1" "subtract_blinn4SG.message" ":defaultLightSet.message";
+relationship "link" ":lightLinker1" "sum_blinn3SG.message" ":defaultLightSet.message";
+relationship "link" ":lightLinker1" "power_blinn5SG.message" ":defaultLightSet.message";
 relationship "shadowLink" ":lightLinker1" ":initialShadingGroup.message" ":defaultLightSet.message";
 relationship "shadowLink" ":lightLinker1" ":initialParticleSE.message" ":defaultLightSet.message";
+relationship "shadowLink" ":lightLinker1" "blinn1SG.message" ":defaultLightSet.message";
+relationship "shadowLink" ":lightLinker1" "blinn2SG.message" ":defaultLightSet.message";
+relationship "shadowLink" ":lightLinker1" "blinn3SG.message" ":defaultLightSet.message";
+relationship "shadowLink" ":lightLinker1" "blinn4SG.message" ":defaultLightSet.message";
+relationship "shadowLink" ":lightLinker1" "subtract_blinn4SG.message" ":defaultLightSet.message";
+relationship "shadowLink" ":lightLinker1" "sum_blinn3SG.message" ":defaultLightSet.message";
+relationship "shadowLink" ":lightLinker1" "power_blinn5SG.message" ":defaultLightSet.message";
 connectAttr "layerManager.dli[0]" "defaultLayer.id";
 connectAttr "renderLayerManager.rlmi[0]" "defaultRenderLayer.rlid";
-connectAttr "locatorShape.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[0].dn";
-connectAttr "noOperation_maya_0.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[1].dn"
+connectAttr "noOperation_blinn1.oc" "blinn1SG.ss";
+connectAttr "noOperation_md_maya_0Shape.iog" "blinn1SG.dsm" -na;
+connectAttr "noOperation_md_maya_1Shape.iog" "blinn1SG.dsm" -na;
+connectAttr "noOperation_pr_1Shape.iog" "blinn1SG.dsm" -na;
+connectAttr "noOperation_pr_0Shape.iog" "blinn1SG.dsm" -na;
+connectAttr "noOperation_pma_maya_0Shape.iog" "blinn1SG.dsm" -na;
+connectAttr "noOperation_pma_maya_1Shape.iog" "blinn1SG.dsm" -na;
+connectAttr "blinn1SG.msg" "materialInfo1.sg";
+connectAttr "noOperation_blinn1.msg" "materialInfo1.m";
+connectAttr "sum_blinn2.oc" "blinn2SG.ss";
+connectAttr "sum_pr_1Shape.iog" "blinn2SG.dsm" -na;
+connectAttr "sum_maya_1Shape.iog" "blinn2SG.dsm" -na;
+connectAttr "sum_maya_0Shape.iog" "blinn2SG.dsm" -na;
+connectAttr "sum_pr_0Shape.iog" "blinn2SG.dsm" -na;
+connectAttr "blinn2SG.msg" "materialInfo2.sg";
+connectAttr "sum_blinn2.msg" "materialInfo2.m";
+connectAttr "subtract_blinn3.oc" "blinn3SG.ss";
+connectAttr "subtract_maya_0Shape.iog" "blinn3SG.dsm" -na;
+connectAttr "subtract_maya_1Shape.iog" "blinn3SG.dsm" -na;
+connectAttr "subtract_pr_0Shape.iog" "blinn3SG.dsm" -na;
+connectAttr "subtract_pr_1Shape.iog" "blinn3SG.dsm" -na;
+connectAttr "blinn3SG.msg" "materialInfo3.sg";
+connectAttr "subtract_blinn3.msg" "materialInfo3.m";
+connectAttr "average_blinn4.oc" "blinn4SG.ss";
+connectAttr "average_pr_0Shape.iog" "blinn4SG.dsm" -na;
+connectAttr "average_pr_1Shape.iog" "blinn4SG.dsm" -na;
+connectAttr "average_maya_0Shape.iog" "blinn4SG.dsm" -na;
+connectAttr "average_maya_1Shape.iog" "blinn4SG.dsm" -na;
+connectAttr "blinn4SG.msg" "materialInfo4.sg";
+connectAttr "average_blinn4.msg" "materialInfo4.m";
+connectAttr "divide_blinn4.oc" "subtract_blinn4SG.ss";
+connectAttr "divide_maya_0Shape.iog" "subtract_blinn4SG.dsm" -na;
+connectAttr "divide_maya_1Shape.iog" "subtract_blinn4SG.dsm" -na;
+connectAttr "divide_pr_0Shape.iog" "subtract_blinn4SG.dsm" -na;
+connectAttr "divide_pr_1Shape.iog" "subtract_blinn4SG.dsm" -na;
+connectAttr "subtract_blinn4SG.msg" "materialInfo5.sg";
+connectAttr "divide_blinn4.msg" "materialInfo5.m";
+connectAttr "multiply_blinn3.oc" "sum_blinn3SG.ss";
+connectAttr "multiply_pr_1Shape.iog" "sum_blinn3SG.dsm" -na;
+connectAttr "multiply_maya_0Shape.iog" "sum_blinn3SG.dsm" -na;
+connectAttr "multiply_maya_1Shape.iog" "sum_blinn3SG.dsm" -na;
+connectAttr "multiply_pr_0Shape.iog" "sum_blinn3SG.dsm" -na;
+connectAttr "sum_blinn3SG.msg" "materialInfo6.sg";
+connectAttr "multiply_blinn3.msg" "materialInfo6.m";
+connectAttr "power_blinn5.oc" "power_blinn5SG.ss";
+connectAttr "power_maya_0Shape.iog" "power_blinn5SG.dsm" -na;
+connectAttr "power_maya_1Shape.iog" "power_blinn5SG.dsm" -na;
+connectAttr "power_pr_0Shape.iog" "power_blinn5SG.dsm" -na;
+connectAttr "power_pr_1Shape.iog" "power_blinn5SG.dsm" -na;
+connectAttr "power_blinn5SG.msg" "materialInfo7.sg";
+connectAttr "power_blinn5.msg" "materialInfo7.m";
+connectAttr "sum_blinn2.msg" "hyperShadePrimaryNodeEditorSavedTabsInfo.tgi[0].ni[0].dn"
 		;
-connectAttr "noOperation_maya_1.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[2].dn"
+connectAttr "power_blinn5.msg" "hyperShadePrimaryNodeEditorSavedTabsInfo.tgi[0].ni[1].dn"
 		;
-connectAttr "noOperation_maya_0Shape.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[3].dn"
+connectAttr "subtract_blinn3.msg" "hyperShadePrimaryNodeEditorSavedTabsInfo.tgi[0].ni[2].dn"
 		;
-connectAttr "locator.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[6].dn";
-connectAttr "noOperation_maya_1Shape.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[7].dn"
+connectAttr "blinn4SG.msg" "hyperShadePrimaryNodeEditorSavedTabsInfo.tgi[0].ni[3].dn"
 		;
+connectAttr "multiply_blinn3.msg" "hyperShadePrimaryNodeEditorSavedTabsInfo.tgi[0].ni[4].dn"
+		;
+connectAttr "divide_blinn4.msg" "hyperShadePrimaryNodeEditorSavedTabsInfo.tgi[0].ni[5].dn"
+		;
+connectAttr "subtract_blinn4SG.msg" "hyperShadePrimaryNodeEditorSavedTabsInfo.tgi[0].ni[6].dn"
+		;
+connectAttr "sum_blinn3SG.msg" "hyperShadePrimaryNodeEditorSavedTabsInfo.tgi[0].ni[7].dn"
+		;
+connectAttr "power_blinn5SG.msg" "hyperShadePrimaryNodeEditorSavedTabsInfo.tgi[0].ni[8].dn"
+		;
+connectAttr "blinn3SG.msg" "hyperShadePrimaryNodeEditorSavedTabsInfo.tgi[0].ni[9].dn"
+		;
+connectAttr "blinn2SG.msg" "hyperShadePrimaryNodeEditorSavedTabsInfo.tgi[0].ni[10].dn"
+		;
+connectAttr "average_blinn4.msg" "hyperShadePrimaryNodeEditorSavedTabsInfo.tgi[0].ni[11].dn"
+		;
+connectAttr "locator.ty" "noOperation_multiplyDivide1.i1x";
+connectAttr "locator.ty" "noOperation_multiplyDivide1.i1y";
+connectAttr "locator.ty" "multiply_multiplyDivide2.i1x";
+connectAttr "locator.ty" "multiply_multiplyDivide2.i1y";
+connectAttr "locator.ty" "divide_multiplyDivide3.i1x";
+connectAttr "locator.ty" "divide_multiplyDivide3.i1y";
+connectAttr "locator.ty" "power_multiplyDivide4.i1x";
+connectAttr "locator.ty" "power_multiplyDivide4.i1y";
+connectAttr "locator.ty" "noOperation_plusMinusAverage_0.i1[0]";
+connectAttr "locator.ty" "noOperation_plusMinusAverage_1.i1[0]";
+connectAttr "locator.ty" "average_plusMinusAverage_1.i1[0]";
+connectAttr "locator.ty" "average_plusMinusAverage_0.i1[0]";
+connectAttr "locator.ty" "subtract_plusMinusAverage_1.i1[0]";
+connectAttr "locator.ty" "subtract_plusMinusAverage_0.i1[0]";
+connectAttr "locator.ty" "addDoubleLinear_1.i1";
+connectAttr "locator.ty" "addDoubleLinear_0.i1";
+connectAttr "sum_maya_1.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[0].dn";
+connectAttr "addDoubleLinear_1.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[1].dn"
+		;
+connectAttr "addDoubleLinear_0.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[2].dn"
+		;
+connectAttr "sum_maya_0.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[3].dn";
+connectAttr "locator.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[4].dn";
+connectAttr "blinn1SG.pa" ":renderPartition.st" -na;
+connectAttr "blinn2SG.pa" ":renderPartition.st" -na;
+connectAttr "blinn3SG.pa" ":renderPartition.st" -na;
+connectAttr "blinn4SG.pa" ":renderPartition.st" -na;
+connectAttr "subtract_blinn4SG.pa" ":renderPartition.st" -na;
+connectAttr "sum_blinn3SG.pa" ":renderPartition.st" -na;
+connectAttr "power_blinn5SG.pa" ":renderPartition.st" -na;
+connectAttr "noOperation_blinn1.msg" ":defaultShaderList1.s" -na;
+connectAttr "sum_blinn2.msg" ":defaultShaderList1.s" -na;
+connectAttr "subtract_blinn3.msg" ":defaultShaderList1.s" -na;
+connectAttr "average_blinn4.msg" ":defaultShaderList1.s" -na;
+connectAttr "multiply_blinn3.msg" ":defaultShaderList1.s" -na;
+connectAttr "divide_blinn4.msg" ":defaultShaderList1.s" -na;
+connectAttr "power_blinn5.msg" ":defaultShaderList1.s" -na;
+connectAttr "noOperation_multiplyDivide1.msg" ":defaultRenderUtilityList1.u" -na
+		;
+connectAttr "multiply_multiplyDivide2.msg" ":defaultRenderUtilityList1.u" -na;
+connectAttr "divide_multiplyDivide3.msg" ":defaultRenderUtilityList1.u" -na;
+connectAttr "power_multiplyDivide4.msg" ":defaultRenderUtilityList1.u" -na;
+connectAttr "noOperation_plusMinusAverage_0.msg" ":defaultRenderUtilityList1.u" 
+		-na;
+connectAttr "noOperation_plusMinusAverage_1.msg" ":defaultRenderUtilityList1.u" 
+		-na;
+connectAttr "average_plusMinusAverage_1.msg" ":defaultRenderUtilityList1.u" -na;
+connectAttr "average_plusMinusAverage_0.msg" ":defaultRenderUtilityList1.u" -na;
+connectAttr "subtract_plusMinusAverage_1.msg" ":defaultRenderUtilityList1.u" -na
+		;
+connectAttr "subtract_plusMinusAverage_0.msg" ":defaultRenderUtilityList1.u" -na
+		;
+connectAttr "addDoubleLinear_1.msg" ":defaultRenderUtilityList1.u" -na;
+connectAttr "addDoubleLinear_0.msg" ":defaultRenderUtilityList1.u" -na;
 connectAttr "defaultRenderLayer.msg" ":defaultRenderingList1.r" -na;
-connectAttr "noOperation_maya_0Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "noOperation_maya_1Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "noOperation_pr_0Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "noOperation_pr_1Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "sum_maya_0Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "sum_maya_1Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "sum_pr_0Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "sum_pr_1Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "subtract_maya_0Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "subtract_maya_1Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "subtract_pr_0Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "subtract_pr_1Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "average_maya_0Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "average_maya_1Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "average_pr_0Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "average_pr_1Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "multiply_maya_0Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "multiply_maya_1Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "multiply_pr_0Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "multiply_pr_1Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "divide_maya_0Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "divide_maya_1Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "divide_pr_0Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "divide_pr_1Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "power_maya_0Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "power_maya_1Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "power_pr_0Shape.iog" ":initialShadingGroup.dsm" -na;
-connectAttr "power_pr_1Shape.iog" ":initialShadingGroup.dsm" -na;
-// End of test_prBinaryOperation.ma
+// End of test_prDoubleLinear.ma

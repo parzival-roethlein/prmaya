@@ -2,30 +2,30 @@
 
 import sys
 sys.path.append(r'C:\Users\paz\Documents\git\prmaya\test\plugins')
-import test_prBinaryOperation
-reload(test_prBinaryOperation)
-test_prBinaryOperation.SETTINGS['plugin_path'] = r'C:\Users\paz\Documents\git\prmaya\prmaya\plugins\prBinaryOperation.py'
-test_prBinaryOperation.SETTINGS['file'] = r'C:\Users\paz\Documents\git\prmaya\test\plugins\test_prBinaryOperation.ma'
-test_prBinaryOperation.run()
+import test_prDoubleLinear
+reload(test_prDoubleLinear)
+test_prDoubleLinear.SETTINGS['plugin_path'] = r'C:\Users\paz\Documents\git\prmaya\prmaya\plugins\prDoubleLinear.py'
+test_prDoubleLinear.SETTINGS['file'] = r'C:\Users\paz\Documents\git\prmaya\test\plugins\test_prDoubleLinear.ma'
+test_prDoubleLinear.run()
 
 import sys
 sys.path.append('/home/prthlein/private/code/prmaya/test/plugins')
-import test_prBinaryOperation
-reload(test_prBinaryOperation)
-test_prBinaryOperation.SETTINGS['plugin_path'] = r'/home/prthlein/private/code/prmaya/prmaya/plugins/prBinaryOperation.py'
-test_prBinaryOperation.SETTINGS['file'] = r'/home/prthlein/private/code/prmaya/test/plugins/test_prBinaryOperation.ma'
-test_prBinaryOperation.run()
+import test_prDoubleLinear
+reload(test_prDoubleLinear)
+test_prDoubleLinear.SETTINGS['plugin_path'] = r'/home/prthlein/private/code/prmaya/prmaya/plugins/prDoubleLinear.py'
+test_prDoubleLinear.SETTINGS['file'] = r'/home/prthlein/private/code/prmaya/test/plugins/test_prDoubleLinear.ma'
+test_prDoubleLinear.run()
 
 """
 
 import maya.cmds as mc
 
-from prmaya.plugins import prBinaryOperation
-reload(prBinaryOperation)
+from prmaya.plugins import prDoubleLinear
+reload(prDoubleLinear)
 
-SETTINGS = {'plugin_name': 'prBinaryOperation.py',
-            'plugin_path': 'C:\Users\paz\Documents\git\prmaya\prmaya\plugins\prBinaryOperation.py',
-            'file': 'C:\Users\paz\Documents\git\prmaya\test\plugins\test_prBinaryOperation.ma',
+SETTINGS = {'plugin_name': 'prDoubleLinear.py',
+            'plugin_path': 'C:\Users\paz\Documents\git\prmaya\prmaya\plugins\prDoubleLinear.py',
+            'file': 'C:\Users\paz\Documents\git\prmaya\test\plugins\test_prDoubleLinear.ma',
             }
 
 
@@ -42,7 +42,7 @@ def run():
                                   'sum', 'subtract', 'average',
                                   'multiply', 'divide', 'power']):
         cube0, cube1 = operation+'_pr_0', operation+'_pr_1',
-        prBinary = mc.createNode('prBinaryOperation')
+        prBinary = mc.createNode('prDoubleLinear')
         prBinary = mc.rename(prBinary, operation+'_'+prBinary)
         mc.setAttr(prBinary + '.operation', value)
 
