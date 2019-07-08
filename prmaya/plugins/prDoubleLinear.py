@@ -14,7 +14,20 @@ USAGE
 (MEL): createNode prDoubleLinear
 
 ATTRIBUTES
-prDoubleLinear1.operation
+prDoubleLinear1.operation: similar to multiplyDivide and plusMinusAverage, except:
+- 0, No operation: outputs 0.0
+  (plusMinusAverage outputs 0.0)
+  (multiplyDivide outputs input1)
+- 5, Division: If ZeroDivisionError outputs 0.0
+  (multiplyDivide if ZeroDivisionError outputs 100000)
+- 6, Power: Negative number with fractional power gives error and outputs 0.0.
+  (multiplyDivide node does not error and outputs NaN value)
+- 7, Floor division: There is no maya node equivalent?!
+- 8, Modulus: There is no maya node equivalent?!
+- 9, input1: output input1.
+  (multiplyDivide does this when in "No operation")
+- 10, input2: output input2
+
 prDoubleLinear1.input[0].input1
 prDoubleLinear1.input[0].input2
 prDoubleLinear1.output[0]
@@ -47,7 +60,7 @@ class prDoubleLinear(om.MPxNode):
         enumAttr = om.MFnEnumAttribute()
 
         # output
-        prDoubleLinear.output = numericAttr.create('output', 'output', om.MFnNumericData.kFloat)
+        prDoubleLinear.output = numericAttr.create('output', 'output', om.MFnNumericData.kDouble)
         numericAttr.array = True
         numericAttr.usesArrayDataBuilder = True
         numericAttr.writable = False
@@ -56,20 +69,25 @@ class prDoubleLinear(om.MPxNode):
         # input
         prDoubleLinear.operation = enumAttr.create('operation', 'operation', 1)
         enumAttr.keyable = True
+        # operation names from maya nodes (plusMinusAverage, multiplyDivide)
         enumAttr.addField('No operation', 0)
-        enumAttr.addField('Sum', 1)
-        enumAttr.addField('Subtract', 2)
+        enumAttr.addField('Sum +', 1)
+        enumAttr.addField('Subtract -', 2)
         enumAttr.addField('Average', 3)
-        enumAttr.addField('Multiply', 4)
-        enumAttr.addField('Divide', 5)
-        enumAttr.addField('Power', 6)
+        enumAttr.addField('Multiply *', 4)
+        enumAttr.addField('Divide /', 5)
+        enumAttr.addField('Power ^', 6)
+        enumAttr.addField('Floor division //', 7)
+        enumAttr.addField('Modulus %', 8)
+        enumAttr.addField('input1', 9)
+        enumAttr.addField('input2', 10)
         prDoubleLinear.addAttribute(prDoubleLinear.operation)
         prDoubleLinear.attributeAffects(prDoubleLinear.operation, prDoubleLinear.output)
 
-        prDoubleLinear.input1 = numericAttr.create('input1', 'input1', om.MFnNumericData.kFloat, 0.0)
+        prDoubleLinear.input1 = numericAttr.create('input1', 'input1', om.MFnNumericData.kDouble, 0.0)
         numericAttr.keyable = True
 
-        prDoubleLinear.input2 = numericAttr.create('input2', 'input2', om.MFnNumericData.kFloat, 0.0)
+        prDoubleLinear.input2 = numericAttr.create('input2', 'input2', om.MFnNumericData.kDouble, 1.0)
         numericAttr.keyable = True
 
         prDoubleLinear.input = compoundAttr.create('input', 'input')
@@ -87,17 +105,17 @@ class prDoubleLinear(om.MPxNode):
     def __init__(self):
         om.MPxNode.__init__(self)
 
-    def displayError(self, error, index=None):
+    def displayWarning(self, error, index=None):
         nodeName = om.MFnDependencyNode(self.thisMObject()).name()
         if index is None:
-            message = '{0}: "{1}"'.format(error, nodeName)
+            message = '"{0}": {1}'.format(nodeName, error)
         else:
-            message = '{0}: "{1}.input[{2}]"'.format(error, nodeName, index)
-        om.MGlobal.displayError(message)
+            message = '"{0}.input[{1}]": {2}'.format(nodeName, index, error)
+        om.MGlobal.displayWarning(message)
 
     def compute(self, plug, dataBlock):
         if plug not in [self.output]:
-            self.displayError(error='Unknown plug: {}'.format(plug))
+            self.displayWarning(error='Unknown plug: {}'.format(plug))
             return
         operation = dataBlock.inputValue(self.operation).asShort()
 
@@ -108,8 +126,8 @@ class prDoubleLinear(om.MPxNode):
             inputArrayHandle.jumpToPhysicalElement(i)
             index = inputArrayHandle.elementLogicalIndex()
             inputTargetHandle = inputArrayHandle.inputValue()
-            in1 = inputTargetHandle.child(self.input1).asFloat()
-            in2 = inputTargetHandle.child(self.input2).asFloat()
+            in1 = inputTargetHandle.child(self.input1).asDouble()
+            in2 = inputTargetHandle.child(self.input2).asDouble()
             output_handle = output_builder.addElement(index)
             if operation == 0:
                 output = 0.0
@@ -125,17 +143,33 @@ class prDoubleLinear(om.MPxNode):
                 try:
                     output = in1 / in2
                 except ZeroDivisionError as er:
-                    self.displayError(er, index)
+                    self.displayWarning('ZeroDivisionError: {}'.format(er), index)
                     output = 0.0
             elif operation == 6:
                 try:
                     output = in1 ** in2
                 except ValueError as er:
-                    # self.displayError(er, index) # disabled because multiplyDivide does not error
+                    self.displayWarning('ValueError: {}'.format(er), index)
                     output = 0.0
+            elif operation == 7:
+                try:
+                    output = in1 // in2
+                except ZeroDivisionError as er:
+                    self.displayWarning('ZeroDivisionError: {}'.format(er), index)
+                    output = 0.0
+            elif operation == 8:
+                try:
+                    output = in1 % in2
+                except ZeroDivisionError as er:
+                    self.displayWarning('ZeroDivisionError: {}'.format(er), index)
+                    output = 0.0
+            elif operation == 9:
+                output = in1
+            elif operation == 10:
+                output = in2
             else:
                 raise ValueError('Invalid operation value: {}'.format(operation))
-            output_handle.setFloat(output)
+            output_handle.setDouble(output)
         output_arrayHandle.set(output_builder)
         output_arrayHandle.setAllClean()
         dataBlock.setClean(plug)
