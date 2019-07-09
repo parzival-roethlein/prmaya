@@ -3,9 +3,14 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Binary operation for array of scalar pairs.
+Basic math operations for pairs of numbers (+, -, average, *, /, ^, root)
 The purpose of this node is to reduce the number of nodes in the scene by
-replacing multiple plusMinusAverage and multiplyDivide nodes with one
+replacing multiple standard maya nodes with a single node, because the Maya ones
+only allow for a limited number of input pairs. Maya node examples:
+- addDoubleLinear
+- multDoubleLinear
+- plusMinusAverage
+- multiplyDivide
 
 USE CASES
 ...
@@ -26,6 +31,7 @@ LINKS
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
+- name: scalar, algebra/math, binary operation/pair. prScalarMath, prScalarPairMath, prScalarAlgebra
 - node behavior attrs
 - custom aeTemplate for prDoubleLinear.input
 
@@ -63,6 +69,7 @@ class prDoubleLinear(om.MPxNode):
         enumAttr.addField('Multiply', 4)
         enumAttr.addField('Divide', 5)
         enumAttr.addField('Power', 6)
+        enumAttr.addField('Root', 7)
         prDoubleLinear.addAttribute(prDoubleLinear.operation)
         prDoubleLinear.attributeAffects(prDoubleLinear.operation, prDoubleLinear.output)
 

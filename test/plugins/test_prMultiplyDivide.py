@@ -19,11 +19,11 @@ test_prMultiplyDivide.run()
 
 import maya.cmds as mc
 
-from prmaya.plugins import prMultiplyDivide
-reload(prMultiplyDivide)
+from prmaya.plugins import prBinaryOperationVec
+reload(prBinaryOperationVec)
 
-SETTINGS = {'plugin_name': 'prMultiplyDivide.py',
-            'plugin_path': '/home/prthlein/private/code/prmaya/prmaya/plugins/prMultiplyDivide.py',
+SETTINGS = {'plugin_name': 'prBinaryOperationVec.py',
+            'plugin_path': '/home/prthlein/private/code/prmaya/prmaya/plugins/prBinaryOperationVec.py',
             'file': '/home/prthlein/private/code/prmaya/test/plugins/test_prMultiplyDivide.ma',
             }
 
