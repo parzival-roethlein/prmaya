@@ -1,8 +1,9 @@
 """
+SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-the python math module as maya node
+The Python math module as Maya node. Was a test, probably not for production
 
 ATTRIBUTES
 1. data
