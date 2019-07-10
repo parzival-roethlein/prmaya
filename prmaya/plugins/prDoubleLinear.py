@@ -3,7 +3,7 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Basic math operations for pairs of numbers (+, -, average, *, /, ^, root)
+Basic math operations for pairs of numbers.
 The purpose of this node is to reduce the number of nodes in the scene by
 replacing multiple standard maya nodes with a single node, because the Maya ones
 only allow for a limited number of input pairs. Maya node examples:
@@ -19,23 +19,25 @@ USAGE
 (MEL): createNode prDoubleLinear
 
 ATTRIBUTES
-prDoubleLinear1.operation: similar to multiplyDivide and plusMinusAverage, except:
-- 0, No operation: outputs 0.0
-  (plusMinusAverage outputs 0.0)
-  (multiplyDivide outputs input1)
-- 5, Division: If ZeroDivisionError outputs 0.0
-  (multiplyDivide if ZeroDivisionError outputs 100000)
-- 6, Power: Negative number with fractional power gives error and outputs 0.0.
-  (multiplyDivide node does not error and outputs NaN value)
-- 7, Floor division: There is no maya node equivalent?!
-- 8, Modulus: There is no maya node equivalent?!
-- 9, input1: output input1.
-  (multiplyDivide does this when in "No operation")
-- 10, input2: output input2
-
-prDoubleLinear1.input[0].input1
-prDoubleLinear1.input[0].input2
-prDoubleLinear1.output[0]
+prDoubleLinear1.input[0].input1 (double)
+prDoubleLinear1.input[0].input2 (double)
+prDoubleLinear1.output[0] (double)
+prDoubleLinear1.operation (enum)
+- 0, No operation: outputs 0.0. Same as plusMinusAverage (multiplyDivide outputs input1)
+- 1, input1: forward input1 to output
+- 2, input2: forward input2 to output
+- 3, Sum +: Same as plusMinusAverage / addDoubleLinear
+- 4, Subtract -: Same as plusMinusAverage
+- 5, Average: Same as plusMinusAverage
+- 6, Multiply *: Same as multiplyDivide / multDoubleLinear
+- 7, Division: Same as multiplyDivide, except:
+               If ZeroDivisionError outputs 0.0, multiplyDivide outputs 100000
+- 8, Power: Same as multiplyDivide, except:
+            Negative number with fractional power gives error and outputs 0.0.
+            multiplyDivide node does not error and outputs NaN value
+- 9, Root: input1 ** (1.0/input2)
+- 10, Floor division //: input1 // input2
+- 11, Modulus: input1 % input2
 
 LINKS
 - Demo: TODO
@@ -44,7 +46,7 @@ LINKS
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
-- name: scalar, algebra/math, binary operation/pair. prScalarMath, prScalarPairMath, prScalarAlgebra
+- names: scalar, algebra/math, binary operation -> prScalarBinaryOp, prScalarMath, prScalarAlgebra
 - node behavior attrs
 - custom aeTemplate for prDoubleLinear.input
 
@@ -73,20 +75,21 @@ class prDoubleLinear(om.MPxNode):
         prDoubleLinear.addAttribute(prDoubleLinear.output)
 
         # input
-        prDoubleLinear.operation = enumAttr.create('operation', 'operation', 1)
+        prDoubleLinear.operation = enumAttr.create('operation', 'operation', 3)
         enumAttr.keyable = True
         # operation names from maya nodes (plusMinusAverage, multiplyDivide)
         enumAttr.addField('No operation', 0)
-        enumAttr.addField('Sum +', 1)
-        enumAttr.addField('Subtract -', 2)
-        enumAttr.addField('Average', 3)
-        enumAttr.addField('Multiply *', 4)
-        enumAttr.addField('Divide /', 5)
-        enumAttr.addField('Power ^', 6)
-        enumAttr.addField('Floor division //', 7)
-        enumAttr.addField('Modulus %', 8)
-        enumAttr.addField('input1', 9)
-        enumAttr.addField('input2', 10)
+        enumAttr.addField('input1', 1)
+        enumAttr.addField('input2', 2)
+        enumAttr.addField('Sum +', 3)
+        enumAttr.addField('Subtract -', 4)
+        enumAttr.addField('Average', 5)
+        enumAttr.addField('Multiply *', 6)
+        enumAttr.addField('Divide /', 7)
+        enumAttr.addField('Power ^', 8)
+        enumAttr.addField('Root', 9)
+        enumAttr.addField('Floor division //', 10)
+        enumAttr.addField('Modulus %', 11)
         prDoubleLinear.addAttribute(prDoubleLinear.operation)
         prDoubleLinear.attributeAffects(prDoubleLinear.operation, prDoubleLinear.output)
 
@@ -138,41 +141,43 @@ class prDoubleLinear(om.MPxNode):
             if operation == 0:
                 output = 0.0
             elif operation == 1:
-                output = in1 + in2
+                output = in1
             elif operation == 2:
-                output = in1 - in2
+                output = in2
             elif operation == 3:
-                output = (in1 + in2) / 2
+                output = in1 + in2
             elif operation == 4:
-                output = in1 * in2
+                output = in1 - in2
             elif operation == 5:
+                output = (in1 + in2) / 2
+            elif operation == 6:
+                output = in1 * in2
+            elif operation == 7:
                 try:
                     output = in1 / in2
                 except ZeroDivisionError as er:
                     self.displayWarning('ZeroDivisionError: {}'.format(er), index)
                     output = 0.0
-            elif operation == 6:
+            elif operation == 8:
                 try:
                     output = in1 ** in2
                 except ValueError as er:
                     self.displayWarning('ValueError: {}'.format(er), index)
                     output = 0.0
-            elif operation == 7:
+            elif operation == 8:
+                output = in1 ** (1.0/in2)
+            elif operation == 10:
                 try:
                     output = in1 // in2
                 except ZeroDivisionError as er:
                     self.displayWarning('ZeroDivisionError: {}'.format(er), index)
                     output = 0.0
-            elif operation == 8:
+            elif operation == 11:
                 try:
                     output = in1 % in2
                 except ZeroDivisionError as er:
                     self.displayWarning('ZeroDivisionError: {}'.format(er), index)
                     output = 0.0
-            elif operation == 9:
-                output = in1
-            elif operation == 10:
-                output = in2
             else:
                 raise ValueError('Invalid operation value: {}'.format(operation))
             output_handle.setDouble(output)
