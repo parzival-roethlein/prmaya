@@ -4,6 +4,7 @@
 # maya / template
 incrementalSave
 .mayaSwatches
+*TEMP.ma
 
 # pycharm
 /.idea

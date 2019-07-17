@@ -1,9 +1,9 @@
 """
+# SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 # DESCRIPTION
 A dynamic User Interface (UI) to manage selections and poses in Autodesk Maya.
-Part of prmaya: https://github.com/parzival-roethlein/prmaya
 
 # USAGE
 Put the file prSelectionUi.py in your Maya scripts folder and execute:
@@ -41,29 +41,32 @@ https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUS
 2012-04-13 / 0.9.1: removed limitations // new features // can't read sets from old version
 2012-03-01 / 0.9.0: first version
 
+# TODO bugs
+- when adding nucleus to selection: api error...
+
 # TODO
-- replace selection option next to 'add to selection', 'remove', ...
-- export/import set UI button (right click menu?)
-- add color option in create new button window
+- create pose option: [radioBtnGrp] all channelBox or all keyable
+- create pose option: [checkbox] if channelBox selected -> only those
+- pose option: replace pose
+- apply pose options: only apply to channelBox selected attr
+- selection option: "replace with selected" next to "Add selected"
 - improve default name of tab/button (from selection)
-- marking menu! ctrl/shift+right click
-- API commands to edit data // put attributes (color, ...) in channelBox for easy batch editing from user
-- UI options as arguments in .UI() call
 - button to print command that should be run to create UI as it currently is and/or config file for that?
+- UI options as arguments in .UI() call
 - option to have multiple instances of window open (how do changes propagate? always force refresh on inactive ui?)
 - set naming convention...
-- faster loading: use API to search/read sets?
-- namespace autoread/overwrite function
-- shift/ctrl+mouse click on selection center button with maya viewport functionality
 - duplicate selection / pose button
 - search and replace for members (give user string output, input field, they can edit in editor of their choice) this also helps when flooding the same vertices on differnt meshes
-- (maybe) popup when leftclicking empty set-optionMenu
-- (maybe) save set to shelf
-- (fix?) when adding nucleus to selection: api error...
-- (code) store pose nodes in dictionary with attr and values for faster 'pose selected nodes' cmd
-- (maybe) save pose only for channelBox highlighted attributes, or only apply to selected/highlighted attributes?
-- (maybe) replace selection with current selection right click option?
-- (maybe) replace pose with current pose right click option?
+
+# TODO nice to have
+- faster loading: use API to search/read sets?
+- store pose nodes in dictionary with attr and values for faster 'pose selected nodes' cmd
+- add color option in create new button window
+- shift/ctrl+mouse click on selection center button with maya viewport functionality
+- marking menu as alternative to the right click menus etc
+- export/import set UI button (right click menu?)
+- API commands to edit data // put attributes (color, ...) in channelBox for easy batch editing from user
+- save set to shelf
 
 """
 

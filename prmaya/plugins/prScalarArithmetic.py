@@ -16,28 +16,26 @@ USE CASES
 ...
 
 USAGE
-(MEL): createNode prDoubleLinear
+(MEL): createNode prScalarArithmetic
 
 ATTRIBUTES
-prDoubleLinear1.input[0].input1 (double)
-prDoubleLinear1.input[0].input2 (double)
-prDoubleLinear1.output[0] (double)
-prDoubleLinear1.operation (enum)
-- 0, No operation: outputs 0.0. Same as plusMinusAverage (multiplyDivide outputs input1)
-- 1, input1: forward input1 to output
-- 2, input2: forward input2 to output
-- 3, Sum +: Same as plusMinusAverage / addDoubleLinear
-- 4, Subtract -: Same as plusMinusAverage
-- 5, Average: Same as plusMinusAverage
-- 6, Multiply *: Same as multiplyDivide / multDoubleLinear
-- 7, Division: Same as multiplyDivide, except:
+prScalarArithmetic1.input[0].input1 (double)
+prScalarArithmetic1.input[0].input2 (double)
+prScalarArithmetic1.output[0] (double)
+prScalarArithmetic1.operation (enum)
+- 0, No operation: forward input1. Same as multiplyDivide
+- 1, Sum +: Same as plusMinusAverage / addDoubleLinear
+- 2, Subtract -: Same as plusMinusAverage
+- 3, Average: Same as plusMinusAverage
+- 4, Multiply *: Same as multiplyDivide / multDoubleLinear
+- 5, Division: Same as multiplyDivide, except:
                If ZeroDivisionError outputs 0.0, multiplyDivide outputs 100000
-- 8, Power: Same as multiplyDivide, except:
+- 6, Power: Same as multiplyDivide, except:
             Negative number with fractional power gives error and outputs 0.0.
             multiplyDivide node does not error and outputs NaN value
-- 9, Root: input1 ** (1.0/input2)
-- 10, Floor division //: input1 // input2
-- 11, Modulus: input1 % input2
+- 7, Root: input1 ** (1.0/input2)
+- 8, Floor division //: input1 // input2
+- 9, Modulus: input1 % input2
 
 LINKS
 - Demo: TODO
@@ -46,9 +44,11 @@ LINKS
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
-- names: scalar, algebra/math, binary operation -> prScalarBinaryOp, prScalarMath, prScalarAlgebra
+- custom aeTemplate for prScalarArithmetic.input
 - node behavior attrs
-- custom aeTemplate for prDoubleLinear.input
+- name alternatives: scalar/double, linear / math>algebra>arithmetic, binary operation
+  -> prDoubleLinear, prDoubleArithmetic
+  -> prScalarAlgebra, prScalarMath, prScalarBinaryOp
 
 """
 
@@ -57,8 +57,8 @@ import sys
 import maya.api.OpenMaya as om
 
 
-class prDoubleLinear(om.MPxNode):
-    nodeTypeName = "prDoubleLinear"
+class prScalarArithmetic(om.MPxNode):
+    nodeTypeName = "prScalarArithmetic"
     nodeTypeId = om.MTypeId(0x0004C266)  # local, not save
 
     @staticmethod
@@ -68,48 +68,46 @@ class prDoubleLinear(om.MPxNode):
         enumAttr = om.MFnEnumAttribute()
 
         # output
-        prDoubleLinear.output = numericAttr.create('output', 'output', om.MFnNumericData.kDouble)
+        prScalarArithmetic.output = numericAttr.create('output', 'output', om.MFnNumericData.kDouble)
         numericAttr.array = True
         numericAttr.usesArrayDataBuilder = True
         numericAttr.writable = False
-        prDoubleLinear.addAttribute(prDoubleLinear.output)
+        prScalarArithmetic.addAttribute(prScalarArithmetic.output)
 
         # input
-        prDoubleLinear.operation = enumAttr.create('operation', 'operation', 3)
+        prScalarArithmetic.operation = enumAttr.create('operation', 'operation', 3)
         enumAttr.keyable = True
         # operation names from maya nodes (plusMinusAverage, multiplyDivide)
         enumAttr.addField('No operation', 0)
-        enumAttr.addField('input1', 1)
-        enumAttr.addField('input2', 2)
-        enumAttr.addField('Sum +', 3)
-        enumAttr.addField('Subtract -', 4)
-        enumAttr.addField('Average', 5)
-        enumAttr.addField('Multiply *', 6)
-        enumAttr.addField('Divide /', 7)
-        enumAttr.addField('Power ^', 8)
-        enumAttr.addField('Root', 9)
-        enumAttr.addField('Floor division //', 10)
-        enumAttr.addField('Modulus %', 11)
-        prDoubleLinear.addAttribute(prDoubleLinear.operation)
-        prDoubleLinear.attributeAffects(prDoubleLinear.operation, prDoubleLinear.output)
+        enumAttr.addField('Sum +', 1)
+        enumAttr.addField('Subtract -', 2)
+        enumAttr.addField('Average', 3)
+        enumAttr.addField('Multiply *', 4)
+        enumAttr.addField('Divide /', 5)
+        enumAttr.addField('Power ^', 6)
+        enumAttr.addField('Root', 7)
+        enumAttr.addField('Floor division //', 8)
+        enumAttr.addField('Modulus %', 9)
+        prScalarArithmetic.addAttribute(prScalarArithmetic.operation)
+        prScalarArithmetic.attributeAffects(prScalarArithmetic.operation, prScalarArithmetic.output)
 
-        prDoubleLinear.input1 = numericAttr.create('input1', 'input1', om.MFnNumericData.kDouble, 0.0)
+        prScalarArithmetic.input1 = numericAttr.create('input1', 'input1', om.MFnNumericData.kDouble, 0.0)
         numericAttr.keyable = True
 
-        prDoubleLinear.input2 = numericAttr.create('input2', 'input2', om.MFnNumericData.kDouble, 1.0)
+        prScalarArithmetic.input2 = numericAttr.create('input2', 'input2', om.MFnNumericData.kDouble, 1.0)
         numericAttr.keyable = True
 
-        prDoubleLinear.input = compoundAttr.create('input', 'input')
-        compoundAttr.addChild(prDoubleLinear.input1)
-        compoundAttr.addChild(prDoubleLinear.input2)
+        prScalarArithmetic.input = compoundAttr.create('input', 'input')
+        compoundAttr.addChild(prScalarArithmetic.input1)
+        compoundAttr.addChild(prScalarArithmetic.input2)
         compoundAttr.array = True
-        prDoubleLinear.addAttribute(prDoubleLinear.input)
-        prDoubleLinear.attributeAffects(prDoubleLinear.input1, prDoubleLinear.output)
-        prDoubleLinear.attributeAffects(prDoubleLinear.input2, prDoubleLinear.output)
+        prScalarArithmetic.addAttribute(prScalarArithmetic.input)
+        prScalarArithmetic.attributeAffects(prScalarArithmetic.input1, prScalarArithmetic.output)
+        prScalarArithmetic.attributeAffects(prScalarArithmetic.input2, prScalarArithmetic.output)
 
     @staticmethod
     def creator():
-        return prDoubleLinear()
+        return prScalarArithmetic()
 
     def __init__(self):
         om.MPxNode.__init__(self)
@@ -139,40 +137,36 @@ class prDoubleLinear(om.MPxNode):
             in2 = inputTargetHandle.child(self.input2).asDouble()
             output_handle = output_builder.addElement(index)
             if operation == 0:
-                output = 0.0
-            elif operation == 1:
                 output = in1
-            elif operation == 2:
-                output = in2
-            elif operation == 3:
+            elif operation == 1:
                 output = in1 + in2
-            elif operation == 4:
+            elif operation == 2:
                 output = in1 - in2
-            elif operation == 5:
+            elif operation == 3:
                 output = (in1 + in2) / 2
-            elif operation == 6:
+            elif operation == 4:
                 output = in1 * in2
-            elif operation == 7:
+            elif operation == 5:
                 try:
                     output = in1 / in2
                 except ZeroDivisionError as er:
                     self.displayWarning('ZeroDivisionError: {}'.format(er), index)
                     output = 0.0
-            elif operation == 8:
+            elif operation == 6:
                 try:
                     output = in1 ** in2
                 except ValueError as er:
                     self.displayWarning('ValueError: {}'.format(er), index)
                     output = 0.0
-            elif operation == 8:
+            elif operation == 7:
                 output = in1 ** (1.0/in2)
-            elif operation == 10:
+            elif operation == 8:
                 try:
                     output = in1 // in2
                 except ZeroDivisionError as er:
                     self.displayWarning('ZeroDivisionError: {}'.format(er), index)
                     output = 0.0
-            elif operation == 11:
+            elif operation == 9:
                 try:
                     output = in1 % in2
                 except ZeroDivisionError as er:
@@ -189,10 +183,10 @@ class prDoubleLinear(om.MPxNode):
 def initializePlugin(obj):
     pluginFn = om.MFnPlugin(obj, 'Parzival Roethlein', '0.0.1')
     try:
-        pluginFn.registerNode(prDoubleLinear.nodeTypeName, prDoubleLinear.nodeTypeId,
-                              prDoubleLinear.creator, prDoubleLinear.initialize)
+        pluginFn.registerNode(prScalarArithmetic.nodeTypeName, prScalarArithmetic.nodeTypeId,
+                              prScalarArithmetic.creator, prScalarArithmetic.initialize)
     except:
-        sys.stderr.write('Failed to register node: {0}'.format(prDoubleLinear.nodeTypeName))
+        sys.stderr.write('Failed to register node: {0}'.format(prScalarArithmetic.nodeTypeName))
         raise
     evalAETemplate()
 
@@ -200,9 +194,9 @@ def initializePlugin(obj):
 def uninitializePlugin(obj):
     pluginFn = om.MFnPlugin(obj)
     try:
-        pluginFn.deregisterNode(prDoubleLinear.nodeTypeId)
+        pluginFn.deregisterNode(prScalarArithmetic.nodeTypeId)
     except:
-        sys.stderr.write('Failed to deregister node: {0}'.format(prDoubleLinear.nodeTypeName))
+        sys.stderr.write('Failed to deregister node: {0}'.format(prScalarArithmetic.nodeTypeName))
         raise
 
 
@@ -213,10 +207,10 @@ def maya_useNewAPI():
 def evalAETemplate():
     import maya.mel as mm
     mm.eval('''
-    global proc AEprDoubleLinearTemplate(string $nodeName)
+    global proc AEprScalarArithmeticTemplate(string $nodeName)
     {
         editorTemplate -beginScrollLayout;
-            editorTemplate -beginLayout "prDoubleLinear Attributes" -collapse 0;
+            editorTemplate -beginLayout "prScalarArithmetic Attributes" -collapse 0;
                 editorTemplate -label "operation" -addControl "operation";
                 editorTemplate -label "input" -addControl "input";
             editorTemplate -endLayout;

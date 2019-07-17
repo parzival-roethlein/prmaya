@@ -2,7 +2,6 @@
 Scripts, plugins and posts (tutorials, notes) for Autodesk Maya. Any feedback is welcome.
 * prmaya (folder structure similar to maya user folder) 
   * scripts (Used in production)
-    * __AEmultDoubleLinearTemplate__
     * __AEplusMinusAverageTemplate__
     * __prPanelCtx__
     * __prObjectSetUi__
