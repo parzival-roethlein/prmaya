@@ -1,12 +1,6 @@
 """
 
 import sys
-sys.path.append('/home/prthlein/private/code/prmaya/test/plugins')
-import test_prRange
-reload(test_prRange)
-test_prRange.run()
-
-import sys
 sys.path.append('C:/Users/paz/Documents/git/prmaya/test/plugins')
 import test_prRange
 reload(test_prRange)
@@ -14,6 +8,12 @@ test_prRange.SETTINGS['plugin_path'] = r'C:\Users\paz\Documents\git\prmaya\prmay
 test_prRange.SETTINGS['file'] = r'C:\Users\paz\Documents\git\prmaya\test\plugins\test_prRange.ma'
 test_prRange.run()
 
+
+import sys
+sys.path.append('/home/prthlein/private/code/prmaya/test/plugins')
+import test_prRange
+reload(test_prRange)
+test_prRange.run()
 """
 
 import maya.cmds as mc
@@ -39,7 +39,7 @@ def run():
     mc.createNode('prRange')
     mc.connectAttr('inputMin.tx', 'prRange1.inputMin')
     mc.connectAttr('inputMax.tx', 'prRange1.inputMax')
-    mc.setAttr("prRange1.inputStepCount", 5)
+    mc.setAttr("prRange1.inputSampleCount", 5)
 
     for x in range(5):
         transform = 'cube{}'.format(x)
