@@ -3,7 +3,7 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-The Python math module as Maya node. Was a test, probably not for production
+The Python math module as Maya node. Random idea, probably not for production.
 
 ATTRIBUTES
 1. data
@@ -26,7 +26,7 @@ https://pazrot3d.blogspot.com/2018/10/prpymathpy-making-of.html
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
-nodeState / frozen
+- nodeState / frozen
 - remove AEprPyMathTemplate_iterableNodeTextField and replace it with something like global mel variable
 TODO MAYBE
 - is the argument compound attribute maya style?
@@ -34,7 +34,6 @@ TODO MAYBE
 - arguments of MFnUnitAttribute type
 - check why maya result attribute value is so inaccurate: round(x, 6) or round(x, 5) is needed to match math module results
 - create docstring: copy from math module (?) + new maya utility
-- generalized AEtemplate array attribute build / delete / update functions, the textfield names have to be built from nodetype and attr name
 """
 
 import math

@@ -1,4 +1,5 @@
 """
+SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
@@ -43,8 +44,8 @@ https://pazrot3d.blogspot.com/2018/10/prclosestpointpy-making-of.html
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
-- implement nodeState / frozen
 - make fromSelection() work with vertex selection
+- implement nodeState / frozen
 
 TODO optional
 - consider scale of target matrix input?
