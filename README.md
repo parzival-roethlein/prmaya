@@ -2,13 +2,17 @@
 Scripts, plugins and posts (tutorials, notes) for Autodesk Maya. Any feedback is welcome.
 * prmaya (folder structure similar to maya user folder) 
   * scripts (Used in production)
-    * __AEplusMinusAverageTemplate__
-    * __prPanelCtx__
+    * __AE...Template__: Improved default ones or for nodeTypes without one
+    * __prPanelCtx__: Custom panel settings while dragging timeline or manipulators 
     * __prObjectSetUi__
     * __prSelectionUi__: Demo: https://vimeo.com/37670989
   * plugins (None tested in production, unsave IDs)
-    * __prClosestPoint__
-    * __prRemapValue__
+    * __prClosestPoint__: Deformer that moves points to closest: matrix (position) / mesh shape (or vertex) / nurbs-curve shape / nurbs-surface shape
+    * __prRange__: Sample a range
+    * __prRemapValue__: Array version of Mayas remapValue node
+    * __prScalarArithmetic__: Arithmetic operators for array of scalar pairs that return a scalar
+    * __prVectorArithmetic__: Arithmetic operators for array of vector pairs that return a vector
+    * __prVectorBlend__: Array version of Mayas blendColors node, but for vectors
 * archive (Unusable. Only good for code/algorithm reference. Made when learning API basics in 2011)
   * plugins
     * __prAttractNode__: Replaced by prClosestPoint. Demo: https://vimeo.com/20002149 

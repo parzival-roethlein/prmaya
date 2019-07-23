@@ -3,30 +3,29 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Basic math for array of vector pairs.
-Similar to Maya utility nodes, but for array.
+Binary math operators for input vector pairs that return a vector
 
 USE CASES
 ...
 
 USAGE
-(MEL): createNode prVector
+(MEL): createNode prVectorArithmetic
 
 ATTRIBUTES
-prVector1.operation
-prVector1.normalizeOutput
-prVector1.input[0].input1
-prVector1.input[0].input1.input1X
-prVector1.input[0].input1.input1Y
-prVector1.input[0].input1.input1Z
-prVector1.input[0].input2
-prVector1.input[0].input2.input2X
-prVector1.input[0].input2.input2Y
-prVector1.input[0].input2.input2Z
-prVector1.output[0]
-prVector1.output[0].outputX
-prVector1.output[0].outputY
-prVector1.output[0].outputZ
+prVectorArithmetic1.operation
+prVectorArithmetic1.normalizeOutput
+prVectorArithmetic1.input[0].input1
+prVectorArithmetic1.input[0].input1.input1X
+prVectorArithmetic1.input[0].input1.input1Y
+prVectorArithmetic1.input[0].input1.input1Z
+prVectorArithmetic1.input[0].input2
+prVectorArithmetic1.input[0].input2.input2X
+prVectorArithmetic1.input[0].input2.input2Y
+prVectorArithmetic1.input[0].input2.input2Z
+prVectorArithmetic1.output[0]
+prVectorArithmetic1.output[0].outputX
+prVectorArithmetic1.output[0].outputY
+prVectorArithmetic1.output[0].outputZ
 
 LINKS
 - Demo: TODO

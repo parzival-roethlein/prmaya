@@ -12,10 +12,9 @@ USAGE
 (MEL): createNode prMultiplyVector
 
 ATTRIBUTES
-prMultiplyVector1.operation
-- 'Multiply * (inputScalar)'
-- 'Multiply * (inputMatrix)'
 prMultiplyVector1.normalizeOutput
+prMultiplyVector1.inputMatrix
+prMultiplyVector1.inputScalar ### TODO inputMatrix/inputScalar: global / for each input / both?
 prMultiplyVector1.input[0].inputVector
 prMultiplyVector1.input[0].inputVector.inputVectorX
 prMultiplyVector1.input[0].inputVector.inputVectorY

@@ -3,7 +3,7 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Basic math operations for pairs of numbers.
+Binary math operators for input scalar pairs that return a scalar
 The purpose of this node is to reduce the number of nodes in the scene by
 replacing multiple standard maya nodes with a single node, because the Maya ones
 only allow for a limited number of input pairs. Maya node examples:

@@ -25,7 +25,7 @@ prVectorAngleBetween1.output[0].outputAxis
 prVectorAngleBetween1.output[0].outputAxis.outputAxisX
 prVectorAngleBetween1.output[0].outputAxis.outputAxisY
 prVectorAngleBetween1.output[0].outputAxis.outputAxisZ
-prVectorAngleBetween1.output[0].outputAngle
+prVectorAngleBetween1.output[0].outputAngle #### group outputs, like mayas angleBetween?
 prVectorAngleBetween1.output[0].outputEuler
 prVectorAngleBetween1.output[0].outputEuler.outputEulerX
 prVectorAngleBetween1.output[0].outputEuler.outputEulerY
