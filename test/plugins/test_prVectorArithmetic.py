@@ -44,17 +44,18 @@ def run():
     mc.unloadPlugin(SETTINGS['plugin_name'])
     mc.loadPlugin(SETTINGS['plugin_path'])
     mc.file(SETTINGS['file'], open=True, force=True)
-    createTempFile()
+
     input1, input2, output = 'input1.t', 'input2.t', 'output.t'
     for value, operation in enumerate(['noOperation',
                                        'sum', 'subtract', 'average',
                                        'crossProduct', 'projection']):
         prNode = mc.createNode('prVectorArithmetic', name=operation + '_prVectorArithmetic')
+        #mc.setAttr(prNode+'.operation', value)
         mc.connectAttr(input1, prNode+'.input[0].input1')
         mc.connectAttr(input2, prNode+'.input[0].input2')
         mc.connectAttr(prNode+'.output[0]', output)
 
-        return
+        return  # TODO: proper test
 
         mc.setAttr(prNode + '.operation', value)
         mc.setAttr(prNode + '.input[1].input1', driverValue)
@@ -73,4 +74,5 @@ def run():
             mc.connectAttr(prNode + '.output[1]', prCubeStatic + '.ty')
         else:
             print('missing: {}'.format(prCubeStatic))
+    createTempFile()
     mc.select(loc)

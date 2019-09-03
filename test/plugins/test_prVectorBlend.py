@@ -44,10 +44,14 @@ def run():
     mc.unloadPlugin(SETTINGS['plugin_name'])
     mc.loadPlugin(SETTINGS['plugin_path'])
     mc.file(SETTINGS['file'], open=True, force=True)
-    createTempFile()
+
     input1, input2, output = 'input1.t', 'input2.t', 'output.t'
     prNode = mc.createNode('prVectorBlend')
     mc.connectAttr(input1, prNode + '.input[1].input1')
     mc.connectAttr(input2, prNode + '.input[1].input2')
     mc.connectAttr(prNode + '.output[1]', output)
     mc.setAttr(prNode + '.input[0].input1', 0.1, 0.2, 0.3)
+
+    # TODO: proper test
+
+    createTempFile()

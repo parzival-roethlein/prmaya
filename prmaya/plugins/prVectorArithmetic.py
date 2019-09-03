@@ -3,7 +3,7 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Binary math operators for input vector pairs that return a vector
+Arithmetic operators for array of vector pairs that return a vector
 
 USE CASES
 ...

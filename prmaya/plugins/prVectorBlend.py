@@ -3,8 +3,10 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-array version of maya blendColors node.
-difference: vector naming (input1X, ..) instead of color (color1R, ..)
+Vector array version of Mayas blendColors node
+difference:
+- vector naming (input1X, ..) instead of color (color1R, ..)
+- option to normalizeOutput
 
 USE CASES
 ...
@@ -53,7 +55,6 @@ class prVectorBlend(om.MPxNode):
     @staticmethod
     def initialize():
         numericAttr = om.MFnNumericAttribute()
-        enumAttr = om.MFnEnumAttribute()
         compoundAttr = om.MFnCompoundAttribute()
 
         # output

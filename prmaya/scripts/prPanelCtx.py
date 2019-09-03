@@ -11,42 +11,33 @@ The purpose is to have a clear view of the deforming geometry
 Technical: Creates a scriptJob (SelectionChanged) and OpenMaya.MConditionMessage (playingBack)
 
 # INSTALLATION
-Copy this file ("prPanelCtx.py") into your ".../maya/scripts" folder
+Copy this file ("prPanelCtx.py") into your ".../maya/scripts" folder.
 
-# USAGE
+# USAGE (It's recommended to run it in your userSetup file, so you don't have to think about it and treat it like a Maya setting)
 import prPanelCtx
 # AND EITHER
-prPanelCtx.enable()
-prPanelCtx.disable()
+prPanelCtx.enable() # prPanelCtx.disable()
 # OR
 prPanelCtx.toggle()
 
 # USAGE EXAMPLE: ANIMATION
 import prPanelCtx
-prPanelCtx.setAnimationDefaults()
-prPanelCtx.toggle()
+prPanelCtx.enable(manipulators=False, nurbsCurves=False, locators=False, controllers=False)
 
 # USAGE EXAMPLE: RIGGING
 import prPanelCtx
-prPanelCtx.setRiggingDefaults()
-prPanelCtx.toggle()
-
-# USAGE EXAMPLE: CUSTOM
-import prPanelCtx
-prPanelCtx.toggle(manipCtxKwargs={'manipulators': False}, playbackCtxKwargs={'nurbsCurves': False, 'locators': False})
+prPanelCtx.enable(manipCtxKwargs={'manipulators': False}, playbackCtxKwargs={'nurbsCurves': False, 'locators': False, 'controllers': False})
 
 
 # TODO
-- DEFAULT_FLAGS for each context, remove arguments from enable/toggle. they should use global vars. add global vars setters that check args (verify flags)
+- UI
 - shadingCtx (xray joints, default material, ...)
 - LightingCtx
-- compare and maybe switch to MEvent version of manipScriptjob
-- hotkey "context" option
-- UI
 - switch scriptJob creation to onFileOpen and delete onFileClose? so playbackId does not get lost / multiple playback scriptjobs created
+- (could not find a event for this) timeline context to start on mousedown, not only after time changes
 
 # TODO (maybe)
-- playbackCtx to start on timeline mouse down (if that changes the time only or in any case)
+- compare and maybe switch to MEvent version of manipScriptjob
 - camera orbit ctx (orbitCtx, draggerContext, panZoomCtx)
 - manipCtx component selection support
 - channelBox attribute drag support: mc.draggerContext doesn't seem to trigger from channelBox drag
@@ -66,10 +57,6 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-GLOBAL_SETTINGS = None
-MANIP_SETTINGS = None
-PLAYBACK_SETTINGS = None
-
 SCENE_PANEL_VALUES = defaultdict(dict)
 MANIP_NODE_TYPE = None
 MANIP_CTX_ID = None
@@ -78,29 +65,17 @@ PLAYBACK_CTX_ID = None
 TOGGLE_STATUS = False
 
 
-def setAnimationDefaults():
-    #  {'show': {'manipulators': False}}
-    # global GLOBAL_SETTINGS = {'show': {manipulators=False, nurbsCurves=False, controllers=False, locators=False, deformers=False, joints=False}}
-    return
-
-
-def setRiggingDefaults():
-    # global MANIP_SETTINGS = {'show': {manipulators=False}}
-    # global PLAYBACK_SETTINGS = {'show': {'nurbsCurves': False, 'controllers': False, 'locators': False, 'deformers': False, 'joints': False}}
-    return
-
-
-def enable(manipCtxKwargs=None, playbackCtxKwargs=None, **globalCtxKwargs):
+def enable(manipCtxKwargs=None, playbackCtxKwargs=None, **allCtxKwargs):
     """
-    :param manipCtxKwargs: see def createManipCtx(..)
-    :param playbackCtxKwargs: see def createPlaybackCtx(..)
-    :param globalCtxKwargs: for either Ctx
+    :param manipCtxKwargs: settings for only the manipulators (translate, rotate, scale tools)
+    :param playbackCtxKwargs: settings for only the timeline interaction (drag, playback)
+    :param allCtxKwargs: settings for both: manipulators / timeline interaction
     :return: 
     """
     global TOGGLE_STATUS
     TOGGLE_STATUS = True
-    manipCtxKwargs = dict(globalCtxKwargs.items() + (manipCtxKwargs or {}).items())
-    playbackCtxKwargs = dict(globalCtxKwargs.items() + (playbackCtxKwargs or {}).items())
+    manipCtxKwargs = dict(allCtxKwargs.items() + (manipCtxKwargs or {}).items())
+    playbackCtxKwargs = dict(allCtxKwargs.items() + (playbackCtxKwargs or {}).items())
     createManipCtx(**manipCtxKwargs)
     createPlaybackCtx(**playbackCtxKwargs)
 
@@ -112,20 +87,20 @@ def disable():
     deletePlaybackCtx()
 
 
-def toggle(displayStatus=True, **enableKwargs):
+def toggle(displayInfo=True, **enableKwargs):
     """
-    :param displayStatus: display toggle status
+    :param displayInfo: display toggle status
     :param enableKwargs: see def enable(..)
     :return:
     """
     global TOGGLE_STATUS
     if not TOGGLE_STATUS:
         enable(**enableKwargs)
-        if displayStatus:
+        if displayInfo:
             om.MGlobal.displayInfo('ENABLED prPanelCtx')
     else:
         disable()
-        if displayStatus:
+        if displayInfo:
             om.MGlobal.displayInfo('DISABLED prPanelCtx')
 
 
@@ -212,6 +187,7 @@ def createManipCtx(**preCommandKwargs):
 
         global MANIP_CTX_ID
         MANIP_CTX_ID = mc.scriptJob(event=["SelectionChanged", prPanelCtxManipScriptJob])
+    # evalDeferred to be able to run in Maya userSetup file
     mc.evalDeferred(createManipCtxDeferred)
 
 
@@ -253,6 +229,7 @@ def createPlaybackCtx(**preCommandKwargs):
                 postCommand()
         global PLAYBACK_CTX_ID
         PLAYBACK_CTX_ID = om.MConditionMessage.addConditionCallback('playingBack', lambda state, *args: prPanelCtxCondition(state, **preCommandKwargs))
+    # evalDeferred to be able to run in Maya userSetup file
     mc.evalDeferred(createPlaybackCtxDeferred)
 
 

@@ -12,7 +12,7 @@ Scripts, plugins and posts (tutorials, notes) for Autodesk Maya. Any feedback is
     * __prRemapValue__: Array version of Mayas remapValue node
     * __prScalarArithmetic__: Arithmetic operators for array of scalar pairs that return a scalar
     * __prVectorArithmetic__: Arithmetic operators for array of vector pairs that return a vector
-    * __prVectorBlend__: Array version of Mayas blendColors node, but for vectors
+    * __prVectorBlend__: Vector array version of Mayas blendColors node
 * archive (Unusable. Only good for code/algorithm reference. Made when learning API basics in 2011)
   * plugins
     * __prAttractNode__: Replaced by prClosestPoint. Demo: https://vimeo.com/20002149 
@@ -25,6 +25,6 @@ Scripts, plugins and posts (tutorials, notes) for Autodesk Maya. Any feedback is
 
 
 ## Donation
-If you find something useful in Maya or for coding, consider supporting the author:
+This was written in my spare time. If you find something useful in Maya or for coding, consider supporting the author:
 
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW)
