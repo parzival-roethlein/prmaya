@@ -16,9 +16,9 @@ Copy this file ("prPanelCtx.py") into your ".../maya/scripts" folder.
 # USAGE (It's recommended to run it in your userSetup file, so you don't have to think about it and treat it like a Maya setting)
 import prPanelCtx
 # AND EITHER
-prPanelCtx.enable() # prPanelCtx.disable()
+prPanelCtx.enable(manipulators=False) # prPanelCtx.disable()
 # OR
-prPanelCtx.toggle()
+prPanelCtx.toggle(manipulators=False)
 
 # USAGE EXAMPLE: ANIMATION
 import prPanelCtx
@@ -112,10 +112,6 @@ def preCommand(withFocus=False, **flags):
     """
     global SCENE_PANEL_VALUES
     SCENE_PANEL_VALUES.clear()
-
-    if not flags:
-        global DEFAULT_FLAGS
-        flags = DEFAULT_FLAGS
 
     panels = mc.getPanel(type='modelPanel')
     if withFocus:
