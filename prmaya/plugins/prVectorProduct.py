@@ -3,14 +3,15 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-array version of mayas "vectorProduct" node.
+array version of mayas "vectorProduct" node
 added features:
 - new .input[0].scalar to multiply output with
 - new .globalScalar to multiply all outputs with
-- new .globalMatrix attr to multiply all outputs with for Matrix Product operations
+- new .globalMatrix attr to multiply all outputs with (Matrix Product operations)
 
 USE CASES
-...
+replace multiple vectorProduct nodes with one
+added scalar multiplication
 
 USAGE
 (MEL): createNode prVectorProduct
@@ -42,20 +43,11 @@ LINKS
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
-- custom aeTemplate for array input attr
-- node behavior attrs
-- icons
+- optional cleanup (icon, aeTemplate array attr, nodeBehavior attr)
 """
 
-
 import sys
-import math
-
 import maya.api.OpenMaya as om
-
-
-def multiply_matrix_with_matrix(m1, m2):
-    return m1
 
 
 class prVectorProduct(om.MPxNode):
@@ -158,42 +150,34 @@ class prVectorProduct(om.MPxNode):
             inputArrayHandle.jumpToPhysicalElement(i)
             index = inputArrayHandle.elementLogicalIndex()
             inputTargetHandle = inputArrayHandle.inputValue()
-            in1 = inputTargetHandle.child(self.input1).asFloat3()
-            in2 = inputTargetHandle.child(self.input2).asFloat3()
+            in1 = om.MVector(inputTargetHandle.child(self.input1).asFloat3())
+            in2 = om.MVector(inputTargetHandle.child(self.input2).asFloat3())
             scalar = inputTargetHandle.child(self.scalar).asFloat()
 
             output_handle = output_builder.addElement(index)
             if operation == 0:  # No operation
                 out = in1
             elif operation == 1:  # Dot Product
-                dotProduct = in1[0] * in2[0] + in1[1] * in2[1] + in1[2] * in2[2]
-                out = [dotProduct, dotProduct, dotProduct]
+                if normalizeOutput:
+                    in1.normalize()
+                    in2.normalize()
+                dotProduct = in1 * in2
+                out = om.MVector(dotProduct, dotProduct, dotProduct)
             elif operation == 2:  # Cross Product
-                outX = in1[1] * in2[2] - in1[2] * in2[1]
-                outY = in1[2] * in2[0] - in1[0] * in2[2]
-                outZ = in1[0] * in2[1] - in1[1] * in2[0]
-                out = [outX, outY, outZ]
-            elif operation == 3:  # Vector Matrix Product
+                out = in1 ^ in2
+            elif operation in [3, 4]:  # Vector / Point Matrix Product
                 matrix = inputTargetHandle.child(self.matrix).asMatrix()
-                m = multiply_matrix_with_matrix(globalMatrix, matrix)
-                out = [in1[0] * m[0] + in1[1] * m[4] + in1[2] * m[8],
-                       in1[0] * m[1] + in1[1] * m[5] + in1[2] * m[9],
-                       in1[0] * m[2] + in1[1] * m[6] + in1[2] * m[10]]
-            elif operation == 4:  # Point Matrix Product
-                matrix = inputTargetHandle.child(self.matrix).asMatrix()
-                m = multiply_matrix_with_matrix(globalMatrix, matrix)
-                out = [in1[0] * m[0] + in1[1] * m[4] + in1[2] * m[8] + m[12],
-                       in1[0] * m[1] + in1[1] * m[5] + in1[2] * m[9] + m[13],
-                       in1[0] * m[2] + in1[1] * m[6] + in1[2] * m[10] + m[14]]
+                m = globalMatrix * matrix
+                out = in1 * m
+                if operation == 4:  # Point Matrix Product
+                    out += om.MVector(m[12], m[13], m[14])
             else:
                 raise ValueError('operation: {}'.format(operation))
 
             if scalar * globalScalar != 1.0:
-                out = [o * globalScalar * scalar for o in out]
-            if normalizeOutput and operation in [0, 1, 2, 3]:
-                # TODO: fix dot product normalization
-                length = math.sqrt(out[0]**2 + out[1]**2 + out[2]**2)
-                out = [out[0] / length, out[1] / length, out[2] / length]
+                out *= globalScalar * scalar
+            if normalizeOutput and operation in [0, 2, 3]:
+                out.normalize()
             output_handle.set3Float(*out)
         output_arrayHandle.set(output_builder)
         output_arrayHandle.setAllClean()
@@ -234,6 +218,7 @@ def evalAETemplate():
                 editorTemplate -label "operation" -addControl "operation";
                 editorTemplate -label "normalizeOutput" -addControl "normalizeOutput";
                 editorTemplate -label "globalScalar" -addControl "globalScalar";
+                editorTemplate -label "globalMatrix" -addControl "globalMatrix";
                 editorTemplate -label "input" -addControl "input";
             editorTemplate -endLayout;
             AEdependNodeTemplate $nodeName;

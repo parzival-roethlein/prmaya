@@ -45,25 +45,35 @@ def run():
     mc.loadPlugin(SETTINGS['plugin_path'])
     mc.file(SETTINGS['file'], open=True, force=True)
 
-    input1, input2, output = 'input1.t', 'input2.t', 'output.t'
-    globalMatrix, globalScalar = 'input2.worldMatrix', 'input2.scalar'
+    input1, input2 = 'input1.translate', 'input2.translate'
+    scalar, matrix = 'input2.scalar', 'input2.worldMatrix'
+    globalScalar, globalMatrix = 'global_transform.scalar', 'global_transform.worldMatrix'
+
     for value, operation in enumerate(['noOperation',
                                        'dotProduct', 'crossProduct',
                                        'vectorMatrixProduct', 'pointMatrixProduct']):
         prNode = mc.createNode('prVectorProduct', name=operation + '_prVectorProduct')
         mayaNode = prNode.replace('prVectorProduct', 'vectorProduct')
         if mc.objExists(mayaNode):
+            # mc.connectAttr(prNode+'.nodeState', mayaNode+'.nodeState', force=True)
+            # mc.connectAttr(prNode+'.frozen', mayaNode+'.frozen', force=True)
             mc.connectAttr(prNode+'.operation', mayaNode+'.operation', force=True)
             mc.connectAttr(prNode+'.normalizeOutput', mayaNode+'.normalizeOutput', force=True)
+        else:
+            print('missing node: {}'.format(mayaNode))
         mc.setAttr(prNode+'.operation', value)
-        mc.connectAttr(input1, prNode+'.input[0].input1')
-        mc.connectAttr(input2, prNode+'.input[0].input2')
         mc.connectAttr(globalScalar, prNode+'.globalScalar')
         mc.connectAttr(globalMatrix, prNode+'.globalMatrix')
-        mc.connectAttr(prNode+'.output[0]', output, force=True)
-        # TODO: other operations
-        break
+        for x in [0, 2]:
+            mc.connectAttr(input1, '{0}.input[{1}].input1'.format(prNode, x))
+            mc.connectAttr(input2, '{0}.input[{1}].input2'.format(prNode, x))
+            mc.connectAttr(scalar, '{0}.input[{1}].scalar'.format(prNode, x))
+            mc.connectAttr(matrix, '{0}.input[{1}].matrix'.format(prNode, x))
+
+            outputAttr = '{0}.output[{1}]'.format(prNode, x)
+            outputTarget = '{}_output_{}.translate'.format(prNode, x)
+            mc.connectAttr(outputAttr, outputTarget, force=True)
 
     createTempFile()
-    mc.select(prNode)
+    mc.select('input1')
 
