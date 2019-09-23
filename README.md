@@ -8,11 +8,13 @@ Scripts, plugins and posts (tutorials, notes) for Autodesk Maya. Any feedback is
     * __prSelectionUi__: Demo: https://vimeo.com/37670989
   * plugins (None tested in production, unsave IDs)
     * __prClosestPoint__: Deformer that moves points to closest: matrix (position) / mesh shape (or vertex) / nurbs-curve shape / nurbs-surface shape
-    * __prRange__: Sample a range
+    * __prPyMath__: The Python math module as Maya node
+    * __prRange__: Create a list of scalars with even spacing
     * __prRemapValue__: Array version of Mayas remapValue node
     * __prScalarArithmetic__: Arithmetic operators for array of scalar pairs that return a scalar
     * __prVectorArithmetic__: Arithmetic operators for array of vector pairs that return a vector
     * __prVectorBlend__: Vector array version of Mayas blendColors node
+    * __prVectorProduct__: Vector array version of Mayas vectorProduct node
 * archive (Unusable. Only good for code/algorithm reference. Made when learning API basics in 2011)
   * plugins
     * __prAttractNode__: Replaced by prClosestPoint. Demo: https://vimeo.com/20002149 

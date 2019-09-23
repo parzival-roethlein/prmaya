@@ -4,10 +4,10 @@ https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
 Array version of Mayas remapValue node: inputValue[], outValue[], outColor[]
-Purpose: Scalable, procedural, convenient, simplify
+Scalable, procedural, convenient, simplify
 
 USE CASES
-...
+Replace multiple remapValue nodes with one
 
 USAGE
 ...

@@ -3,16 +3,19 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Sample a range
+Create a list of scalars with even spacing
 
 USE CASES
-...
+- Evenly distribute transforms nodes on a curve (motionPath1.uValue, ...)
 
 USAGE
 ...
 
 ATTRIBUTES
-...
+prScalarArithmetic1.inputMin
+prScalarArithmetic1.inputMax
+prScalarArithmetic1.inputSampleCount
+prScalarArithmetic1.output[0]
 
 LINKS
 - Demo: TODO
