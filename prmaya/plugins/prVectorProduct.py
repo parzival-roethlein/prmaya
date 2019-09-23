@@ -5,6 +5,7 @@ https://github.com/parzival-roethlein/prmaya
 DESCRIPTION
 array version of mayas "vectorProduct" node
 added features:
+- new .operation: projection (input1 on input2) AND (input2 on input1)
 - new .input[0].scalar to multiply output with
 - new .globalScalar to multiply all outputs with
 - new .globalMatrix attr to multiply all outputs with (Matrix Product operations)
@@ -47,6 +48,8 @@ TODO
 """
 
 import sys
+import math
+
 import maya.api.OpenMaya as om
 
 
@@ -76,6 +79,8 @@ class prVectorProduct(om.MPxNode):
         enumAttr.addField('Cross Product', 2)
         enumAttr.addField('Vector Matrix Product', 3)
         enumAttr.addField('Point Matrix Product', 4)
+        enumAttr.addField('Project in1 on in2', 5)
+        enumAttr.addField('Project in2 on in1', 6)
         prVectorProduct.addAttribute(prVectorProduct.operation)
         prVectorProduct.attributeAffects(prVectorProduct.operation, prVectorProduct.output)
 
@@ -171,12 +176,18 @@ class prVectorProduct(om.MPxNode):
                 out = in1 * m
                 if operation == 4:  # Point Matrix Product
                     out += om.MVector(m[12], m[13], m[14])
+            elif operation == 5:  # Projection in1 on in2
+                mult = in1 * in2 / in2.length() ** 2
+                out = om.MVector(in2[0] * mult, in2[1] * mult, in2[2] * mult)
+            elif operation == 6:  # Projection in2 on in1
+                mult = in1 * in2 / in1.length() ** 2
+                out = om.MVector(in1[0] * mult, in1[1] * mult, in1[2] * mult)
             else:
                 raise ValueError('operation: {}'.format(operation))
 
             if scalar * globalScalar != 1.0:
                 out *= globalScalar * scalar
-            if normalizeOutput and operation in [0, 2, 3]:
+            if normalizeOutput and operation in [0, 2, 3, 4, 5]:
                 out.normalize()
             output_handle.set3Float(*out)
         output_arrayHandle.set(output_builder)

@@ -51,7 +51,8 @@ def run():
 
     for value, operation in enumerate(['noOperation',
                                        'dotProduct', 'crossProduct',
-                                       'vectorMatrixProduct', 'pointMatrixProduct']):
+                                       'vectorMatrixProduct', 'pointMatrixProduct',
+                                       'project_in1_on_in2', 'project_in2_on_in1']):
         prNode = mc.createNode('prVectorProduct', name=operation + '_prVectorProduct')
         mayaNode = prNode.replace('prVectorProduct', 'vectorProduct')
         if mc.objExists(mayaNode):
@@ -59,8 +60,6 @@ def run():
             # mc.connectAttr(prNode+'.frozen', mayaNode+'.frozen', force=True)
             mc.connectAttr(prNode+'.operation', mayaNode+'.operation', force=True)
             mc.connectAttr(prNode+'.normalizeOutput', mayaNode+'.normalizeOutput', force=True)
-        else:
-            print('missing node: {}'.format(mayaNode))
         mc.setAttr(prNode+'.operation', value)
         mc.connectAttr(globalScalar, prNode+'.globalScalar')
         mc.connectAttr(globalMatrix, prNode+'.globalMatrix')
