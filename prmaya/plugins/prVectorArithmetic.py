@@ -3,7 +3,7 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Arithmetic operators for array of vector pairs that return a vector
+Arithmetic operators (plus, minus, average) for array of vector pairs that return a vector
 
 USE CASES
 ...
@@ -70,8 +70,6 @@ class prVectorArithmetic(om.MPxNode):
         enumAttr.addField('Sum +', 1)
         enumAttr.addField('Subtract -', 2)
         enumAttr.addField('Average', 3)
-        enumAttr.addField('Cross product X', 4)
-        enumAttr.addField('Projection', 5)
         prVectorArithmetic.addAttribute(prVectorArithmetic.operation)
         prVectorArithmetic.attributeAffects(prVectorArithmetic.operation, prVectorArithmetic.output)
 
@@ -127,25 +125,16 @@ class prVectorArithmetic(om.MPxNode):
             in1 = inputTargetHandle.child(self.input1).asFloat3()
             in2 = inputTargetHandle.child(self.input2).asFloat3()
             output_handle = output_builder.addElement(index)
-            if operation == 0:
+            if operation == 0:  # no operation
                 out = in1
-            elif operation == 1:
+            elif operation == 1:  # plus
                 out = [in1[0] + in2[0], in1[1] + in2[1], in1[2] + in2[2]]
-            elif operation == 2:
+            elif operation == 2:  # minus
                 out = [in1[0] - in2[0], in1[1] - in2[1], in1[2] - in2[2]]
-            elif operation == 3:
+            elif operation == 3:  # average
                 out = [(in1[0] + in2[0]) / 2,
                        (in1[1] + in2[1]) / 2,
                        (in1[2] + in2[2]) / 2]
-            elif operation == 4:
-                out = [in1[1] * in2[2] - in1[2] * in2[1],
-                       in1[2] * in2[0] - in1[0] * in2[2],
-                       in1[0] * in2[1] - in1[1] * in2[0]]
-            elif operation == 5:
-                dot = in1[0] * in2[0] + in1[1] * in2[1] + in1[2] * in2[2]
-                in2_length = math.sqrt(in2[0]**2 + in2[1]**2 + in2[2]**2)
-                mult = dot / in2_length ** 2
-                out = [in2[0] * mult, in2[1] * mult, in2[2] * mult]
             else:
                 raise ValueError('operation: {}'.format(operation))
             if normalizeOutput:
