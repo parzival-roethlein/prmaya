@@ -3,7 +3,7 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Array of binary vector math operations. Similar to mayas "vectorProduct" and "plusMinusAverage.input3D/output3D".
+Array version of Mayas "vectorProduct" and "plusMinusAverage.input3D/output3D" (with two inputs).
 Added features:
 - new .operation: projection (input1 on input2) AND (input2 on input1)
 - new .input[0].scalar to multiply output with

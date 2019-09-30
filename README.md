@@ -13,7 +13,7 @@ Scripts, plugins and posts (tutorials, notes) for Autodesk Maya. Any feedback is
     * __prRemapValue__: Array version of Mayas remapValue node
     * __prScalarArithmetic__: Arithmetic operators for array of scalar pairs that return a scalar
     * __prVectorBlend__: Vector array version of Mayas blendColors node
-    * __prVectorMath__: Array of binary vector math operations. Similar to mayas "vectorProduct" and "plusMinusAverage.input3D/output3D".
+    * __prVectorMath__: Array version of Mayas "vectorProduct" and "plusMinusAverage.input3D/output3D" (with two inputs).
 
 * archive (Unusable. Only good for code/algorithm reference. Made when learning API basics in 2011)
   * plugins
