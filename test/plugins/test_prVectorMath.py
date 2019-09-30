@@ -2,30 +2,30 @@
 
 import sys
 sys.path.append(r'C:\Users\paz\Documents\git\prmaya\test\plugins')
-import test_prVectorProduct
-reload(test_prVectorProduct)
-test_prVectorProduct.SETTINGS['plugin_path'] = r'C:\Users\paz\Documents\git\prmaya\prmaya\plugins\prVectorProduct.py'
-test_prVectorProduct.SETTINGS['file'] = r'C:\Users\paz\Documents\git\prmaya\test\plugins\test_prVectorProduct.ma'
-test_prVectorProduct.run()
+import test_prVectorMath
+reload(test_prVectorMath)
+test_prVectorMath.SETTINGS['plugin_path'] = r'C:\Users\paz\Documents\git\prmaya\prmaya\plugins\prVectorMath.py'
+test_prVectorMath.SETTINGS['file'] = r'C:\Users\paz\Documents\git\prmaya\test\plugins\test_prVectorMath.ma'
+test_prVectorMath.run()
 
 import sys
 sys.path.append('/home/prthlein/private/code/prmaya/test/plugins')
-import test_prVectorProduct
-reload(test_prVectorProduct)
-test_prVectorProduct.SETTINGS['plugin_path'] = r'/home/prthlein/private/code/prmaya/prmaya/plugins/prVectorProduct.py'
-test_prVectorProduct.SETTINGS['file'] = r'/home/prthlein/private/code/prmaya/test/plugins/test_prVectorProduct.ma'
-test_prVectorProduct.run()
+import test_prVectorMath
+reload(test_prVectorMath)
+test_prVectorMath.SETTINGS['plugin_path'] = r'/home/prthlein/private/code/prmaya/prmaya/plugins/prVectorMath.py'
+test_prVectorMath.SETTINGS['file'] = r'/home/prthlein/private/code/prmaya/test/plugins/test_prVectorMath.ma'
+test_prVectorMath.run()
 
 """
 
 import maya.cmds as mc
 
-from prmaya.plugins import prVectorProduct
-reload(prVectorProduct)
+from prmaya.plugins import prVectorMath
+reload(prVectorMath)
 
-SETTINGS = {'plugin_name': 'prVectorProduct.py',
-            'plugin_path': 'C:\Users\paz\Documents\git\prmaya\prmaya\plugins\prVectorProduct.py',
-            'file': 'C:\Users\paz\Documents\git\prmaya\test\plugins\test_prVectorProduct.ma',
+SETTINGS = {'plugin_name': 'prVectorMath.py',
+            'plugin_path': 'C:\Users\paz\Documents\git\prmaya\prmaya\plugins\prVectorMath.py',
+            'file': 'C:\Users\paz\Documents\git\prmaya\test\plugins\test_prVectorMath.ma',
             }
 
 
@@ -50,15 +50,15 @@ def run():
     globalScalar, globalMatrix = 'global_transform.scalar', 'global_transform.worldMatrix'
 
     for value, operation in enumerate(['noOperation',
+                                       'sum', 'subtract', 'average',
                                        'dotProduct', 'crossProduct',
                                        'vectorMatrixProduct', 'pointMatrixProduct',
                                        'project_in1_on_in2', 'project_in2_on_in1']):
-        prNode = mc.createNode('prVectorProduct', name=operation + '_prVectorProduct')
-        mayaNode = prNode.replace('prVectorProduct', 'vectorProduct')
+        prNode = mc.createNode('prVectorMath', name=operation + '_prVectorMath')
+        mayaNode = prNode.replace('prVectorMath', 'vectorProduct')
         if mc.objExists(mayaNode):
             # mc.connectAttr(prNode+'.nodeState', mayaNode+'.nodeState', force=True)
             # mc.connectAttr(prNode+'.frozen', mayaNode+'.frozen', force=True)
-            mc.connectAttr(prNode+'.operation', mayaNode+'.operation', force=True)
             mc.connectAttr(prNode+'.normalizeOutput', mayaNode+'.normalizeOutput', force=True)
         mc.setAttr(prNode+'.operation', value)
         mc.connectAttr(globalScalar, prNode+'.globalScalar')

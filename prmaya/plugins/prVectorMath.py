@@ -3,39 +3,39 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-array version of mayas "vectorProduct" node
-added features:
+Array of binary vector math operations. Similar to mayas "vectorProduct" and "plusMinusAverage.input3D/output3D".
+Added features:
 - new .operation: projection (input1 on input2) AND (input2 on input1)
 - new .input[0].scalar to multiply output with
 - new .globalScalar to multiply all outputs with
 - new .globalMatrix attr to multiply all outputs with (Matrix Product operations)
 
 USE CASES
-replace multiple vectorProduct nodes with one
-added scalar multiplication
+- replace multiple vectorProduct nodes with one / simplify graphs
+- if you need the extra operations / features
 
 USAGE
-(MEL): createNode prVectorProduct
+(MEL): createNode prVectorMath
 
 ATTRIBUTES
-prVectorProduct1.operation
-prVectorProduct1.normalizeOutput
-prVectorProduct1.globalScalar
-prVectorProduct1.globalMatrix
-prVectorProduct1.input[0].input1
-prVectorProduct1.input[0].input1.input1X
-prVectorProduct1.input[0].input1.input1Y
-prVectorProduct1.input[0].input1.input1Z
-prVectorProduct1.input[0].input2
-prVectorProduct1.input[0].input2.input2X
-prVectorProduct1.input[0].input2.input2Y
-prVectorProduct1.input[0].input2.input2Z
-prVectorProduct1.input[0].scalar
-prVectorProduct1.input[0].matrix
-prVectorProduct1.output[0]
-prVectorProduct1.output[0].outputX
-prVectorProduct1.output[0].outputY
-prVectorProduct1.output[0].outputZ
+prVectorMath1.operation
+prVectorMath1.normalizeOutput
+prVectorMath1.globalScalar
+prVectorMath1.globalMatrix
+prVectorMath1.input[0].input1
+prVectorMath1.input[0].input1.input1X
+prVectorMath1.input[0].input1.input1Y
+prVectorMath1.input[0].input1.input1Z
+prVectorMath1.input[0].input2
+prVectorMath1.input[0].input2.input2X
+prVectorMath1.input[0].input2.input2Y
+prVectorMath1.input[0].input2.input2Z
+prVectorMath1.input[0].scalar
+prVectorMath1.input[0].matrix
+prVectorMath1.output[0]
+prVectorMath1.output[0].outputX
+prVectorMath1.output[0].outputY
+prVectorMath1.output[0].outputZ
 
 LINKS
 - Demo: TODO
@@ -53,8 +53,8 @@ import math
 import maya.api.OpenMaya as om
 
 
-class prVectorProduct(om.MPxNode):
-    nodeTypeName = "prVectorProduct"
+class prVectorMath(om.MPxNode):
+    nodeTypeName = "prVectorMath"
     nodeTypeId = om.MTypeId(0x0004C269)  # local, not save
 
     @staticmethod
@@ -65,67 +65,70 @@ class prVectorProduct(om.MPxNode):
         matrixAttr = om.MFnMatrixAttribute()
 
         # output
-        prVectorProduct.output = numericAttr.createPoint('output', 'output')
+        prVectorMath.output = numericAttr.createPoint('output', 'output')
         numericAttr.array = True
         numericAttr.usesArrayDataBuilder = True
         numericAttr.writable = False
-        prVectorProduct.addAttribute(prVectorProduct.output)
+        prVectorMath.addAttribute(prVectorMath.output)
 
         # input
-        prVectorProduct.operation = enumAttr.create('operation', 'operation', 1)
+        prVectorMath.operation = enumAttr.create('operation', 'operation', 1)
         enumAttr.keyable = True
         enumAttr.addField('No operation', 0)
-        enumAttr.addField('Dot Product', 1)
-        enumAttr.addField('Cross Product', 2)
-        enumAttr.addField('Vector Matrix Product', 3)
-        enumAttr.addField('Point Matrix Product', 4)
-        enumAttr.addField('Project in1 on in2', 5)
-        enumAttr.addField('Project in2 on in1', 6)
-        prVectorProduct.addAttribute(prVectorProduct.operation)
-        prVectorProduct.attributeAffects(prVectorProduct.operation, prVectorProduct.output)
+        enumAttr.addField('Sum', 1)
+        enumAttr.addField('Subtract', 2)
+        enumAttr.addField('Average', 3)
+        enumAttr.addField('Dot Product', 4)
+        enumAttr.addField('Cross Product', 5)
+        enumAttr.addField('Vector Matrix Product', 6)
+        enumAttr.addField('Point Matrix Product', 7)
+        enumAttr.addField('Project in1 on in2', 8)
+        enumAttr.addField('Project in2 on in1', 9)
+        prVectorMath.addAttribute(prVectorMath.operation)
+        prVectorMath.attributeAffects(prVectorMath.operation, prVectorMath.output)
 
-        prVectorProduct.normalizeOutput = numericAttr.create('normalizeOutput', 'normalizeOutput', om.MFnNumericData.kBoolean, False)
+        prVectorMath.normalizeOutput = numericAttr.create('normalizeOutput', 'normalizeOutput', om.MFnNumericData.kBoolean, False)
         numericAttr.keyable = True
-        prVectorProduct.addAttribute(prVectorProduct.normalizeOutput)
-        prVectorProduct.attributeAffects(prVectorProduct.normalizeOutput, prVectorProduct.output)
+        prVectorMath.addAttribute(prVectorMath.normalizeOutput)
+        prVectorMath.attributeAffects(prVectorMath.normalizeOutput, prVectorMath.output)
 
-        prVectorProduct.globalScalar = numericAttr.create('globalScalar', 'globalScalar', om.MFnNumericData.kFloat, 1.0)
+        prVectorMath.globalScalar = numericAttr.create('globalScalar', 'globalScalar', om.MFnNumericData.kFloat, 1.0)
         numericAttr.keyable = True
-        prVectorProduct.addAttribute(prVectorProduct.globalScalar)
-        prVectorProduct.attributeAffects(prVectorProduct.globalScalar, prVectorProduct.output)
+        prVectorMath.addAttribute(prVectorMath.globalScalar)
+        prVectorMath.attributeAffects(prVectorMath.globalScalar, prVectorMath.output)
 
-        prVectorProduct.globalMatrix = matrixAttr.create('globalMatrix', 'globalMatrix')
+        prVectorMath.globalMatrix = matrixAttr.create('globalMatrix', 'globalMatrix')
         matrixAttr.keyable = True
-        prVectorProduct.addAttribute(prVectorProduct.globalMatrix)
-        prVectorProduct.attributeAffects(prVectorProduct.globalMatrix, prVectorProduct.output)
+        prVectorMath.addAttribute(prVectorMath.globalMatrix)
+        prVectorMath.attributeAffects(prVectorMath.globalMatrix, prVectorMath.output)
 
-        prVectorProduct.input1 = numericAttr.createPoint('input1', 'input1')
+        prVectorMath.input1 = numericAttr.createPoint('input1', 'input1')
         numericAttr.keyable = True
 
-        prVectorProduct.input2 = numericAttr.createPoint('input2', 'input2')
+        prVectorMath.input2 = numericAttr.createPoint('input2', 'input2')
         numericAttr.keyable = True
 
-        prVectorProduct.matrix = matrixAttr.create('matrix', 'matrix')
+        prVectorMath.matrix = matrixAttr.create('matrix', 'matrix')
         matrixAttr.keyable = True
 
-        prVectorProduct.scalar = numericAttr.create('scalar', 'scalar', om.MFnNumericData.kFloat, 1.0)
+        prVectorMath.scalar = numericAttr.create('scalar', 'scalar', om.MFnNumericData.kFloat, 1.0)
         numericAttr.keyable = True
 
-        prVectorProduct.input = compoundAttr.create('input', 'input')
-        compoundAttr.addChild(prVectorProduct.input1)
-        compoundAttr.addChild(prVectorProduct.input2)
-        compoundAttr.addChild(prVectorProduct.scalar)
-        compoundAttr.addChild(prVectorProduct.matrix)
+        prVectorMath.input = compoundAttr.create('input', 'input')
+        compoundAttr.addChild(prVectorMath.input1)
+        compoundAttr.addChild(prVectorMath.input2)
+        compoundAttr.addChild(prVectorMath.scalar)
+        compoundAttr.addChild(prVectorMath.matrix)
         compoundAttr.array = True
-        prVectorProduct.addAttribute(prVectorProduct.input)
-        prVectorProduct.attributeAffects(prVectorProduct.input1, prVectorProduct.output)
-        prVectorProduct.attributeAffects(prVectorProduct.input2, prVectorProduct.output)
-        prVectorProduct.attributeAffects(prVectorProduct.scalar, prVectorProduct.output)
-        prVectorProduct.attributeAffects(prVectorProduct.matrix, prVectorProduct.output)
+        prVectorMath.addAttribute(prVectorMath.input)
+        prVectorMath.attributeAffects(prVectorMath.input1, prVectorMath.output)
+        prVectorMath.attributeAffects(prVectorMath.input2, prVectorMath.output)
+        prVectorMath.attributeAffects(prVectorMath.scalar, prVectorMath.output)
+        prVectorMath.attributeAffects(prVectorMath.matrix, prVectorMath.output)
 
     @staticmethod
     def creator():
-        return prVectorProduct()
+        return prVectorMath()
 
     def __init__(self):
         om.MPxNode.__init__(self)
@@ -160,26 +163,33 @@ class prVectorProduct(om.MPxNode):
             scalar = inputTargetHandle.child(self.scalar).asFloat()
 
             output_handle = output_builder.addElement(index)
+
             if operation == 0:  # No operation
                 out = in1
-            elif operation == 1:  # Dot Product
+            elif operation == 1:  # Sum
+                out = in1 + in2
+            elif operation == 2:  # Subtract
+                out = in1 - in2
+            elif operation == 3:  # Average
+                out = (in1 + in2) * 0.5
+            elif operation == 4:  # Dot Product
                 if normalizeOutput:
                     in1.normalize()
                     in2.normalize()
                 dotProduct = in1 * in2
                 out = om.MVector(dotProduct, dotProduct, dotProduct)
-            elif operation == 2:  # Cross Product
+            elif operation == 5:  # Cross Product
                 out = in1 ^ in2
-            elif operation in [3, 4]:  # Vector / Point Matrix Product
+            elif operation in [6, 7]:  # Vector / Point Matrix Product
                 matrix = inputTargetHandle.child(self.matrix).asMatrix()
                 m = globalMatrix * matrix
                 out = in1 * m
-                if operation == 4:  # Point Matrix Product
+                if operation == 7:  # Point Matrix Product
                     out += om.MVector(m[12], m[13], m[14])
-            elif operation == 5:  # Projection in1 on in2
+            elif operation == 8:  # Projection in1 on in2
                 mult = in1 * in2 / in2.length() ** 2
                 out = om.MVector(in2[0] * mult, in2[1] * mult, in2[2] * mult)
-            elif operation == 6:  # Projection in2 on in1
+            elif operation == 9:  # Projection in2 on in1
                 mult = in1 * in2 / in1.length() ** 2
                 out = om.MVector(in1[0] * mult, in1[1] * mult, in1[2] * mult)
             else:
@@ -187,7 +197,7 @@ class prVectorProduct(om.MPxNode):
 
             if scalar * globalScalar != 1.0:
                 out *= globalScalar * scalar
-            if normalizeOutput and operation in [0, 2, 3, 4, 5]:
+            if normalizeOutput and operation != 4:
                 out.normalize()
             output_handle.set3Float(*out)
         output_arrayHandle.set(output_builder)
@@ -198,10 +208,10 @@ class prVectorProduct(om.MPxNode):
 def initializePlugin(obj):
     pluginFn = om.MFnPlugin(obj, 'Parzival Roethlein', '0.0.1')
     try:
-        pluginFn.registerNode(prVectorProduct.nodeTypeName, prVectorProduct.nodeTypeId,
-                              prVectorProduct.creator, prVectorProduct.initialize)
+        pluginFn.registerNode(prVectorMath.nodeTypeName, prVectorMath.nodeTypeId,
+                              prVectorMath.creator, prVectorMath.initialize)
     except:
-        sys.stderr.write('Failed to register node: {0}'.format(prVectorProduct.nodeTypeName))
+        sys.stderr.write('Failed to register node: {0}'.format(prVectorMath.nodeTypeName))
         raise
     evalAETemplate()
 
@@ -209,9 +219,9 @@ def initializePlugin(obj):
 def uninitializePlugin(obj):
     pluginFn = om.MFnPlugin(obj)
     try:
-        pluginFn.deregisterNode(prVectorProduct.nodeTypeId)
+        pluginFn.deregisterNode(prVectorMath.nodeTypeId)
     except:
-        sys.stderr.write('Failed to deregister node: {0}'.format(prVectorProduct.nodeTypeName))
+        sys.stderr.write('Failed to deregister node: {0}'.format(prVectorMath.nodeTypeName))
         raise
 
 
@@ -222,10 +232,10 @@ def maya_useNewAPI():
 def evalAETemplate():
     import maya.mel as mm
     mm.eval('''
-    global proc AEprVectorProductTemplate(string $nodeName)
+    global proc AEprVectorMathTemplate(string $nodeName)
     {
         editorTemplate -beginScrollLayout;
-            editorTemplate -beginLayout "prVectorProduct Attributes" -collapse 0;
+            editorTemplate -beginLayout "prVectorMath Attributes" -collapse 0;
                 editorTemplate -label "operation" -addControl "operation";
                 editorTemplate -label "normalizeOutput" -addControl "normalizeOutput";
                 editorTemplate -label "globalScalar" -addControl "globalScalar";

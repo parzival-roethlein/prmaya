@@ -1,6 +1,6 @@
 //Maya ASCII 2018 scene
-//Name: test_prVectorProduct.ma
-//Last modified: Mon, Sep 23, 2019 01:45:55 AM
+//Name: test_prVectorMath.ma
+//Last modified: Mon, Sep 30, 2019 02:07:57 AM
 //Codeset: 1252
 requires maya "2018";
 currentUnit -l centimeter -a degree -t film;
@@ -12,16 +12,17 @@ fileInfo "osv" "Microsoft Windows 8 Business Edition, 64-bit  (Build 9200)\n";
 createNode transform -s -n "persp";
 	rename -uid "0C68873B-42E1-044A-9AC2-03AD22B3D66B";
 	setAttr ".v" no;
-	setAttr ".t" -type "double3" 0.69161767821728137 1.3123372685124373 4.223722171314428 ;
-	setAttr ".r" -type "double3" -14.138352729610412 8.2000000000014683 0 ;
+	setAttr ".t" -type "double3" 0.79362335101431747 2.0409582213752708 3.5172304975187565 ;
+	setAttr ".r" -type "double3" -21.938352729612575 8.6000000000001098 6.031354277005253e-16 ;
 createNode camera -s -n "perspShape" -p "persp";
 	rename -uid "BCA98976-415B-B4E0-3363-7A8DC13AFFC9";
 	setAttr -k off ".v" no;
 	setAttr ".fl" 34.999999999999993;
-	setAttr ".coi" 5.605745523926462;
+	setAttr ".coi" 4.1828608844472059;
 	setAttr ".imn" -type "string" "persp";
 	setAttr ".den" -type "string" "persp_depth";
 	setAttr ".man" -type "string" "persp_mask";
+	setAttr ".tp" -type "double3" 1.7071068286895752 1.1071068048477173 0 ;
 	setAttr ".hc" -type "string" "viewSet -p %camera";
 createNode transform -s -n "top";
 	rename -uid "185734B7-4E71-54BE-0AED-54B33B57AF09";
@@ -179,9 +180,10 @@ createNode mesh -n "noOperation_vectorProduct_outputShape" -p "noOperation_vecto
 	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
-createNode transform -n "noOperation_prVectorProduct_output_0" -p "noOperation_result";
+createNode transform -n "noOperation_prVectorMath_output_0" -p "noOperation_result";
 	rename -uid "414A277B-4DD3-4F2A-1D11-6F82BA5F6B70";
-createNode mesh -n "noOperation_prVectorProduct_output_0Shape" -p "noOperation_prVectorProduct_output_0";
+	setAttr ".t" -type "double3" 0 1 0 ;
+createNode mesh -n "noOperation_prVectorMath_output_0Shape" -p "noOperation_prVectorMath_output_0";
 	rename -uid "AA33CF02-45BC-EA3E-D820-AE886B5A601D";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
@@ -220,9 +222,10 @@ createNode mesh -n "noOperation_prVectorProduct_output_0Shape" -p "noOperation_p
 	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
-createNode transform -n "noOperation_prVectorProduct_output_2" -p "noOperation_result";
+createNode transform -n "noOperation_prVectorMath_output_2" -p "noOperation_result";
 	rename -uid "450411A6-446B-940D-003C-B397F0D77ED7";
-createNode mesh -n "noOperation_prVectorProduct_output_2Shape" -p "noOperation_prVectorProduct_output_2";
+	setAttr ".t" -type "double3" 0 1 0 ;
+createNode mesh -n "noOperation_prVectorMath_output_2Shape" -p "noOperation_prVectorMath_output_2";
 	rename -uid "963848E4-4C3B-3812-5443-EAA712E04978";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
@@ -240,6 +243,393 @@ createNode mesh -n "noOperation_prVectorProduct_output_2Shape" -p "noOperation_p
 		-0.39746854 0.60253137 -0.60253149 0.39746851 -0.39746857 -0.39746848 -0.60253143 
 		-0.39746842 -0.60253143 0.39746848 -0.50253147 0.60253149 -0.60253149 -0.50253153 
 		0.39746848 0.60253143 0.49746844 0.60253143 -0.39746854 0.49746856 0.39746857;
+	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
+		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
+	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
+		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
+	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
+		f 4 0 5 -2 -5
+		mu 0 4 0 1 3 2
+		f 4 1 7 -3 -7
+		mu 0 4 2 3 5 4
+		f 4 2 9 -4 -9
+		mu 0 4 4 5 7 6
+		f 4 3 11 -1 -11
+		mu 0 4 6 7 9 8
+		f 4 -12 -10 -8 -6
+		mu 0 4 1 10 11 3
+		f 4 10 4 6 8
+		mu 0 4 12 0 2 13;
+	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
+	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
+	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
+	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
+createNode transform -n "sum_result" -p "DONT_TOUCH";
+	rename -uid "CFFD8756-40E8-F340-1087-E5ABD288B12C";
+createNode transform -n "sum_vectorProduct_output" -p "sum_result";
+	rename -uid "21B98532-4C14-7EF4-D891-4297111A78FA";
+createNode mesh -n "sum_vectorProduct_outputShape" -p "sum_vectorProduct_output";
+	rename -uid "31BE4E83-4C47-0301-1061-1E90846463E6";
+	setAttr -k off ".v";
+	setAttr ".ovdt" 1;
+	setAttr ".ove" yes;
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".pv" -type "double2" 0.5 0.5 ;
+	setAttr ".uvst[0].uvsn" -type "string" "map1";
+	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
+		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
+		 0.875 0.25 0.125 0 0.125 0.25;
+	setAttr ".cuvs" -type "string" "map1";
+	setAttr ".dcc" -type "string" "Ambient+Diffuse";
+	setAttr ".covm[0]"  0 1 1;
+	setAttr ".cdvm[0]"  0 1 1;
+	setAttr -s 8 ".pt[0:7]" -type "float3"  0.39099032 0.39099032 -0.39099032 
+		-0.39099032 0.39099032 -0.39099032 0.39099032 -0.39099032 -0.39099032 -0.39099032 
+		-0.39099032 -0.39099032 0.39099032 -0.39099032 0.39099032 -0.39099032 -0.39099032 
+		0.39099032 0.39099032 0.39099032 0.39099032 -0.39099032 0.39099032 0.39099032;
+	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
+		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
+	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
+		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
+	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
+		f 4 0 5 -2 -5
+		mu 0 4 0 1 3 2
+		f 4 1 7 -3 -7
+		mu 0 4 2 3 5 4
+		f 4 2 9 -4 -9
+		mu 0 4 4 5 7 6
+		f 4 3 11 -1 -11
+		mu 0 4 6 7 9 8
+		f 4 -12 -10 -8 -6
+		mu 0 4 1 10 11 3
+		f 4 10 4 6 8
+		mu 0 4 12 0 2 13;
+	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
+	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
+	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
+	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
+createNode transform -n "sum_prVectorMath_output_0" -p "sum_result";
+	rename -uid "F433FCF3-4BD3-E5F7-2E18-DA87EA0C27DB";
+	setAttr ".t" -type "double3" 1 1.3999999761581421 0 ;
+createNode mesh -n "sum_prVectorMath_output_0Shape" -p "sum_prVectorMath_output_0";
+	rename -uid "479DEF6B-4D9E-5A0A-5A1F-59822CA528ED";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".pv" -type "double2" 0.5 0.375 ;
+	setAttr ".uvst[0].uvsn" -type "string" "map1";
+	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
+		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
+		 0.875 0.25 0.125 0 0.125 0.25;
+	setAttr ".cuvs" -type "string" "map1";
+	setAttr ".dcc" -type "string" "Ambient+Diffuse";
+	setAttr ".covm[0]"  0 1 1;
+	setAttr ".cdvm[0]"  0 1 1;
+	setAttr -s 8 ".pt[0:7]" -type "float3"  0.39746848 0.39746848 -0.39746848 
+		-0.39746848 0.39746848 -0.39746848 0.39746848 -0.5 -0.39746848 -0.39746848 -0.5 -0.39746848 
+		0.39746848 -0.5 0.39746848 -0.39746848 -0.5 0.39746848 0.39746848 0.39746848 0.39746848 
+		-0.39746848 0.39746848 0.39746848;
+	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
+		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
+	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
+		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
+	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
+		f 4 0 5 -2 -5
+		mu 0 4 0 1 3 2
+		f 4 1 7 -3 -7
+		mu 0 4 2 3 5 4
+		f 4 2 9 -4 -9
+		mu 0 4 4 5 7 6
+		f 4 3 11 -1 -11
+		mu 0 4 6 7 9 8
+		f 4 -12 -10 -8 -6
+		mu 0 4 1 10 11 3
+		f 4 10 4 6 8
+		mu 0 4 12 0 2 13;
+	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
+	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
+	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
+	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
+createNode transform -n "sum_prVectorMath_output_2" -p "sum_result";
+	rename -uid "0BF84C03-450F-89EB-C8AC-8289B226A6EF";
+	setAttr ".t" -type "double3" 1 1.3999999761581421 0 ;
+createNode mesh -n "sum_prVectorMath_output_2Shape" -p "sum_prVectorMath_output_2";
+	rename -uid "2F88A978-49D6-A0BC-8530-6A867140858F";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".pv" -type "double2" 0.5 0.375 ;
+	setAttr ".uvst[0].uvsn" -type "string" "map1";
+	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
+		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
+		 0.875 0.25 0.125 0 0.125 0.25;
+	setAttr ".cuvs" -type "string" "map1";
+	setAttr ".dcc" -type "string" "Ambient+Diffuse";
+	setAttr ".covm[0]"  0 1 1;
+	setAttr ".cdvm[0]"  0 1 1;
+	setAttr -s 8 ".pt[0:7]" -type "float3"  0.60253149 0.60253149 -0.39746851 
+		-0.39746854 0.60253137 -0.60253149 0.39746851 -0.39746857 -0.39746848 -0.60253143 
+		-0.39746842 -0.60253143 0.39746848 -0.5 0.60253149 -0.60253149 -0.5 0.39746848 0.60253143 
+		0.5 0.60253143 -0.39746854 0.5 0.39746857;
+	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
+		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
+	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
+		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
+	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
+		f 4 0 5 -2 -5
+		mu 0 4 0 1 3 2
+		f 4 1 7 -3 -7
+		mu 0 4 2 3 5 4
+		f 4 2 9 -4 -9
+		mu 0 4 4 5 7 6
+		f 4 3 11 -1 -11
+		mu 0 4 6 7 9 8
+		f 4 -12 -10 -8 -6
+		mu 0 4 1 10 11 3
+		f 4 10 4 6 8
+		mu 0 4 12 0 2 13;
+	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
+	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
+	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
+	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
+createNode transform -n "subtract_result" -p "DONT_TOUCH";
+	rename -uid "FF71526C-4532-1C35-C2E5-1FA1D6765857";
+createNode transform -n "subtract_vectorProduct_output" -p "subtract_result";
+	rename -uid "0E622253-4986-3CCF-450B-0AB214A6D952";
+createNode mesh -n "subtract_vectorProduct_outputShape" -p "subtract_vectorProduct_output";
+	rename -uid "677A39E7-46E2-DE4B-D9DA-F180DAFF5DFE";
+	setAttr -k off ".v";
+	setAttr ".ovdt" 1;
+	setAttr ".ove" yes;
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".pv" -type "double2" 0.5 0.5 ;
+	setAttr ".uvst[0].uvsn" -type "string" "map1";
+	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
+		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
+		 0.875 0.25 0.125 0 0.125 0.25;
+	setAttr ".cuvs" -type "string" "map1";
+	setAttr ".dcc" -type "string" "Ambient+Diffuse";
+	setAttr ".covm[0]"  0 1 1;
+	setAttr ".cdvm[0]"  0 1 1;
+	setAttr -s 8 ".pt[0:7]" -type "float3"  0.39099032 0.39099032 -0.39099032 
+		-0.39099032 0.39099032 -0.39099032 0.39099032 -0.39099032 -0.39099032 -0.39099032 
+		-0.39099032 -0.39099032 0.39099032 -0.39099032 0.39099032 -0.39099032 -0.39099032 
+		0.39099032 0.39099032 0.39099032 0.39099032 -0.39099032 0.39099032 0.39099032;
+	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
+		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
+	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
+		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
+	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
+		f 4 0 5 -2 -5
+		mu 0 4 0 1 3 2
+		f 4 1 7 -3 -7
+		mu 0 4 2 3 5 4
+		f 4 2 9 -4 -9
+		mu 0 4 4 5 7 6
+		f 4 3 11 -1 -11
+		mu 0 4 6 7 9 8
+		f 4 -12 -10 -8 -6
+		mu 0 4 1 10 11 3
+		f 4 10 4 6 8
+		mu 0 4 12 0 2 13;
+	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
+	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
+	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
+	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
+createNode transform -n "subtract_prVectorMath_output_0" -p "subtract_result";
+	rename -uid "A853BCF7-4AEF-D7DB-E378-CD880251EBC3";
+	setAttr ".t" -type "double3" -1 0.60000002384185791 0 ;
+createNode mesh -n "subtract_prVectorMath_output_0Shape" -p "subtract_prVectorMath_output_0";
+	rename -uid "9EC9E0D5-44E2-F419-A7FC-FA8E4857DECC";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".pv" -type "double2" 0.5 0.375 ;
+	setAttr ".uvst[0].uvsn" -type "string" "map1";
+	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
+		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
+		 0.875 0.25 0.125 0 0.125 0.25;
+	setAttr ".cuvs" -type "string" "map1";
+	setAttr ".dcc" -type "string" "Ambient+Diffuse";
+	setAttr ".covm[0]"  0 1 1;
+	setAttr ".cdvm[0]"  0 1 1;
+	setAttr -s 8 ".pt[0:7]" -type "float3"  0.39746848 0.39746848 -0.39746848 
+		-0.39746848 0.39746848 -0.39746848 0.39746848 -0.5 -0.39746848 -0.39746848 -0.5 -0.39746848 
+		0.39746848 -0.5 0.39746848 -0.39746848 -0.5 0.39746848 0.39746848 0.39746848 0.39746848 
+		-0.39746848 0.39746848 0.39746848;
+	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
+		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
+	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
+		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
+	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
+		f 4 0 5 -2 -5
+		mu 0 4 0 1 3 2
+		f 4 1 7 -3 -7
+		mu 0 4 2 3 5 4
+		f 4 2 9 -4 -9
+		mu 0 4 4 5 7 6
+		f 4 3 11 -1 -11
+		mu 0 4 6 7 9 8
+		f 4 -12 -10 -8 -6
+		mu 0 4 1 10 11 3
+		f 4 10 4 6 8
+		mu 0 4 12 0 2 13;
+	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
+	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
+	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
+	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
+createNode transform -n "subtract_prVectorMath_output_2" -p "subtract_result";
+	rename -uid "1EF55B28-49C3-EC57-2B47-A59342364DBC";
+	setAttr ".t" -type "double3" -1 0.60000002384185791 0 ;
+createNode mesh -n "subtract_prVectorMath_output_2Shape" -p "subtract_prVectorMath_output_2";
+	rename -uid "9895B431-4D42-B558-AE78-EE882D581C7C";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".pv" -type "double2" 0.5 0.375 ;
+	setAttr ".uvst[0].uvsn" -type "string" "map1";
+	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
+		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
+		 0.875 0.25 0.125 0 0.125 0.25;
+	setAttr ".cuvs" -type "string" "map1";
+	setAttr ".dcc" -type "string" "Ambient+Diffuse";
+	setAttr ".covm[0]"  0 1 1;
+	setAttr ".cdvm[0]"  0 1 1;
+	setAttr -s 8 ".pt[0:7]" -type "float3"  0.60253149 0.60253149 -0.39746851 
+		-0.39746854 0.60253137 -0.60253149 0.39746851 -0.39746857 -0.39746848 -0.60253143 
+		-0.39746842 -0.60253143 0.39746848 -0.5 0.60253149 -0.60253149 -0.5 0.39746848 0.60253143 
+		0.5 0.60253143 -0.39746854 0.5 0.39746857;
+	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
+		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
+	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
+		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
+	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
+		f 4 0 5 -2 -5
+		mu 0 4 0 1 3 2
+		f 4 1 7 -3 -7
+		mu 0 4 2 3 5 4
+		f 4 2 9 -4 -9
+		mu 0 4 4 5 7 6
+		f 4 3 11 -1 -11
+		mu 0 4 6 7 9 8
+		f 4 -12 -10 -8 -6
+		mu 0 4 1 10 11 3
+		f 4 10 4 6 8
+		mu 0 4 12 0 2 13;
+	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
+	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
+	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
+	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
+createNode transform -n "average_result" -p "DONT_TOUCH";
+	rename -uid "06C85A68-45FA-360E-396B-80BD41A1143E";
+createNode transform -n "average_vectorProduct_output" -p "average_result";
+	rename -uid "20BDDC42-44D3-E762-BD1A-EDB5B319D944";
+createNode mesh -n "average_vectorProduct_outputShape" -p "average_vectorProduct_output";
+	rename -uid "512D98D3-4E37-7499-D295-F98E53B490D5";
+	setAttr -k off ".v";
+	setAttr ".ovdt" 1;
+	setAttr ".ove" yes;
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".pv" -type "double2" 0.5 0.5 ;
+	setAttr ".uvst[0].uvsn" -type "string" "map1";
+	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
+		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
+		 0.875 0.25 0.125 0 0.125 0.25;
+	setAttr ".cuvs" -type "string" "map1";
+	setAttr ".dcc" -type "string" "Ambient+Diffuse";
+	setAttr ".covm[0]"  0 1 1;
+	setAttr ".cdvm[0]"  0 1 1;
+	setAttr -s 8 ".pt[0:7]" -type "float3"  0.39099032 0.39099032 -0.39099032 
+		-0.39099032 0.39099032 -0.39099032 0.39099032 -0.39099032 -0.39099032 -0.39099032 
+		-0.39099032 -0.39099032 0.39099032 -0.39099032 0.39099032 -0.39099032 -0.39099032 
+		0.39099032 0.39099032 0.39099032 0.39099032 -0.39099032 0.39099032 0.39099032;
+	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
+		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
+	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
+		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
+	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
+		f 4 0 5 -2 -5
+		mu 0 4 0 1 3 2
+		f 4 1 7 -3 -7
+		mu 0 4 2 3 5 4
+		f 4 2 9 -4 -9
+		mu 0 4 4 5 7 6
+		f 4 3 11 -1 -11
+		mu 0 4 6 7 9 8
+		f 4 -12 -10 -8 -6
+		mu 0 4 1 10 11 3
+		f 4 10 4 6 8
+		mu 0 4 12 0 2 13;
+	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
+	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
+	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
+	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
+createNode transform -n "average_prVectorMath_output_0" -p "average_result";
+	rename -uid "E239FDB7-4C33-D7BC-527A-5FAAA2A8F5B3";
+	setAttr ".t" -type "double3" 0.5 0.69999998807907104 0 ;
+createNode mesh -n "average_prVectorMath_output_0Shape" -p "average_prVectorMath_output_0";
+	rename -uid "6B1AB520-4949-4560-6E84-5EBF3497F172";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".pv" -type "double2" 0.5 0.375 ;
+	setAttr ".uvst[0].uvsn" -type "string" "map1";
+	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
+		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
+		 0.875 0.25 0.125 0 0.125 0.25;
+	setAttr ".cuvs" -type "string" "map1";
+	setAttr ".dcc" -type "string" "Ambient+Diffuse";
+	setAttr ".covm[0]"  0 1 1;
+	setAttr ".cdvm[0]"  0 1 1;
+	setAttr -s 8 ".pt[0:7]" -type "float3"  0.39746848 0.39746848 -0.39746848 
+		-0.39746848 0.39746848 -0.39746848 0.39746848 -0.5 -0.39746848 -0.39746848 -0.5 -0.39746848 
+		0.39746848 -0.5 0.39746848 -0.39746848 -0.5 0.39746848 0.39746848 0.39746848 0.39746848 
+		-0.39746848 0.39746848 0.39746848;
+	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
+		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
+	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
+		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
+	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
+		f 4 0 5 -2 -5
+		mu 0 4 0 1 3 2
+		f 4 1 7 -3 -7
+		mu 0 4 2 3 5 4
+		f 4 2 9 -4 -9
+		mu 0 4 4 5 7 6
+		f 4 3 11 -1 -11
+		mu 0 4 6 7 9 8
+		f 4 -12 -10 -8 -6
+		mu 0 4 1 10 11 3
+		f 4 10 4 6 8
+		mu 0 4 12 0 2 13;
+	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
+	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
+	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
+	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
+createNode transform -n "average_prVectorMath_output_2" -p "average_result";
+	rename -uid "08A37C7F-42A9-2F08-E8FA-B0977703EB97";
+	setAttr ".t" -type "double3" 0.5 0.69999998807907104 0 ;
+createNode mesh -n "average_prVectorMath_output_2Shape" -p "average_prVectorMath_output_2";
+	rename -uid "5758A00A-4757-8D80-8D4F-E5A6E1D5AD0D";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".pv" -type "double2" 0.5 0.375 ;
+	setAttr ".uvst[0].uvsn" -type "string" "map1";
+	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
+		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
+		 0.875 0.25 0.125 0 0.125 0.25;
+	setAttr ".cuvs" -type "string" "map1";
+	setAttr ".dcc" -type "string" "Ambient+Diffuse";
+	setAttr ".covm[0]"  0 1 1;
+	setAttr ".cdvm[0]"  0 1 1;
+	setAttr -s 8 ".pt[0:7]" -type "float3"  0.60253149 0.60253149 -0.39746851 
+		-0.39746854 0.60253137 -0.60253149 0.39746851 -0.39746857 -0.39746848 -0.60253143 
+		-0.39746842 -0.60253143 0.39746848 -0.5 0.60253149 -0.60253149 -0.5 0.39746848 0.60253143 
+		0.5 0.60253143 -0.39746854 0.5 0.39746857;
 	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
 		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
 	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
@@ -306,9 +696,10 @@ createNode mesh -n "dotProduct_vectorProduct_outputShape" -p "dotProduct_vectorP
 	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
-createNode transform -n "dotProduct_prVectorProduct_output_0" -p "dotProduct_result";
+createNode transform -n "dotProduct_prVectorMath_output_0" -p "dotProduct_result";
 	rename -uid "147D6430-4108-2E4A-38C7-4786DD152C5F";
-createNode mesh -n "dotProduct_prVectorProduct_output_0Shape" -p "dotProduct_prVectorProduct_output_0";
+	setAttr ".t" -type "double3" 0.40000000596046448 0.40000000596046448 0.40000000596046448 ;
+createNode mesh -n "dotProduct_prVectorMath_output_0Shape" -p "dotProduct_prVectorMath_output_0";
 	rename -uid "6A2AA0A0-4943-92E9-EA16-6A96A9C4E8F9";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
@@ -347,9 +738,10 @@ createNode mesh -n "dotProduct_prVectorProduct_output_0Shape" -p "dotProduct_prV
 	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
-createNode transform -n "dotProduct_prVectorProduct_output_2" -p "dotProduct_result";
+createNode transform -n "dotProduct_prVectorMath_output_2" -p "dotProduct_result";
 	rename -uid "3C288495-4C31-ACFD-3B15-1DA7AD83C496";
-createNode mesh -n "dotProduct_prVectorProduct_output_2Shape" -p "dotProduct_prVectorProduct_output_2";
+	setAttr ".t" -type "double3" 0.40000000596046448 0.40000000596046448 0.40000000596046448 ;
+createNode mesh -n "dotProduct_prVectorMath_output_2Shape" -p "dotProduct_prVectorMath_output_2";
 	rename -uid "F7675FDB-482E-04C7-1679-71AA2BA574C8";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
@@ -433,9 +825,10 @@ createNode mesh -n "crossProduct_vectorProduct_outputShape" -p "crossProduct_vec
 	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
-createNode transform -n "crossProduct_prVectorProduct_output_0" -p "crossProduct_result";
+createNode transform -n "crossProduct_prVectorMath_output_0" -p "crossProduct_result";
 	rename -uid "4317B2C4-4832-357B-19AE-4B837158C810";
-createNode mesh -n "crossProduct_prVectorProduct_output_0Shape" -p "crossProduct_prVectorProduct_output_0";
+	setAttr ".t" -type "double3" 0 0 -1 ;
+createNode mesh -n "crossProduct_prVectorMath_output_0Shape" -p "crossProduct_prVectorMath_output_0";
 	rename -uid "6BC11D85-481A-182E-34E1-FB810452DA8F";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
@@ -474,9 +867,10 @@ createNode mesh -n "crossProduct_prVectorProduct_output_0Shape" -p "crossProduct
 	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
-createNode transform -n "crossProduct_prVectorProduct_output_2" -p "crossProduct_result";
+createNode transform -n "crossProduct_prVectorMath_output_2" -p "crossProduct_result";
 	rename -uid "48A33855-4CEF-8A20-3F41-E1B550B06F9D";
-createNode mesh -n "crossProduct_prVectorProduct_output_2Shape" -p "crossProduct_prVectorProduct_output_2";
+	setAttr ".t" -type "double3" 0 0 -1 ;
+createNode mesh -n "crossProduct_prVectorMath_output_2Shape" -p "crossProduct_prVectorMath_output_2";
 	rename -uid "4EC77B7B-417A-9843-4E23-BEB66B467FDD";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
@@ -560,9 +954,10 @@ createNode mesh -n "vectorMatrixProduct_vectorProduct_outputShape" -p "vectorMat
 	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
-createNode transform -n "vectorMatrixProduct_prVectorProduct_output_0" -p "vectorMatrixProduct_result";
+createNode transform -n "vectorMatrixProduct_prVectorMath_output_0" -p "vectorMatrixProduct_result";
 	rename -uid "2ABD8EA3-493A-8C0D-4C60-CCA25EC47D8B";
-createNode mesh -n "vectorMatrixProduct_prVectorProduct_output_0Shape" -p "vectorMatrixProduct_prVectorProduct_output_0";
+	setAttr ".t" -type "double3" 0.70710676908493042 0.70710676908493042 0 ;
+createNode mesh -n "vectorMatrixProduct_prVectorMath_output_0Shape" -p "vectorMatrixProduct_prVectorMath_output_0";
 	rename -uid "B842F330-4318-8CB2-05AB-AD9682686D77";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
@@ -601,9 +996,10 @@ createNode mesh -n "vectorMatrixProduct_prVectorProduct_output_0Shape" -p "vecto
 	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
-createNode transform -n "vectorMatrixProduct_prVectorProduct_output_2" -p "vectorMatrixProduct_result";
+createNode transform -n "vectorMatrixProduct_prVectorMath_output_2" -p "vectorMatrixProduct_result";
 	rename -uid "CFF958DF-4CE1-C68B-B44E-9CA00A036B82";
-createNode mesh -n "vectorMatrixProduct_prVectorProduct_output_2Shape" -p "vectorMatrixProduct_prVectorProduct_output_2";
+	setAttr ".t" -type "double3" 0.70710676908493042 0.70710676908493042 0 ;
+createNode mesh -n "vectorMatrixProduct_prVectorMath_output_2Shape" -p "vectorMatrixProduct_prVectorMath_output_2";
 	rename -uid "18F5774D-4A95-3700-5BEE-ACA94B97D13E";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
@@ -687,9 +1083,10 @@ createNode mesh -n "pointMatrixProduct_vectorProduct_outputShape" -p "pointMatri
 	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
-createNode transform -n "pointMatrixProduct_prVectorProduct_output_0" -p "pointMatrixProduct_result";
+createNode transform -n "pointMatrixProduct_prVectorMath_output_0" -p "pointMatrixProduct_result";
 	rename -uid "54B36CFF-4848-CC9E-4C8A-D98950D20CA1";
-createNode mesh -n "pointMatrixProduct_prVectorProduct_output_0Shape" -p "pointMatrixProduct_prVectorProduct_output_0";
+	setAttr ".t" -type "double3" 1.7071068286895752 1.1071068048477173 0 ;
+createNode mesh -n "pointMatrixProduct_prVectorMath_output_0Shape" -p "pointMatrixProduct_prVectorMath_output_0";
 	rename -uid "89AECC89-4A21-7683-709B-45A3FBAA429F";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
@@ -728,9 +1125,10 @@ createNode mesh -n "pointMatrixProduct_prVectorProduct_output_0Shape" -p "pointM
 	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
-createNode transform -n "pointMatrixProduct_prVectorProduct_output_2" -p "pointMatrixProduct_result";
+createNode transform -n "pointMatrixProduct_prVectorMath_output_2" -p "pointMatrixProduct_result";
 	rename -uid "72AAB28C-4CCF-E5F5-F949-C8855237EEC6";
-createNode mesh -n "pointMatrixProduct_prVectorProduct_output_2Shape" -p "pointMatrixProduct_prVectorProduct_output_2";
+	setAttr ".t" -type "double3" 1.7071068286895752 1.1071068048477173 0 ;
+createNode mesh -n "pointMatrixProduct_prVectorMath_output_2Shape" -p "pointMatrixProduct_prVectorMath_output_2";
 	rename -uid "4A97C81C-42BF-DEBD-DE64-75B16332BC7D";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
@@ -771,9 +1169,10 @@ createNode mesh -n "pointMatrixProduct_prVectorProduct_output_2Shape" -p "pointM
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -n "project_in1_on_in2_result" -p "DONT_TOUCH";
 	rename -uid "42C007C4-42A0-E332-AC97-B6B8B8FA2A5C";
-createNode transform -n "project_in1_on_in2_prVectorProduct_output_0" -p "project_in1_on_in2_result";
+createNode transform -n "project_in1_on_in2_prVectorMath_output_0" -p "project_in1_on_in2_result";
 	rename -uid "9C61EBEE-476F-3BD6-D9E6-D389DC9C2476";
-createNode mesh -n "project_in1_on_in2_prVectorProduct_output_0Shape" -p "project_in1_on_in2_prVectorProduct_output_0";
+	setAttr ".t" -type "double3" 0.34482759237289429 0.13793103396892548 0 ;
+createNode mesh -n "project_in1_on_in2_prVectorMath_output_0Shape" -p "project_in1_on_in2_prVectorMath_output_0";
 	rename -uid "809F1124-49A1-AD04-ECFD-F5B102CD6B2E";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
@@ -812,9 +1211,10 @@ createNode mesh -n "project_in1_on_in2_prVectorProduct_output_0Shape" -p "projec
 	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
-createNode transform -n "project_in1_on_in2_prVectorProduct_output_2" -p "project_in1_on_in2_result";
+createNode transform -n "project_in1_on_in2_prVectorMath_output_2" -p "project_in1_on_in2_result";
 	rename -uid "A5B3BF7E-402D-7F7E-9E8E-AE9BCC31DADD";
-createNode mesh -n "project_in1_on_in2_prVectorProduct_output_2Shape" -p "project_in1_on_in2_prVectorProduct_output_2";
+	setAttr ".t" -type "double3" 0.34482759237289429 0.13793103396892548 0 ;
+createNode mesh -n "project_in1_on_in2_prVectorMath_output_2Shape" -p "project_in1_on_in2_prVectorMath_output_2";
 	rename -uid "8FD0BDE1-4454-F0AB-4814-42B5178BDCE2";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
@@ -855,9 +1255,10 @@ createNode mesh -n "project_in1_on_in2_prVectorProduct_output_2Shape" -p "projec
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -n "project_in2_on_in1_result" -p "DONT_TOUCH";
 	rename -uid "8D89C700-4C1D-4498-F1D4-44A0059BA84D";
-createNode transform -n "project_in2_on_in1_prVectorProduct_output_0" -p "project_in2_on_in1_result";
+createNode transform -n "project_in2_on_in1_prVectorMath_output_0" -p "project_in2_on_in1_result";
 	rename -uid "E9BCA3F9-40E0-7DC6-FF84-65A219895622";
-createNode mesh -n "project_in2_on_in1_prVectorProduct_output_0Shape" -p "project_in2_on_in1_prVectorProduct_output_0";
+	setAttr ".t" -type "double3" 0 0.40000000596046448 0 ;
+createNode mesh -n "project_in2_on_in1_prVectorMath_output_0Shape" -p "project_in2_on_in1_prVectorMath_output_0";
 	rename -uid "8503B59A-41E1-45FC-90ED-42824CCB5047";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
@@ -896,9 +1297,10 @@ createNode mesh -n "project_in2_on_in1_prVectorProduct_output_0Shape" -p "projec
 	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
-createNode transform -n "project_in2_on_in1_prVectorProduct_output_2" -p "project_in2_on_in1_result";
+createNode transform -n "project_in2_on_in1_prVectorMath_output_2" -p "project_in2_on_in1_result";
 	rename -uid "B6AC31FA-4C5F-AA80-78D4-D985A7D87D57";
-createNode mesh -n "project_in2_on_in1_prVectorProduct_output_2Shape" -p "project_in2_on_in1_prVectorProduct_output_2";
+	setAttr ".t" -type "double3" 0 0.40000000596046448 0 ;
+createNode mesh -n "project_in2_on_in1_prVectorMath_output_2Shape" -p "project_in2_on_in1_prVectorMath_output_2";
 	rename -uid "59CD450B-40D0-6111-DDFC-C29C07BAFF62";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
@@ -956,19 +1358,19 @@ createNode locator -n "globalMatrix_locatorShape" -p "globalMatrix_locator";
 	rename -uid "D51FB7DC-4C64-85AB-E640-CF923ECED1C4";
 	setAttr -k off ".v";
 createNode lightLinker -s -n "lightLinker1";
-	rename -uid "AA88D559-4361-C86C-624C-F681CE0933B0";
-	setAttr -s 8 ".lnk";
-	setAttr -s 8 ".slnk";
+	rename -uid "FC658F4D-474E-2534-1810-4D9B26A72CF7";
+	setAttr -s 11 ".lnk";
+	setAttr -s 11 ".slnk";
 createNode shapeEditorManager -n "shapeEditorManager";
-	rename -uid "22271CD6-4AD9-A6FE-CBDB-E0B7E7582011";
+	rename -uid "5B72DB24-4A53-5E38-1A2A-B1B28D9A19C6";
 createNode poseInterpolatorManager -n "poseInterpolatorManager";
-	rename -uid "EE946139-4C3D-EB9D-9D45-9C8A18F0818B";
+	rename -uid "B07F1197-42E7-3BC0-4126-708530382A5C";
 createNode displayLayerManager -n "layerManager";
-	rename -uid "3E92D693-4C0C-7E91-8197-A6BF52FF45AB";
+	rename -uid "024DC7AF-41D6-CCD6-6BB9-649935DD6F87";
 createNode displayLayer -n "defaultLayer";
 	rename -uid "8F93688F-46E3-F6B2-6739-A181975EFC16";
 createNode renderLayerManager -n "renderLayerManager";
-	rename -uid "696D9ACF-445C-29C7-90D3-E2BF1BD75A8B";
+	rename -uid "33C50582-4B17-F7A7-128F-E0902984E46A";
 createNode renderLayer -n "defaultRenderLayer";
 	rename -uid "143B10B8-4219-D6B6-2030-EB8B52461AE1";
 	setAttr ".g" yes;
@@ -983,55 +1385,13 @@ createNode vectorProduct -n "dotProduct_vectorProduct";
 	rename -uid "AEF3A760-489D-4449-3FBD-F9A04B2AABEA";
 createNode vectorProduct -n "crossProduct_vectorProduct";
 	rename -uid "D8DAF7D8-43E2-83E0-4308-69966B8D8480";
-	setAttr ".op" 2;
+	setAttr ".op" 5;
 createNode vectorProduct -n "vectorMatrixProduct_vectorProduct";
 	rename -uid "6E16937E-4707-5F15-2D67-0099B6C80F3B";
 	setAttr ".op" 3;
 createNode vectorProduct -n "pointMatrixProduct_vectorProduct";
 	rename -uid "A712C057-483F-3CE7-A6F2-1EA47F2D1F33";
 	setAttr ".op" 4;
-createNode nodeGraphEditorInfo -n "MayaNodeEditorSavedTabsInfo";
-	rename -uid "E47736A6-4070-F555-53C5-DF9ED8D8FB8B";
-	setAttr ".tgi[0].tn" -type "string" "Untitled_1";
-	setAttr ".tgi[0].vl" -type "double2" -756.01570264738939 -707.19441251416072 ;
-	setAttr ".tgi[0].vh" -type "double2" 1385.9150333834259 339.02175582021857 ;
-	setAttr -s 12 ".tgi[0].ni";
-	setAttr ".tgi[0].ni[0].x" 461.04376220703125;
-	setAttr ".tgi[0].ni[0].y" -86.695159912109375;
-	setAttr ".tgi[0].ni[0].nvs" 18305;
-	setAttr ".tgi[0].ni[1].x" 445.71533203125;
-	setAttr ".tgi[0].ni[1].y" -282.60540771484375;
-	setAttr ".tgi[0].ni[1].nvs" 18305;
-	setAttr ".tgi[0].ni[2].x" 452.85818481445313;
-	setAttr ".tgi[0].ni[2].y" -466.5670166015625;
-	setAttr ".tgi[0].ni[2].nvs" 18305;
-	setAttr ".tgi[0].ni[3].x" 453.13824462890625;
-	setAttr ".tgi[0].ni[3].y" 46.801963806152344;
-	setAttr ".tgi[0].ni[3].nvs" 18305;
-	setAttr ".tgi[0].ni[4].x" 116.73699188232422;
-	setAttr ".tgi[0].ni[4].y" -503.18045043945313;
-	setAttr ".tgi[0].ni[4].nvs" 18305;
-	setAttr ".tgi[0].ni[5].x" -379.42269897460938;
-	setAttr ".tgi[0].ni[5].y" -106.10360717773438;
-	setAttr ".tgi[0].ni[5].nvs" 18305;
-	setAttr ".tgi[0].ni[6].x" -379.42269897460938;
-	setAttr ".tgi[0].ni[6].y" -4.6750359535217285;
-	setAttr ".tgi[0].ni[6].nvs" 18304;
-	setAttr ".tgi[0].ni[7].x" 125.62889099121094;
-	setAttr ".tgi[0].ni[7].y" -276.3280029296875;
-	setAttr ".tgi[0].ni[7].nvs" 18305;
-	setAttr ".tgi[0].ni[8].x" 136.21574401855469;
-	setAttr ".tgi[0].ni[8].y" -68.353370666503906;
-	setAttr ".tgi[0].ni[8].nvs" 18305;
-	setAttr ".tgi[0].ni[9].x" 167.14285278320313;
-	setAttr ".tgi[0].ni[9].y" 351.42855834960938;
-	setAttr ".tgi[0].ni[9].nvs" 18306;
-	setAttr ".tgi[0].ni[10].x" 127.52445983886719;
-	setAttr ".tgi[0].ni[10].y" 119.12535858154297;
-	setAttr ".tgi[0].ni[10].nvs" 18305;
-	setAttr ".tgi[0].ni[11].x" 459.44155883789063;
-	setAttr ".tgi[0].ni[11].y" 374.97390747070313;
-	setAttr ".tgi[0].ni[11].nvs" 1923;
 createNode lambert -n "noOperation_lambert";
 	rename -uid "AF529FE9-4F8D-5D7A-DBC0-CA877E30475B";
 	setAttr ".c" -type "float3" 1 0 0 ;
@@ -1097,6 +1457,81 @@ createNode shadingEngine -n "lambert7SG";
 	setAttr ".ro" yes;
 createNode materialInfo -n "materialInfo6";
 	rename -uid "6B9839AB-4E8C-6632-840F-1B840C5BC0F4";
+createNode plusMinusAverage -n "plusMinusAverage1";
+	rename -uid "92624152-482E-ECB5-CA0D-86A06FD20E9C";
+createNode lambert -n "sum_lambert";
+	rename -uid "87A26ED2-4049-B074-9FCC-058780BC8027";
+	setAttr ".c" -type "float3" 1 1 1 ;
+createNode shadingEngine -n "lambert8SG";
+	rename -uid "125A2F68-4BF6-7534-D8E4-2C8E14E8BF6C";
+	setAttr ".ihi" 0;
+	setAttr -s 3 ".dsm";
+	setAttr ".ro" yes;
+createNode materialInfo -n "materialInfo7";
+	rename -uid "BE48DF37-4E4C-8393-9D93-19A0CF50DAC6";
+createNode lambert -n "subtract_lambert";
+	rename -uid "7193A74E-490B-B32F-CEF5-ECBB80C04F04";
+createNode shadingEngine -n "lambert9SG";
+	rename -uid "8A7197A8-4CCC-FA01-DACB-D981D6B709BF";
+	setAttr ".ihi" 0;
+	setAttr -s 3 ".dsm";
+	setAttr ".ro" yes;
+createNode materialInfo -n "materialInfo8";
+	rename -uid "5C20DFB3-4A32-E63C-CD03-D18AD342E7D6";
+createNode lambert -n "average_lambert";
+	rename -uid "2F6741C0-4C16-3AC3-B133-54B5471F177B";
+	setAttr ".c" -type "float3" 0.042168677 0.042168677 0.042168677 ;
+createNode shadingEngine -n "lambert10SG";
+	rename -uid "4D4C3C82-4DBB-53B3-DFCB-9AA6DDA6D2E9";
+	setAttr ".ihi" 0;
+	setAttr -s 3 ".dsm";
+	setAttr ".ro" yes;
+createNode materialInfo -n "materialInfo9";
+	rename -uid "53F239E2-42CA-7D0B-1332-E5A0BD83A452";
+createNode plusMinusAverage -n "sum_plusMinusAverage";
+	rename -uid "17DAA166-42A9-3DEC-BBC6-6EA488B8AE80";
+	setAttr -s 2 ".i3";
+	setAttr -s 2 ".i3";
+createNode plusMinusAverage -n "subtract_plusMinusAverage";
+	rename -uid "61C6E7C3-4AEF-4C8F-0A14-3E898A959A5B";
+	setAttr ".op" 2;
+	setAttr -s 2 ".i3";
+	setAttr -s 2 ".i3";
+createNode plusMinusAverage -n "average_plusMinusAverage";
+	rename -uid "BDA36DC7-4B49-7551-2F1B-B38222E0145B";
+	setAttr ".op" 3;
+	setAttr -s 2 ".i3";
+	setAttr -s 2 ".i3";
+createNode nodeGraphEditorInfo -n "MayaNodeEditorSavedTabsInfo";
+	rename -uid "BEB6378F-4F61-FD61-B1A4-88B54080AFA2";
+	setAttr ".tgi[0].tn" -type "string" "Untitled_1";
+	setAttr ".tgi[0].vl" -type "double2" -1399.7210917038294 -660.27325745938117 ;
+	setAttr ".tgi[0].vh" -type "double2" 877.70828105338467 452.12659372980414 ;
+	setAttr -s 8 ".tgi[0].ni";
+	setAttr ".tgi[0].ni[0].x" -627.95977783203125;
+	setAttr ".tgi[0].ni[0].y" -495.51055908203125;
+	setAttr ".tgi[0].ni[0].nvs" 18305;
+	setAttr ".tgi[0].ni[1].x" -1252.857177734375;
+	setAttr ".tgi[0].ni[1].y" 94.285713195800781;
+	setAttr ".tgi[0].ni[1].nvs" 18305;
+	setAttr ".tgi[0].ni[2].x" -1252.857177734375;
+	setAttr ".tgi[0].ni[2].y" -60;
+	setAttr ".tgi[0].ni[2].nvs" 18305;
+	setAttr ".tgi[0].ni[3].x" -908.63427734375;
+	setAttr ".tgi[0].ni[3].y" 152.75129699707031;
+	setAttr ".tgi[0].ni[3].nvs" 18305;
+	setAttr ".tgi[0].ni[4].x" -540.0770263671875;
+	setAttr ".tgi[0].ni[4].y" 19.354642868041992;
+	setAttr ".tgi[0].ni[4].nvs" 18305;
+	setAttr ".tgi[0].ni[5].x" -944.51812744140625;
+	setAttr ".tgi[0].ni[5].y" -373.42962646484375;
+	setAttr ".tgi[0].ni[5].nvs" 18305;
+	setAttr ".tgi[0].ni[6].x" -522.1064453125;
+	setAttr ".tgi[0].ni[6].y" 347.01632690429688;
+	setAttr ".tgi[0].ni[6].nvs" 18305;
+	setAttr ".tgi[0].ni[7].x" -911.02655029296875;
+	setAttr ".tgi[0].ni[7].y" -119.73451232910156;
+	setAttr ".tgi[0].ni[7].nvs" 18305;
 select -ne :time1;
 	setAttr ".o" 1;
 	setAttr ".unw" 1;
@@ -1107,12 +1542,14 @@ select -ne :hardwareRenderingGlobals;
 		 0 0 0 0 ;
 	setAttr ".fprt" yes;
 select -ne :renderPartition;
-	setAttr -s 8 ".st";
+	setAttr -s 11 ".st";
 select -ne :renderGlobalsList1;
 select -ne :defaultShaderList1;
-	setAttr -s 10 ".s";
+	setAttr -s 13 ".s";
 select -ne :postProcessList1;
 	setAttr -s 2 ".p";
+select -ne :defaultRenderUtilityList1;
+	setAttr -s 3 ".u";
 select -ne :defaultRenderingList1;
 select -ne :initialShadingGroup;
 	setAttr ".ro" yes;
@@ -1128,6 +1565,9 @@ connectAttr "input2_locatorShape.wm" "input2_annotationShape.dom" -na;
 connectAttr "globalMatrix_locatorShape.wm" "globalMatrix_annotationShape.dom" -na
 		;
 connectAttr "noOperation_vectorProduct.o" "noOperation_vectorProduct_output.t";
+connectAttr "sum_plusMinusAverage.o3" "sum_vectorProduct_output.t";
+connectAttr "subtract_plusMinusAverage.o3" "subtract_vectorProduct_output.t";
+connectAttr "average_plusMinusAverage.o3" "average_vectorProduct_output.t";
 connectAttr "dotProduct_vectorProduct.o" "dotProduct_vectorProduct_output.t";
 connectAttr "crossProduct_vectorProduct.o" "crossProduct_vectorProduct_output.t"
 		;
@@ -1143,6 +1583,9 @@ relationship "link" ":lightLinker1" "lambert4SG.message" ":defaultLightSet.messa
 relationship "link" ":lightLinker1" "lambert5SG.message" ":defaultLightSet.message";
 relationship "link" ":lightLinker1" "lambert6SG.message" ":defaultLightSet.message";
 relationship "link" ":lightLinker1" "lambert7SG.message" ":defaultLightSet.message";
+relationship "link" ":lightLinker1" "lambert8SG.message" ":defaultLightSet.message";
+relationship "link" ":lightLinker1" "lambert9SG.message" ":defaultLightSet.message";
+relationship "link" ":lightLinker1" "lambert10SG.message" ":defaultLightSet.message";
 relationship "shadowLink" ":lightLinker1" ":initialShadingGroup.message" ":defaultLightSet.message";
 relationship "shadowLink" ":lightLinker1" ":initialParticleSE.message" ":defaultLightSet.message";
 relationship "shadowLink" ":lightLinker1" "lambert2SG.message" ":defaultLightSet.message";
@@ -1151,6 +1594,9 @@ relationship "shadowLink" ":lightLinker1" "lambert4SG.message" ":defaultLightSet
 relationship "shadowLink" ":lightLinker1" "lambert5SG.message" ":defaultLightSet.message";
 relationship "shadowLink" ":lightLinker1" "lambert6SG.message" ":defaultLightSet.message";
 relationship "shadowLink" ":lightLinker1" "lambert7SG.message" ":defaultLightSet.message";
+relationship "shadowLink" ":lightLinker1" "lambert8SG.message" ":defaultLightSet.message";
+relationship "shadowLink" ":lightLinker1" "lambert9SG.message" ":defaultLightSet.message";
+relationship "shadowLink" ":lightLinker1" "lambert10SG.message" ":defaultLightSet.message";
 connectAttr "layerManager.dli[0]" "defaultLayer.id";
 connectAttr "renderLayerManager.rlmi[0]" "defaultRenderLayer.rlid";
 connectAttr "input2Shape.wp" "noOperation_vectorProduct.i2";
@@ -1168,90 +1614,111 @@ connectAttr "input2Shape.wm" "vectorMatrixProduct_vectorProduct.m";
 connectAttr "input2Shape.wp" "pointMatrixProduct_vectorProduct.i2";
 connectAttr "input1Shape.wp" "pointMatrixProduct_vectorProduct.i1";
 connectAttr "input2Shape.wm" "pointMatrixProduct_vectorProduct.m";
-connectAttr "crossProduct_vectorProduct_output.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[0].dn"
-		;
-connectAttr "vectorMatrixProduct_vectorProduct_output.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[1].dn"
-		;
-connectAttr "pointMatrixProduct_vectorProduct_output.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[2].dn"
-		;
-connectAttr "dotProduct_vectorProduct_output.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[3].dn"
-		;
-connectAttr "pointMatrixProduct_vectorProduct.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[4].dn"
-		;
-connectAttr "input2Shape.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[5].dn";
-connectAttr "input1Shape.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[6].dn";
-connectAttr "vectorMatrixProduct_vectorProduct.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[7].dn"
-		;
-connectAttr "crossProduct_vectorProduct.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[8].dn"
-		;
-connectAttr "noOperation_vectorProduct.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[9].dn"
-		;
-connectAttr "dotProduct_vectorProduct.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[10].dn"
-		;
-connectAttr "noOperation_vectorProduct_output.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[11].dn"
-		;
 connectAttr "noOperation_lambert.oc" "lambert2SG.ss";
-connectAttr "noOperation_prVectorProduct_output_2Shape.iog" "lambert2SG.dsm" -na
-		;
-connectAttr "noOperation_prVectorProduct_output_0Shape.iog" "lambert2SG.dsm" -na
-		;
+connectAttr "noOperation_prVectorMath_output_2Shape.iog" "lambert2SG.dsm" -na;
+connectAttr "noOperation_prVectorMath_output_0Shape.iog" "lambert2SG.dsm" -na;
 connectAttr "noOperation_vectorProduct_outputShape.iog" "lambert2SG.dsm" -na;
 connectAttr "lambert2SG.msg" "materialInfo1.sg";
 connectAttr "noOperation_lambert.msg" "materialInfo1.m";
 connectAttr "dotProduct_lambert.oc" "lambert3SG.ss";
-connectAttr "dotProduct_prVectorProduct_output_2Shape.iog" "lambert3SG.dsm" -na;
-connectAttr "dotProduct_prVectorProduct_output_0Shape.iog" "lambert3SG.dsm" -na;
+connectAttr "dotProduct_prVectorMath_output_2Shape.iog" "lambert3SG.dsm" -na;
+connectAttr "dotProduct_prVectorMath_output_0Shape.iog" "lambert3SG.dsm" -na;
 connectAttr "dotProduct_vectorProduct_outputShape.iog" "lambert3SG.dsm" -na;
 connectAttr "lambert3SG.msg" "materialInfo2.sg";
 connectAttr "dotProduct_lambert.msg" "materialInfo2.m";
 connectAttr "crossProduct_lambert.oc" "lambert4SG.ss";
-connectAttr "crossProduct_prVectorProduct_output_2Shape.iog" "lambert4SG.dsm" -na
-		;
-connectAttr "crossProduct_prVectorProduct_output_0Shape.iog" "lambert4SG.dsm" -na
-		;
+connectAttr "crossProduct_prVectorMath_output_2Shape.iog" "lambert4SG.dsm" -na;
+connectAttr "crossProduct_prVectorMath_output_0Shape.iog" "lambert4SG.dsm" -na;
 connectAttr "crossProduct_vectorProduct_outputShape.iog" "lambert4SG.dsm" -na;
 connectAttr "lambert4SG.msg" "materialInfo3.sg";
 connectAttr "crossProduct_lambert.msg" "materialInfo3.m";
 connectAttr "vectorMatrixProduct_lambert.oc" "lambert5SG.ss";
-connectAttr "vectorMatrixProduct_prVectorProduct_output_2Shape.iog" "lambert5SG.dsm"
+connectAttr "vectorMatrixProduct_prVectorMath_output_2Shape.iog" "lambert5SG.dsm"
 		 -na;
-connectAttr "vectorMatrixProduct_prVectorProduct_output_0Shape.iog" "lambert5SG.dsm"
+connectAttr "vectorMatrixProduct_prVectorMath_output_0Shape.iog" "lambert5SG.dsm"
 		 -na;
 connectAttr "vectorMatrixProduct_vectorProduct_outputShape.iog" "lambert5SG.dsm"
 		 -na;
 connectAttr "lambert5SG.msg" "materialInfo4.sg";
 connectAttr "vectorMatrixProduct_lambert.msg" "materialInfo4.m";
 connectAttr "pointMatrixProduct_lambert.oc" "lambert6SG.ss";
-connectAttr "pointMatrixProduct_prVectorProduct_output_2Shape.iog" "lambert6SG.dsm"
+connectAttr "pointMatrixProduct_prVectorMath_output_2Shape.iog" "lambert6SG.dsm"
 		 -na;
-connectAttr "pointMatrixProduct_prVectorProduct_output_0Shape.iog" "lambert6SG.dsm"
+connectAttr "pointMatrixProduct_prVectorMath_output_0Shape.iog" "lambert6SG.dsm"
 		 -na;
 connectAttr "pointMatrixProduct_vectorProduct_outputShape.iog" "lambert6SG.dsm" 
 		-na;
 connectAttr "lambert6SG.msg" "materialInfo5.sg";
 connectAttr "pointMatrixProduct_lambert.msg" "materialInfo5.m";
 connectAttr "project_lambert.oc" "lambert7SG.ss";
-connectAttr "project_in2_on_in1_prVectorProduct_output_2Shape.iog" "lambert7SG.dsm"
+connectAttr "project_in2_on_in1_prVectorMath_output_2Shape.iog" "lambert7SG.dsm"
 		 -na;
-connectAttr "project_in2_on_in1_prVectorProduct_output_0Shape.iog" "lambert7SG.dsm"
+connectAttr "project_in2_on_in1_prVectorMath_output_0Shape.iog" "lambert7SG.dsm"
 		 -na;
-connectAttr "project_in1_on_in2_prVectorProduct_output_2Shape.iog" "lambert7SG.dsm"
+connectAttr "project_in1_on_in2_prVectorMath_output_2Shape.iog" "lambert7SG.dsm"
 		 -na;
-connectAttr "project_in1_on_in2_prVectorProduct_output_0Shape.iog" "lambert7SG.dsm"
+connectAttr "project_in1_on_in2_prVectorMath_output_0Shape.iog" "lambert7SG.dsm"
 		 -na;
 connectAttr "lambert7SG.msg" "materialInfo6.sg";
 connectAttr "project_lambert.msg" "materialInfo6.m";
+connectAttr "sum_lambert.oc" "lambert8SG.ss";
+connectAttr "sum_prVectorMath_output_2Shape.iog" "lambert8SG.dsm" -na;
+connectAttr "sum_prVectorMath_output_0Shape.iog" "lambert8SG.dsm" -na;
+connectAttr "sum_vectorProduct_outputShape.iog" "lambert8SG.dsm" -na;
+connectAttr "lambert8SG.msg" "materialInfo7.sg";
+connectAttr "sum_lambert.msg" "materialInfo7.m";
+connectAttr "subtract_lambert.oc" "lambert9SG.ss";
+connectAttr "subtract_prVectorMath_output_2Shape.iog" "lambert9SG.dsm" -na;
+connectAttr "subtract_prVectorMath_output_0Shape.iog" "lambert9SG.dsm" -na;
+connectAttr "subtract_vectorProduct_outputShape.iog" "lambert9SG.dsm" -na;
+connectAttr "lambert9SG.msg" "materialInfo8.sg";
+connectAttr "subtract_lambert.msg" "materialInfo8.m";
+connectAttr "average_lambert.oc" "lambert10SG.ss";
+connectAttr "average_prVectorMath_output_2Shape.iog" "lambert10SG.dsm" -na;
+connectAttr "average_prVectorMath_output_0Shape.iog" "lambert10SG.dsm" -na;
+connectAttr "average_vectorProduct_outputShape.iog" "lambert10SG.dsm" -na;
+connectAttr "lambert10SG.msg" "materialInfo9.sg";
+connectAttr "average_lambert.msg" "materialInfo9.m";
+connectAttr "input1.t" "sum_plusMinusAverage.i3[0]";
+connectAttr "input2.t" "sum_plusMinusAverage.i3[1]";
+connectAttr "input1.t" "subtract_plusMinusAverage.i3[0]";
+connectAttr "input2.t" "subtract_plusMinusAverage.i3[1]";
+connectAttr "input1.t" "average_plusMinusAverage.i3[0]";
+connectAttr "input2.t" "average_plusMinusAverage.i3[1]";
+connectAttr "average_vectorProduct_output.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[0].dn"
+		;
+connectAttr "input2.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[1].dn";
+connectAttr "input1.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[2].dn";
+connectAttr "sum_plusMinusAverage.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[3].dn"
+		;
+connectAttr "subtract_vectorProduct_output.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[4].dn"
+		;
+connectAttr "average_plusMinusAverage.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[5].dn"
+		;
+connectAttr "sum_vectorProduct_output.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[6].dn"
+		;
+connectAttr "subtract_plusMinusAverage.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[7].dn"
+		;
 connectAttr "lambert2SG.pa" ":renderPartition.st" -na;
 connectAttr "lambert3SG.pa" ":renderPartition.st" -na;
 connectAttr "lambert4SG.pa" ":renderPartition.st" -na;
 connectAttr "lambert5SG.pa" ":renderPartition.st" -na;
 connectAttr "lambert6SG.pa" ":renderPartition.st" -na;
 connectAttr "lambert7SG.pa" ":renderPartition.st" -na;
+connectAttr "lambert8SG.pa" ":renderPartition.st" -na;
+connectAttr "lambert9SG.pa" ":renderPartition.st" -na;
+connectAttr "lambert10SG.pa" ":renderPartition.st" -na;
 connectAttr "noOperation_lambert.msg" ":defaultShaderList1.s" -na;
 connectAttr "dotProduct_lambert.msg" ":defaultShaderList1.s" -na;
 connectAttr "crossProduct_lambert.msg" ":defaultShaderList1.s" -na;
 connectAttr "vectorMatrixProduct_lambert.msg" ":defaultShaderList1.s" -na;
 connectAttr "pointMatrixProduct_lambert.msg" ":defaultShaderList1.s" -na;
 connectAttr "project_lambert.msg" ":defaultShaderList1.s" -na;
+connectAttr "sum_lambert.msg" ":defaultShaderList1.s" -na;
+connectAttr "subtract_lambert.msg" ":defaultShaderList1.s" -na;
+connectAttr "average_lambert.msg" ":defaultShaderList1.s" -na;
+connectAttr "sum_plusMinusAverage.msg" ":defaultRenderUtilityList1.u" -na;
+connectAttr "subtract_plusMinusAverage.msg" ":defaultRenderUtilityList1.u" -na;
+connectAttr "average_plusMinusAverage.msg" ":defaultRenderUtilityList1.u" -na;
 connectAttr "defaultRenderLayer.msg" ":defaultRenderingList1.r" -na;
-// End of test_prVectorProduct.ma
+// End of test_prVectorMath.ma
