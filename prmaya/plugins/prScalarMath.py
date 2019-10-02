@@ -3,7 +3,7 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Binary (pair) math operators for array of scalars that return a scalar.
+Binary math operators for array of scalar pairs that return a scalar.
 Similar to Maya nodes:
 - addDoubleLinear
 - multDoubleLinear
@@ -11,9 +11,8 @@ Similar to Maya nodes:
 - multiplyDivide
 
 USE CASES
-Reduce the number of nodes in the scene by replacing multiple Maya math utility
-nodes with fewer prScalarMath nodes.
-Added missing operators: Modulus, floor division, ...
+- Replace multiple Maya nodes with fewer prScalarMath nodes
+- New operations/features missing in Maya
 
 USAGE
 (MEL): createNode prScalarMath
@@ -44,8 +43,7 @@ LINKS
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
-- custom aeTemplate for prScalarMath.input
-- node behavior attrs
+- optional cleanup (icon, aeTemplate array attr, nodeBehavior attr)
 - name alternatives: scalar/double, linear / math>algebra>arithmetic, binary operation
   -> prDoubleLinear, prDoubleArithmetic
   -> prScalarAlgebra, prScalarMath, prScalarBinaryOp

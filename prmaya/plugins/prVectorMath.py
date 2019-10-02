@@ -3,22 +3,24 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Array version of Mayas "vectorProduct" and "plusMinusAverage.input3D/output3D" (with two inputs).
-Added features:
-- new .operation: projection (input1 on input2) AND (input2 on input1)
-- new .input[0].scalar to multiply output with
-- new .globalScalar to multiply all outputs with
-- new .globalMatrix attr to multiply all outputs with (Matrix Product operations)
+Array version of Mayas "vectorProduct" with added operations and features
+New operations:
+- Sum, Subtract, Average (similar to Mayas plusMinusAverage)
+- Project (in1 on in2), Project (in2 on in1)
+New features:
+- .input[0].scalar to multiply each output with
+- .globalScalar to multiply all outputs with
+- .globalMatrix attr to multiply all outputs with (Matrix Product operations)
 
 USE CASES
-- replace multiple vectorProduct nodes with one / simplify graphs
-- if you need the extra operations / features
+- Replace multiple Maya nodes (vectorProduct, plusMinusAverage) with fewer
+  prVectorMath nodes
+- New operations/features missing in Maya
 
 USAGE
 (MEL): createNode prVectorMath
 
 ATTRIBUTES
-prVectorMath1.operation
 prVectorMath1.normalizeOutput
 prVectorMath1.globalScalar
 prVectorMath1.globalMatrix
@@ -36,6 +38,17 @@ prVectorMath1.output[0]
 prVectorMath1.output[0].outputX
 prVectorMath1.output[0].outputY
 prVectorMath1.output[0].outputZ
+prVectorMath1.operation
+- 0, No operation: forward input1. Same as vectorProduct
+- 1, Sum: Same as plusMinusAverage
+- 2, Subtract: Same as plusMinusAverage
+- 3, Average: Same as plusMinusAverage
+- 4, Dot Product: Same as vectorProduct
+- 5, Cross Product: Same as vectorProduct
+- 6, Vector Matrix Product: Same as vectorProduct
+- 7, Point Matrix Product: Same as vectorProduct
+- 8, Project (in1 on in2): new
+- 9, Project (in2 on in1): new
 
 LINKS
 - Demo: TODO
@@ -48,7 +61,6 @@ TODO
 """
 
 import sys
-import math
 
 import maya.api.OpenMaya as om
 
@@ -75,13 +87,13 @@ class prVectorMath(om.MPxNode):
         prVectorMath.operation = enumAttr.create('operation', 'operation', 1)
         enumAttr.keyable = True
         enumAttr.addField('No operation', 0)
-        enumAttr.addField('Sum', 1)
-        enumAttr.addField('Subtract', 2)
+        enumAttr.addField('Sum +', 1)
+        enumAttr.addField('Subtract -', 2)
         enumAttr.addField('Average', 3)
-        enumAttr.addField('Dot Product', 4)
-        enumAttr.addField('Cross Product', 5)
-        enumAttr.addField('Vector Matrix Product', 6)
-        enumAttr.addField('Point Matrix Product', 7)
+        enumAttr.addField('Dot Product *', 4)
+        enumAttr.addField('Cross Product x', 5)
+        enumAttr.addField('Vector Matrix Product *', 6)
+        enumAttr.addField('Point Matrix Product *', 7)
         enumAttr.addField('Project in1 on in2', 8)
         enumAttr.addField('Project in2 on in1', 9)
         prVectorMath.addAttribute(prVectorMath.operation)
@@ -187,11 +199,9 @@ class prVectorMath(om.MPxNode):
                 if operation == 7:  # Point Matrix Product
                     out += om.MVector(m[12], m[13], m[14])
             elif operation == 8:  # Projection in1 on in2
-                mult = in1 * in2 / in2.length() ** 2
-                out = om.MVector(in2[0] * mult, in2[1] * mult, in2[2] * mult)
+                out = in2 * (in1 * in2 / in2.length() ** 2)
             elif operation == 9:  # Projection in2 on in1
-                mult = in1 * in2 / in1.length() ** 2
-                out = om.MVector(in1[0] * mult, in1[1] * mult, in1[2] * mult)
+                out = in1 * (in1 * in2 / in1.length() ** 2)
             else:
                 raise ValueError('operation: {}'.format(operation))
 
