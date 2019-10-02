@@ -3,7 +3,7 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Create a list of scalars with even spacing
+Create a list of scalars between two values with even spacing.
 
 USE CASES
 - Evenly distribute transforms nodes on a curve (motionPath1.uValue, ...)

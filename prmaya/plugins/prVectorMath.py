@@ -3,7 +3,7 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Array version of Mayas "vectorProduct" with added operations and features
+Array version of Mayas "vectorProduct" with added operations and features.
 New operations:
 - Sum, Subtract, Average (similar to Mayas plusMinusAverage)
 - Project (in1 on in2), Project (in2 on in1)

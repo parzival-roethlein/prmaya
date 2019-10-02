@@ -3,7 +3,10 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-The Python math module as Maya node. Random idea, probably not for production.
+The Python math module as Maya node.
+
+USE CASES
+Random idea, probably not for production.
 
 ATTRIBUTES
 1. data
