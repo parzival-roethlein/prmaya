@@ -2,30 +2,30 @@
 
 import sys
 sys.path.append(r'C:\Users\paz\Documents\git\prmaya\test\plugins')
-import test_prScalarArithmetic
-reload(test_prScalarArithmetic)
-test_prScalarArithmetic.SETTINGS['plugin_path'] = r'C:\Users\paz\Documents\git\prmaya\prmaya\plugins\prScalarArithmetic.py'
-test_prScalarArithmetic.SETTINGS['file'] = r'C:\Users\paz\Documents\git\prmaya\test\plugins\test_prScalarArithmetic.ma'
-test_prScalarArithmetic.run()
+import test_prScalarMath
+reload(test_prScalarMath)
+test_prScalarMath.SETTINGS['plugin_path'] = r'C:\Users\paz\Documents\git\prmaya\prmaya\plugins\prScalarMath.py'
+test_prScalarMath.SETTINGS['file'] = r'C:\Users\paz\Documents\git\prmaya\test\plugins\test_prScalarMath.ma'
+test_prScalarMath.run()
 
 import sys
 sys.path.append('/home/prthlein/private/code/prmaya/test/plugins')
-import test_prScalarArithmetic
-reload(test_prScalarArithmetic)
-test_prScalarArithmetic.SETTINGS['plugin_path'] = r'/home/prthlein/private/code/prmaya/prmaya/plugins/prScalarArithmetic.py'
-test_prScalarArithmetic.SETTINGS['file'] = r'/home/prthlein/private/code/prmaya/test/plugins/test_prScalarArithmetic.ma'
-test_prScalarArithmetic.run()
+import test_prScalarMath
+reload(test_prScalarMath)
+test_prScalarMath.SETTINGS['plugin_path'] = r'/home/prthlein/private/code/prmaya/prmaya/plugins/prScalarMath.py'
+test_prScalarMath.SETTINGS['file'] = r'/home/prthlein/private/code/prmaya/test/plugins/test_prScalarMath.ma'
+test_prScalarMath.run()
 
 """
 
 import maya.cmds as mc
 
-from prmaya.plugins import prScalarArithmetic
-reload(prScalarArithmetic)
+from prmaya.plugins import prScalarMath
+reload(prScalarMath)
 
-SETTINGS = {'plugin_name': 'prScalarArithmetic.py',
-            'plugin_path': 'C:\Users\paz\Documents\git\prmaya\prmaya\plugins\prScalarArithmetic.py',
-            'file': 'C:\Users\paz\Documents\git\prmaya\test\plugins\test_prScalarArithmetic.ma',
+SETTINGS = {'plugin_name': 'prScalarMath.py',
+            'plugin_path': 'C:\Users\paz\Documents\git\prmaya\prmaya\plugins\prScalarMath.py',
+            'file': 'C:\Users\paz\Documents\git\prmaya\test\plugins\test_prScalarMath.ma',
             }
 
 
@@ -51,8 +51,8 @@ def run():
                                        'sum', 'subtract', 'average',
                                        'multiply', 'divide', 'power',
                                        'root', 'floorDivision', 'modulo']):
-        prNode = mc.createNode('prScalarArithmetic',
-                                           name=operation + '_prScalarArithmetic')
+        prNode = mc.createNode('prScalarMath',
+                                           name=operation + '_prScalarMath')
         mc.setAttr(prNode + '.operation', value)
         mc.setAttr(prNode + '.input[1].input1', driverValue)
         mc.setAttr(prNode + '.input[1].input2', driverValue)

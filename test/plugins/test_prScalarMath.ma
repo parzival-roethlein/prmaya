@@ -1,5 +1,5 @@
 //Maya ASCII 2018 scene
-//Name: test_prDoubleArithmetic.ma
+//Name: test_prScalarMath.ma
 //Last modified: Mon, Jul 15, 2019 12:53:29 AM
 //Codeset: 1252
 requires maya "2018";
@@ -1667,4 +1667,4 @@ connectAttr "root_prShape.iog" ":initialShadingGroup.dsm" -na;
 connectAttr "root_pr_staticShape.iog" ":initialShadingGroup.dsm" -na;
 connectAttr "floorDivision_pr_staticShape.iog" ":initialShadingGroup.dsm" -na;
 connectAttr "modulo_pr_staticShape.iog" ":initialShadingGroup.dsm" -na;
-// End of test_prDoubleArithmetic.ma
+// End of test_prScalarMath.ma

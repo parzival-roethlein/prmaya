@@ -3,26 +3,26 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Arithmetic operators for array of scalar pairs that return a scalar.
-The purpose of this node is to reduce the number of nodes in the scene by
-replacing multiple standard maya nodes with a single node, because the Maya ones
-only allow for a limited number of input pairs. Maya node examples:
+Binary (pair) math operators for array of scalars that return a scalar.
+Similar to Maya nodes:
 - addDoubleLinear
 - multDoubleLinear
 - plusMinusAverage
 - multiplyDivide
 
 USE CASES
-...
+Reduce the number of nodes in the scene by replacing multiple Maya math utility
+nodes with fewer prScalarMath nodes.
+Added missing operators: Modulus, floor division, ...
 
 USAGE
-(MEL): createNode prScalarArithmetic
+(MEL): createNode prScalarMath
 
 ATTRIBUTES
-prScalarArithmetic1.input[0].input1 (double)
-prScalarArithmetic1.input[0].input2 (double)
-prScalarArithmetic1.output[0] (double)
-prScalarArithmetic1.operation (enum)
+prScalarMath1.input[0].input1 (double)
+prScalarMath1.input[0].input2 (double)
+prScalarMath1.output[0] (double)
+prScalarMath1.operation (enum)
 - 0, No operation: forward input1. Same as multiplyDivide
 - 1, Sum +: Same as plusMinusAverage / addDoubleLinear
 - 2, Subtract -: Same as plusMinusAverage
@@ -44,7 +44,7 @@ LINKS
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
-- custom aeTemplate for prScalarArithmetic.input
+- custom aeTemplate for prScalarMath.input
 - node behavior attrs
 - name alternatives: scalar/double, linear / math>algebra>arithmetic, binary operation
   -> prDoubleLinear, prDoubleArithmetic
@@ -57,8 +57,8 @@ import sys
 import maya.api.OpenMaya as om
 
 
-class prScalarArithmetic(om.MPxNode):
-    nodeTypeName = "prScalarArithmetic"
+class prScalarMath(om.MPxNode):
+    nodeTypeName = "prScalarMath"
     nodeTypeId = om.MTypeId(0x0004C266)  # local, not save
 
     @staticmethod
@@ -68,14 +68,14 @@ class prScalarArithmetic(om.MPxNode):
         enumAttr = om.MFnEnumAttribute()
 
         # output
-        prScalarArithmetic.output = numericAttr.create('output', 'output', om.MFnNumericData.kDouble)
+        prScalarMath.output = numericAttr.create('output', 'output', om.MFnNumericData.kDouble)
         numericAttr.array = True
         numericAttr.usesArrayDataBuilder = True
         numericAttr.writable = False
-        prScalarArithmetic.addAttribute(prScalarArithmetic.output)
+        prScalarMath.addAttribute(prScalarMath.output)
 
         # input
-        prScalarArithmetic.operation = enumAttr.create('operation', 'operation', 3)
+        prScalarMath.operation = enumAttr.create('operation', 'operation', 3)
         enumAttr.keyable = True
         # operation names from maya nodes (plusMinusAverage, multiplyDivide)
         enumAttr.addField('No operation', 0)
@@ -88,26 +88,26 @@ class prScalarArithmetic(om.MPxNode):
         enumAttr.addField('Root', 7)
         enumAttr.addField('Floor division //', 8)
         enumAttr.addField('Modulus %', 9)
-        prScalarArithmetic.addAttribute(prScalarArithmetic.operation)
-        prScalarArithmetic.attributeAffects(prScalarArithmetic.operation, prScalarArithmetic.output)
+        prScalarMath.addAttribute(prScalarMath.operation)
+        prScalarMath.attributeAffects(prScalarMath.operation, prScalarMath.output)
 
-        prScalarArithmetic.input1 = numericAttr.create('input1', 'input1', om.MFnNumericData.kDouble, 0.0)
+        prScalarMath.input1 = numericAttr.create('input1', 'input1', om.MFnNumericData.kDouble, 0.0)
         numericAttr.keyable = True
 
-        prScalarArithmetic.input2 = numericAttr.create('input2', 'input2', om.MFnNumericData.kDouble, 1.0)
+        prScalarMath.input2 = numericAttr.create('input2', 'input2', om.MFnNumericData.kDouble, 1.0)
         numericAttr.keyable = True
 
-        prScalarArithmetic.input = compoundAttr.create('input', 'input')
-        compoundAttr.addChild(prScalarArithmetic.input1)
-        compoundAttr.addChild(prScalarArithmetic.input2)
+        prScalarMath.input = compoundAttr.create('input', 'input')
+        compoundAttr.addChild(prScalarMath.input1)
+        compoundAttr.addChild(prScalarMath.input2)
         compoundAttr.array = True
-        prScalarArithmetic.addAttribute(prScalarArithmetic.input)
-        prScalarArithmetic.attributeAffects(prScalarArithmetic.input1, prScalarArithmetic.output)
-        prScalarArithmetic.attributeAffects(prScalarArithmetic.input2, prScalarArithmetic.output)
+        prScalarMath.addAttribute(prScalarMath.input)
+        prScalarMath.attributeAffects(prScalarMath.input1, prScalarMath.output)
+        prScalarMath.attributeAffects(prScalarMath.input2, prScalarMath.output)
 
     @staticmethod
     def creator():
-        return prScalarArithmetic()
+        return prScalarMath()
 
     def __init__(self):
         om.MPxNode.__init__(self)
@@ -183,10 +183,10 @@ class prScalarArithmetic(om.MPxNode):
 def initializePlugin(obj):
     pluginFn = om.MFnPlugin(obj, 'Parzival Roethlein', '0.0.1')
     try:
-        pluginFn.registerNode(prScalarArithmetic.nodeTypeName, prScalarArithmetic.nodeTypeId,
-                              prScalarArithmetic.creator, prScalarArithmetic.initialize)
+        pluginFn.registerNode(prScalarMath.nodeTypeName, prScalarMath.nodeTypeId,
+                              prScalarMath.creator, prScalarMath.initialize)
     except:
-        sys.stderr.write('Failed to register node: {0}'.format(prScalarArithmetic.nodeTypeName))
+        sys.stderr.write('Failed to register node: {0}'.format(prScalarMath.nodeTypeName))
         raise
     evalAETemplate()
 
@@ -194,9 +194,9 @@ def initializePlugin(obj):
 def uninitializePlugin(obj):
     pluginFn = om.MFnPlugin(obj)
     try:
-        pluginFn.deregisterNode(prScalarArithmetic.nodeTypeId)
+        pluginFn.deregisterNode(prScalarMath.nodeTypeId)
     except:
-        sys.stderr.write('Failed to deregister node: {0}'.format(prScalarArithmetic.nodeTypeName))
+        sys.stderr.write('Failed to deregister node: {0}'.format(prScalarMath.nodeTypeName))
         raise
 
 
@@ -207,10 +207,10 @@ def maya_useNewAPI():
 def evalAETemplate():
     import maya.mel as mm
     mm.eval('''
-    global proc AEprScalarArithmeticTemplate(string $nodeName)
+    global proc AEprScalarMathTemplate(string $nodeName)
     {
         editorTemplate -beginScrollLayout;
-            editorTemplate -beginLayout "prScalarArithmetic Attributes" -collapse 0;
+            editorTemplate -beginLayout "prScalarMath Attributes" -collapse 0;
                 editorTemplate -label "operation" -addControl "operation";
                 editorTemplate -label "input" -addControl "input";
             editorTemplate -endLayout;
