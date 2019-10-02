@@ -121,19 +121,12 @@ class prVectorBlend(om.MPxNode):
             inputArrayHandle.jumpToPhysicalElement(i)  # old api: jumpToArrayElement(i)
             index = inputArrayHandle.elementLogicalIndex()
             inputTargetHandle = inputArrayHandle.inputValue()
-            in1 = inputTargetHandle.child(self.input1).asFloat3()
-            in2 = inputTargetHandle.child(self.input2).asFloat3()
+            in1 = om.MVector(inputTargetHandle.child(self.input1).asFloat3())
+            in2 = om.MVector(inputTargetHandle.child(self.input2).asFloat3())
             output_handle = output_builder.addElement(index)
-
-            out = [in2[0] + blender * (in1[0] - in2[0]),
-                   in2[1] + blender * (in1[1] - in2[1]),
-                   in2[2] + blender * (in1[2] - in2[2])]
+            out = in2 + blender * (in1 - in2)
             if normalizeOutput:
-                length = math.sqrt(out[0]**2 + out[1]**2 + out[2]**2)
-                try:
-                    out = [out[0] / length, out[1] / length, out[2] / length]
-                except ZeroDivisionError:
-                    out = [0.0, 0.0, 0.0]
+                out.normalize()
             output_handle.set3Float(*out)
         output_arrayHandle.set(output_builder)
         output_arrayHandle.setAllClean()

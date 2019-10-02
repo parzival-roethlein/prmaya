@@ -47,6 +47,8 @@ def run():
 
     input1, input2, output = 'input1.t', 'input2.t', 'output.t'
     prNode = mc.createNode('prVectorBlend')
+
+    mc.connectAttr('output.blender', prNode + '.blender')
     mc.connectAttr(input1, prNode + '.input[1].input1')
     mc.connectAttr(input2, prNode + '.input[1].input2')
     mc.connectAttr(prNode + '.output[1]', output)

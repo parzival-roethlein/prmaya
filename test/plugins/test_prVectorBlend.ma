@@ -1,8 +1,9 @@
 //Maya ASCII 2018 scene
 //Name: test_prVectorBlend.ma
-//Last modified: Tue, Jul 23, 2019 12:04:51 AM
+//Last modified: Wed, Oct 02, 2019 01:23:44 AM
 //Codeset: 1252
 requires maya "2018";
+requires "stereoCamera" "10.0";
 currentUnit -l centimeter -a degree -t film;
 fileInfo "application" "maya";
 fileInfo "product" "Maya 2018";
@@ -12,13 +13,13 @@ fileInfo "osv" "Microsoft Windows 8 Business Edition, 64-bit  (Build 9200)\n";
 createNode transform -s -n "persp";
 	rename -uid "BE80F057-4CF8-69EA-FC3E-A69C5E9BE5F8";
 	setAttr ".v" no;
-	setAttr ".t" -type "double3" 0.6440460295601963 1.6969045588897007 3.604176682701381 ;
-	setAttr ".r" -type "double3" -20.138352729605273 3.4000000000002588 -1.991351797743046e-16 ;
+	setAttr ".t" -type "double3" 1.0171885838354693 1.5293201303478805 2.9145858301320966 ;
+	setAttr ".r" -type "double3" -19.538352729605776 9.4000000000003201 0 ;
 createNode camera -s -n "perspShape" -p "persp";
 	rename -uid "94EF5145-4BBA-DFB5-345A-8C95B1101ABF";
 	setAttr -k off ".v" no;
 	setAttr ".fl" 34.999999999999993;
-	setAttr ".coi" 3.7509671977395547;
+	setAttr ".coi" 3.1253431358612369;
 	setAttr ".imn" -type "string" "persp";
 	setAttr ".den" -type "string" "persp_depth";
 	setAttr ".man" -type "string" "persp_mask";
@@ -204,19 +205,112 @@ createNode pointConstraint -n "input2_annotation_pointConstraint1" -p "input2_an
 createNode transform -n "output_group";
 	rename -uid "DAC4CE01-45BB-0A82-29F9-A881FF9B9595";
 createNode transform -n "output" -p "output_group";
-	rename -uid "7C0B62B4-438A-6787-80DE-2F95246CBC0B";
+	rename -uid "E3A4C9C1-40C7-9875-4EE4-FB86B4FB359C";
+	addAttr -ci true -sn "blender" -ln "blender" -at "double";
 	setAttr -l on -k off ".v";
-	setAttr ".t" -type "double3" 0.5 0.5 0 ;
+	setAttr ".t" -type "double3" 0.75 0.5 0 ;
 	setAttr -l on -k off ".rx";
 	setAttr -l on -k off ".ry";
 	setAttr -l on -k off ".rz";
 	setAttr -l on -k off ".sx";
 	setAttr -l on -k off ".sy";
 	setAttr -l on -k off ".sz";
-createNode locator -n "outputShape" -p "output";
+	setAttr -k on ".blender" 0.5;
+createNode mesh -n "outputShape" -p "output";
+	rename -uid "361755DB-4DB5-6BD8-5A5F-BE90E11942F8";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".pv" -type "double2" 0.5 0.5 ;
+	setAttr ".uvst[0].uvsn" -type "string" "map1";
+	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
+		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
+		 0.875 0.25 0.125 0 0.125 0.25;
+	setAttr ".cuvs" -type "string" "map1";
+	setAttr ".dcc" -type "string" "Ambient+Diffuse";
+	setAttr ".covm[0]"  0 1 1;
+	setAttr ".cdvm[0]"  0 1 1;
+	setAttr -s 8 ".pt[0:7]" -type "float3"  0.44482839 0.44482839 -0.44482839 
+		-0.44482839 0.44482839 -0.44482839 0.44482839 -0.44482839 -0.44482839 -0.44482839 
+		-0.44482839 -0.44482839 0.44482839 -0.44482839 0.44482839 -0.44482839 -0.44482839 
+		0.44482839 0.44482839 0.44482839 0.44482839 -0.44482839 0.44482839 0.44482839;
+	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
+		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
+	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
+		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
+	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
+		f 4 0 5 -2 -5
+		mu 0 4 0 1 3 2
+		f 4 1 7 -3 -7
+		mu 0 4 2 3 5 4
+		f 4 2 9 -4 -9
+		mu 0 4 4 5 7 6
+		f 4 3 11 -1 -11
+		mu 0 4 6 7 9 8
+		f 4 -12 -10 -8 -6
+		mu 0 4 1 10 11 3
+		f 4 10 4 6 8
+		mu 0 4 12 0 2 13;
+	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
+	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
+	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
+	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
+createNode transform -n "output_an" -p "output";
+	rename -uid "7C0B62B4-438A-6787-80DE-2F95246CBC0B";
+	setAttr -k off ".v" no;
+	setAttr -l on -k off ".rx";
+	setAttr -l on -k off ".ry";
+	setAttr -l on -k off ".rz";
+	setAttr -l on -k off ".sx";
+	setAttr -l on -k off ".sy";
+	setAttr -l on -k off ".sz";
+createNode locator -n "output_anShape" -p "output_an";
 	rename -uid "1406F70C-4D1B-AAEE-F302-5691B2D1449B";
 	setAttr -k off ".v";
 	setAttr ".los" -type "double3" 0.5 0.5 0.5 ;
+createNode transform -n "output_maya" -p "output_group";
+	rename -uid "147BF5BA-4820-DEDF-EF28-FD851BE59618";
+	setAttr ".ovdt" 1;
+	setAttr ".ove" yes;
+createNode mesh -n "output_mayaShape" -p "output_maya";
+	rename -uid "14EB333B-4D22-A99E-6C26-32B66ECD46F4";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".pv" -type "double2" 0.5 0.5 ;
+	setAttr ".uvst[0].uvsn" -type "string" "map1";
+	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
+		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
+		 0.875 0.25 0.125 0 0.125 0.25;
+	setAttr ".cuvs" -type "string" "map1";
+	setAttr ".dcc" -type "string" "Ambient+Diffuse";
+	setAttr ".covm[0]"  0 1 1;
+	setAttr ".cdvm[0]"  0 1 1;
+	setAttr -s 8 ".pt[0:7]" -type "float3"  0.43938744 0.43938744 -0.43938744 
+		-0.43938744 0.43938744 -0.43938744 0.43938744 -0.43938744 -0.43938744 -0.43938744 
+		-0.43938744 -0.43938744 0.43938744 -0.43938744 0.43938744 -0.43938744 -0.43938744 
+		0.43938744 0.43938744 0.43938744 0.43938744 -0.43938744 0.43938744 0.43938744;
+	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
+		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
+	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
+		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
+	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
+		f 4 0 5 -2 -5
+		mu 0 4 0 1 3 2
+		f 4 1 7 -3 -7
+		mu 0 4 2 3 5 4
+		f 4 2 9 -4 -9
+		mu 0 4 4 5 7 6
+		f 4 3 11 -1 -11
+		mu 0 4 6 7 9 8
+		f 4 -12 -10 -8 -6
+		mu 0 4 1 10 11 3
+		f 4 10 4 6 8
+		mu 0 4 12 0 2 13;
+	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
+	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
+	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
+	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -n "output_annotation_group" -p "output_group";
 	rename -uid "C0E90524-4C08-B3C9-87F5-C797F6C2A285";
 	setAttr ".ovdt" 2;
@@ -233,7 +327,7 @@ createNode transform -n "output_annotation" -p "output_annotation_group";
 createNode annotationShape -n "output_annotationShape" -p "output_annotation";
 	rename -uid "85AA6C1D-4ECA-B0BE-0D59-67B9DECB231C";
 	setAttr -k off ".v";
-	setAttr ".txt" -type "string" " output";
+	setAttr ".txt" -type "string" "output / blender";
 	setAttr ".daro" no;
 createNode pointConstraint -n "output_annotation_pointConstraint1" -p "output_annotation";
 	rename -uid "021E4F54-49CA-6D75-E6A7-909B4F26486F";
@@ -256,19 +350,19 @@ createNode pointConstraint -n "output_annotation_pointConstraint1" -p "output_an
 	setAttr -k on ".w0";
 	setAttr -k on ".w1";
 createNode lightLinker -s -n "lightLinker1";
-	rename -uid "4C54D09B-44A0-0926-2868-B4966AE25E4B";
+	rename -uid "E8EB9E50-4837-2830-B7B6-B1AF04B57F51";
 	setAttr -s 2 ".lnk";
 	setAttr -s 2 ".slnk";
 createNode shapeEditorManager -n "shapeEditorManager";
-	rename -uid "E3E281B0-4329-4CB5-164D-6F8EA05FC09E";
+	rename -uid "4BC8E572-407C-B2E2-0FF5-D7AE4CD1FD46";
 createNode poseInterpolatorManager -n "poseInterpolatorManager";
-	rename -uid "4678A11E-4ECC-7BE9-D970-DDBC1C7E70B9";
+	rename -uid "6DBD45D4-433B-7527-5474-1AAD04C4B3A3";
 createNode displayLayerManager -n "layerManager";
-	rename -uid "25A1554C-46C7-0F12-5F9A-CDB99EE13562";
+	rename -uid "D3C12610-4252-06E6-9043-51A283064F8B";
 createNode displayLayer -n "defaultLayer";
 	rename -uid "3CEB601F-44AB-3B1F-A1FC-419CE307CF60";
 createNode renderLayerManager -n "renderLayerManager";
-	rename -uid "BEF0CE6C-40B4-1AEF-C021-14882F28C196";
+	rename -uid "8FE74AB0-4017-9E3A-0D33-5D81DD246A9C";
 createNode renderLayer -n "defaultRenderLayer";
 	rename -uid "9E08ECF3-4E11-2798-6D57-5982D3DBF79A";
 	setAttr ".g" yes;
@@ -281,6 +375,8 @@ createNode nodeGraphEditorInfo -n "MayaNodeEditorSavedTabsInfo";
 	setAttr ".tgi[0].tn" -type "string" "Untitled_1";
 	setAttr ".tgi[0].vl" -type "double2" -1133.3332882987147 -553.57140657447724 ;
 	setAttr ".tgi[0].vh" -type "double2" 1133.3332882987147 553.57140657447724 ;
+createNode blendColors -n "output_blendColors";
+	rename -uid "A76B262D-41F7-4689-1F1A-558CCBEB609B";
 select -ne :time1;
 	setAttr ".o" 1;
 	setAttr ".unw" 1;
@@ -299,6 +395,7 @@ select -ne :postProcessList1;
 	setAttr -s 2 ".p";
 select -ne :defaultRenderingList1;
 select -ne :initialShadingGroup;
+	setAttr -s 2 ".dsm";
 	setAttr ".ro" yes;
 select -ne :initialParticleSE;
 	setAttr ".ro" yes;
@@ -345,7 +442,8 @@ connectAttr "input2.rpt" "input2_annotation_pointConstraint1.tg[1].trt";
 connectAttr "input2.pm" "input2_annotation_pointConstraint1.tg[1].tpm";
 connectAttr "input2_annotation_pointConstraint1.w1" "input2_annotation_pointConstraint1.tg[1].tw"
 		;
-connectAttr "outputShape.wm" "output_arrow_annotationShape.dom" -na;
+connectAttr "output_blendColors.op" "output_maya.t";
+connectAttr "output_anShape.wm" "output_arrow_annotationShape.dom" -na;
 connectAttr "output_annotation_pointConstraint1.ctx" "output_annotation.tx";
 connectAttr "output_annotation_pointConstraint1.cty" "output_annotation.ty";
 connectAttr "output_annotation_pointConstraint1.ctz" "output_annotation.tz";
@@ -358,10 +456,10 @@ connectAttr "output_group.rpt" "output_annotation_pointConstraint1.tg[0].trt";
 connectAttr "output_group.pm" "output_annotation_pointConstraint1.tg[0].tpm";
 connectAttr "output_annotation_pointConstraint1.w0" "output_annotation_pointConstraint1.tg[0].tw"
 		;
-connectAttr "output.t" "output_annotation_pointConstraint1.tg[1].tt";
-connectAttr "output.rp" "output_annotation_pointConstraint1.tg[1].trp";
-connectAttr "output.rpt" "output_annotation_pointConstraint1.tg[1].trt";
-connectAttr "output.pm" "output_annotation_pointConstraint1.tg[1].tpm";
+connectAttr "output_an.t" "output_annotation_pointConstraint1.tg[1].tt";
+connectAttr "output_an.rp" "output_annotation_pointConstraint1.tg[1].trp";
+connectAttr "output_an.rpt" "output_annotation_pointConstraint1.tg[1].trt";
+connectAttr "output_an.pm" "output_annotation_pointConstraint1.tg[1].tpm";
 connectAttr "output_annotation_pointConstraint1.w1" "output_annotation_pointConstraint1.tg[1].tw"
 		;
 relationship "link" ":lightLinker1" ":initialShadingGroup.message" ":defaultLightSet.message";
@@ -370,5 +468,10 @@ relationship "shadowLink" ":lightLinker1" ":initialShadingGroup.message" ":defau
 relationship "shadowLink" ":lightLinker1" ":initialParticleSE.message" ":defaultLightSet.message";
 connectAttr "layerManager.dli[0]" "defaultLayer.id";
 connectAttr "renderLayerManager.rlmi[0]" "defaultRenderLayer.rlid";
+connectAttr "input1.t" "output_blendColors.c1";
+connectAttr "input2.t" "output_blendColors.c2";
+connectAttr "output.blender" "output_blendColors.b";
 connectAttr "defaultRenderLayer.msg" ":defaultRenderingList1.r" -na;
+connectAttr "outputShape.iog" ":initialShadingGroup.dsm" -na;
+connectAttr "output_mayaShape.iog" ":initialShadingGroup.dsm" -na;
 // End of test_prVectorBlend.ma
