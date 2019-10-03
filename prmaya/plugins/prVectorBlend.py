@@ -6,10 +6,10 @@ DESCRIPTION
 Vector array version of Mayas blendColors node.
 Differences:
 - vector naming (input1X, ..) instead of color (color1R, ..)
-- option to normalizeOutput
+- added normalizeOutput attr
 
 USE CASES
-...
+- Replace multiple blendColor nodes with one prVectorBlend node
 
 USAGE
 (MEL): createNode prVectorBlend
@@ -43,7 +43,6 @@ TODO
 """
 
 import sys
-import math
 
 import maya.api.OpenMaya as om
 

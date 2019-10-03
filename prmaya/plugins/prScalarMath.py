@@ -11,7 +11,7 @@ Similar to Maya nodes:
 - multiplyDivide
 
 USE CASES
-- Replace multiple Maya nodes with fewer prScalarMath nodes
+- Replace multiple Maya nodes with one prScalarMath nodes
 - New operations/features missing in Maya
 
 USAGE

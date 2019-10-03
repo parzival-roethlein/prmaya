@@ -13,8 +13,7 @@ New features:
 - .globalMatrix attr to multiply all outputs with (Matrix Product operations)
 
 USE CASES
-- Replace multiple Maya nodes (vectorProduct, plusMinusAverage) with fewer
-  prVectorMath nodes
+- Replace multiple Maya nodes (vectorProduct, ...) with one prVectorMath node
 - New operations/features missing in Maya
 
 USAGE
