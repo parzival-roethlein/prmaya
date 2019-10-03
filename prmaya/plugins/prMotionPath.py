@@ -71,18 +71,18 @@ class prMotionPath(om.MPxNode):
         prMotionPath.addAttribute(prMotionPath.inputCurve)
         prMotionPath.attributeAffects(prMotionPath.inputCurve, prMotionPath.outTranslate)
 
+        prMotionPath.fractionMode = numericAttr.create('fractionMode', 'fractionMode',
+                                                       om.MFnNumericData.kBoolean, True)
+        numericAttr.keyable = True
+        prMotionPath.addAttribute(prMotionPath.fractionMode)
+        prMotionPath.attributeAffects(prMotionPath.fractionMode, prMotionPath.outTranslate)
+
         prMotionPath.uValue = numericAttr.create('uValue', 'uValue', om.MFnNumericData.kFloat, 0.0)
         numericAttr.keyable = True
         numericAttr.array = True
         numericAttr.usesArrayDataBuilder = True
         prMotionPath.addAttribute(prMotionPath.uValue)
         prMotionPath.attributeAffects(prMotionPath.uValue, prMotionPath.outTranslate)
-
-        prMotionPath.fractionMode = numericAttr.create('fractionMode', 'fractionMode',
-                                                       om.MFnNumericData.kBoolean, True)
-        numericAttr.keyable = True
-        prMotionPath.addAttribute(prMotionPath.fractionMode)
-        prMotionPath.attributeAffects(prMotionPath.fractionMode, prMotionPath.outTranslate)
 
     @staticmethod
     def creator():

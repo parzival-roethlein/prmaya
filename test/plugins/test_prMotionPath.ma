@@ -1,6 +1,6 @@
 //Maya ASCII 2018 scene
 //Name: test_prMotionPath.ma
-//Last modified: Thu, Oct 03, 2019 01:34:17 AM
+//Last modified: Thu, Oct 03, 2019 01:49:27 AM
 //Codeset: 1252
 requires maya "2018";
 currentUnit -l centimeter -a degree -t film;
@@ -1071,22 +1071,22 @@ createNode transform -n "annotation1" -p "uValue_locator";
 createNode annotationShape -n "annotationShape1" -p "annotation1";
 	rename -uid "43458E85-41E9-548B-9B1E-119C1575BBED";
 	setAttr -k off ".v";
-	setAttr ".txt" -type "string" " uValue";
+	setAttr ".txt" -type "string" "uValue fractionMode";
 	setAttr ".daro" no;
 createNode lightLinker -s -n "lightLinker1";
-	rename -uid "22336D3E-4B18-E192-651A-4192818D2714";
+	rename -uid "8DC04CD2-45A5-1248-EE82-4593C66B71D5";
 	setAttr -s 2 ".lnk";
 	setAttr -s 2 ".slnk";
 createNode shapeEditorManager -n "shapeEditorManager";
-	rename -uid "1AC08EE2-401A-6250-F08A-3E9818AD0FA9";
+	rename -uid "35B8699B-4354-F58E-16FD-DDA935235FF5";
 createNode poseInterpolatorManager -n "poseInterpolatorManager";
-	rename -uid "2766708C-4075-971E-7ED7-8AA20727A6DA";
+	rename -uid "454EF22B-4311-074F-9B7F-B699426306CA";
 createNode displayLayerManager -n "layerManager";
-	rename -uid "2F4F0DA5-4E5F-2A02-2F73-90B556FC3CB1";
+	rename -uid "0C9A3330-45B0-7206-1DE5-13B9655FF52C";
 createNode displayLayer -n "defaultLayer";
 	rename -uid "88A67CB6-4713-8DFD-6E23-3CA78197C0FB";
 createNode renderLayerManager -n "renderLayerManager";
-	rename -uid "0435C8BF-445D-E227-3613-E78670B5127E";
+	rename -uid "6591AE24-481A-B7F0-2BB9-61AC6F39AF1D";
 createNode renderLayer -n "defaultRenderLayer";
 	rename -uid "B4796BC8-4092-6F2B-13A9-E88CC2A3DB92";
 	setAttr ".g" yes;
