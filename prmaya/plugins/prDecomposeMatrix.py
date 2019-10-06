@@ -3,24 +3,26 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Array version of Mayas "decomposeMatrix" with added features and fixed rotateOrder bug
+Array version of Mayas "decomposeMatrix" with added features.
+- "output..." attributes shortened to "out..."
+- inputInverseMatrix added
 
 USE CASES
 - Replace multiple decomposeMatrix nodes (+multMatrix) with fewer prDecomposeMatrix nodes
-- If you need another rotateOrder than xyz (decomposeMatrix.inputRotateOrder is not working)
+- inputRotateOrder working. Was bugged in Maya until some version before 2018
 
 USAGE
 (MEL): createNode prDecomposeMatrix
 
 ATTRIBUTES
-prDecomposeMatrix1.input[0].inputMatrix
-prDecomposeMatrix1.input[0].inputInverseMatrix
-prDecomposeMatrix1.input[0].inputRotateOrder
-prDecomposeMatrix1.output[0].outputTranslate
-prDecomposeMatrix1.output[0].outputRotate
-prDecomposeMatrix1.output[0].outputScale
-prDecomposeMatrix1.output[0].outputShear
-prDecomposeMatrix1.output[0].outputQuat
+prDecomposeMatrix.input[0].inputMatrix
+prDecomposeMatrix.input[0].inputInverseMatrix
+prDecomposeMatrix.input[0].inputRotateOrder
+prDecomposeMatrix.output[0].outTranslate
+prDecomposeMatrix.output[0].outRotate
+prDecomposeMatrix.output[0].outScale
+prDecomposeMatrix.output[0].outShear
+prDecomposeMatrix.output[0].outQuat
 
 LINKS
 - Demo: TODO
@@ -49,13 +51,52 @@ class prDecomposeMatrix(om.MPxNode):
         matrixAttr = om.MFnMatrixAttribute()
         enumAttr = om.MFnEnumAttribute()
         compoundAttr = om.MFnCompoundAttribute()
+        unitAttr = om.MFnUnitAttribute()
 
         # output
         prDecomposeMatrix.outTranslate = numericAttr.createPoint('outTranslate', 'outTranslate')
         numericAttr.writable = False
 
+        prDecomposeMatrix.outRotateX = unitAttr.create('outRotateX', 'outRotateX', om.MFnUnitAttribute.kAngle)
+        unitAttr.writable = False
+        prDecomposeMatrix.outRotateY = unitAttr.create('outRotateY', 'outRotateY', om.MFnUnitAttribute.kAngle)
+        unitAttr.writable = False
+        prDecomposeMatrix.outRotateZ = unitAttr.create('outRotateZ', 'outRotateZ', om.MFnUnitAttribute.kAngle)
+        unitAttr.writable = False
+        prDecomposeMatrix.outRotate = compoundAttr.create('outRotate', 'outRotate')
+        compoundAttr.writable = False
+        compoundAttr.addChild(prDecomposeMatrix.outRotateX)
+        compoundAttr.addChild(prDecomposeMatrix.outRotateY)
+        compoundAttr.addChild(prDecomposeMatrix.outRotateZ)
+
+        prDecomposeMatrix.outScale = numericAttr.createPoint('outScale', 'outScale')
+        numericAttr.writable = False
+
+        prDecomposeMatrix.outShear = numericAttr.createPoint('outShear', 'outShear')
+        numericAttr.writable = False
+
+        prDecomposeMatrix.outQuatX = numericAttr.create('outQuatX', 'outQuatX', om.MFnNumericData.kFloat)
+        unitAttr.writable = False
+        prDecomposeMatrix.outQuatY = numericAttr.create('outQuatY', 'outQuatY', om.MFnNumericData.kFloat)
+        unitAttr.writable = False
+        prDecomposeMatrix.outQuatZ = numericAttr.create('outQuatZ', 'outQuatZ', om.MFnNumericData.kFloat)
+        unitAttr.writable = False
+        prDecomposeMatrix.outQuatW = numericAttr.create('outQuatW', 'outQuatW', om.MFnNumericData.kFloat)
+        unitAttr.writable = False
+        prDecomposeMatrix.outQuat = compoundAttr.create('outQuat', 'outQuat')
+        compoundAttr.writable = False
+        compoundAttr.addChild(prDecomposeMatrix.outQuatX)
+        compoundAttr.addChild(prDecomposeMatrix.outQuatY)
+        compoundAttr.addChild(prDecomposeMatrix.outQuatZ)
+        compoundAttr.addChild(prDecomposeMatrix.outQuatW)
+
         prDecomposeMatrix.output = compoundAttr.create('output', 'output')
         compoundAttr.addChild(prDecomposeMatrix.outTranslate)
+        compoundAttr.addChild(prDecomposeMatrix.outRotate)
+        compoundAttr.addChild(prDecomposeMatrix.outScale)
+        compoundAttr.addChild(prDecomposeMatrix.outShear)
+        compoundAttr.addChild(prDecomposeMatrix.outQuat)
+        compoundAttr.writable = False
         compoundAttr.array = True
         compoundAttr.usesArrayDataBuilder = True
         prDecomposeMatrix.addAttribute(prDecomposeMatrix.output)
@@ -104,7 +145,7 @@ class prDecomposeMatrix(om.MPxNode):
         om.MGlobal.displayWarning(message)
 
     def compute(self, plug, dataBlock):
-        if plug not in [self.outTranslate]:
+        if plug not in [self.output, self.outTranslate, self.outRotate, self.outScale, self.outShear]:
             self.displayWarning(error='Unknown plug: {}'.format(plug))
             return
 
@@ -118,11 +159,48 @@ class prDecomposeMatrix(om.MPxNode):
             inputTargetHandle = inputArrayHandle.inputValue()
             outputHandle = output_builder.addElement(index)
             outTranslateHandle = outputHandle.child(self.outTranslate)
-
+            outRotateHandle = outputHandle.child(self.outRotate)
+            outScaleHandle = outputHandle.child(self.outScale)
+            outShearHandle = outputHandle.child(self.outShear)
+            outQuatHandle = outputHandle.child(self.outQuat)
             rotateOrder = inputTargetHandle.child(self.inputRotateOrder).asShort()
+            inputMatrix = inputTargetHandle.child(self.inputMatrix).asMatrix()
+            inputInverseMatrix = inputTargetHandle.child(self.inputInverseMatrix).asMatrix()
 
-            outTranslate = [rotateOrder, rotateOrder, rotateOrder]
-            outTranslateHandle.set3Float(outTranslate[0], outTranslate[1], outTranslate[2])
+            inputTransMatrix = om.MTransformationMatrix(inputMatrix*inputInverseMatrix)
+
+            # translate
+            translate = inputTransMatrix.translation(om.MSpace.kWorld)
+            outTranslateHandle.set3Float(*translate)
+            outTranslateHandle.setClean()
+
+            # rotate
+            inputTransMatrix.reorderRotation(rotateOrder + 1)
+            rotation = inputTransMatrix.rotation()
+            outRotateHandle.set3Double(rotation[0], rotation[1], rotation[2])
+            outRotateHandle.setClean()
+
+            # scale
+            scale = inputTransMatrix.scale(om.MSpace.kWorld)
+            outScaleHandle.set3Float(*scale)
+            outScaleHandle.setClean()
+
+            # shear
+            shear = inputTransMatrix.shear(om.MSpace.kWorld)
+            outShearHandle.set3Float(*shear)
+            outShearHandle.setClean()
+
+            # quat
+            quaternion = inputTransMatrix.rotation(asQuaternion=True)
+            outQuatXHandle = outQuatHandle.child(self.outQuatX)
+            outQuatXHandle.setFloat(quaternion.x)
+            outQuatYHandle = outQuatHandle.child(self.outQuatY)
+            outQuatYHandle.setFloat(quaternion.y)
+            outQuatZHandle = outQuatHandle.child(self.outQuatZ)
+            outQuatZHandle.setFloat(quaternion.z)
+            outQuatWHandle = outQuatHandle.child(self.outQuatW)
+            outQuatWHandle.setFloat(quaternion.w)
+            outQuatHandle.setClean()
 
         output_arrayHandle.set(output_builder)
         output_arrayHandle.setAllClean()
@@ -165,6 +243,6 @@ def evalAETemplate():
             AEdependNodeTemplate $nodeName;
             editorTemplate -addExtraControls;
         editorTemplate -endScrollLayout;
-        //editorTemplate -suppress "output";
+        editorTemplate -suppress "output";
     };
     ''')

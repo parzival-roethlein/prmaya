@@ -46,7 +46,18 @@ def run():
     mc.file(SETTINGS['file'], open=True, force=True)
 
     prNode = mc.createNode('prDecomposeMatrix', name='prnode_output_prDecomposeMatrix')
-    mc.connectAttr('inputMatrix.matrix', prNode+'.input[0].inputMatrix', force=True)
-    mc.connectAttr(prNode+'.output[0].outTranslate', 'prnode_output.translate', force=True)
+    mc.connectAttr('inputMatrix.cubeRotateOrder', prNode+'.input[1].inputRotateOrder', force=True)
+    mc.connectAttr('inputMatrix.worldMatrix', prNode+'.input[1].inputMatrix', force=True)
+    mc.connectAttr('prnode_output.parentInverseMatrix', prNode+'.input[1].inputInverseMatrix', force=True)
+    mc.connectAttr(prNode+'.output[1].outTranslate', 'prnode_output.translate', force=True)
+    mc.connectAttr(prNode+'.output[1].outRotate', 'prnode_output.rotate', force=True)
+    mc.connectAttr(prNode+'.output[1].outScale', 'prnode_output.scale', force=True)
+    mc.connectAttr(prNode+'.output[1].outShear', 'prnode_output.shear', force=True)
+    mc.connectAttr(prNode+'.output[1].outQuatX', 'prnode_outQuat.tx', force=True)
+    mc.connectAttr(prNode+'.output[1].outQuatY', 'prnode_outQuat.ty', force=True)
+    mc.connectAttr(prNode+'.output[1].outQuatZ', 'prnode_outQuat.tz', force=True)
+    mc.connectAttr(prNode+'.output[1].outQuatW', 'prnode_outQuat.sy', force=True)
 
     createTempFile()
+
+    mc.select('inputMatrix')
