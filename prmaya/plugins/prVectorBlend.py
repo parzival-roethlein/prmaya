@@ -3,8 +3,7 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Vector array version of Mayas blendColors node.
-Differences:
+Vector array version of Mayas "blendColors" with added features.
 - vector naming (input1X, ..) instead of color (color1R, ..)
 - added normalizeOutput attr
 

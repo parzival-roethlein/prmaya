@@ -3,7 +3,7 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Array version of Mayas "motionPath" node: .uValue[], .output[].outTranslate
+Array version of Mayas "motionPath" with added features.
 Differences:
 - motionPath.uValue = prMotionPath.uValue[0]: made into array
 - motionPath.geometryPath = prMotionPath.inputCurve: renamed
@@ -32,6 +32,7 @@ LINKS
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
+- merge with prCurveMatrix
 - uValue aeTemplate buttons
 - prMotionPath.inputWorldMatrix (of curve), prMotionPath.inputInverseMatrix (for output[] space)
 - all motionPath features

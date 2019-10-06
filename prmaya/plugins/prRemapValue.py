@@ -3,7 +3,8 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Array version of Mayas remapValue node: inputValue[], outValue[], outColor[]
+Array version of Mayas "remapValue".
+inputValue[], outValue[], outColor[]
 
 USE CASES
 Replace multiple remapValue nodes with one prRemapValue node
