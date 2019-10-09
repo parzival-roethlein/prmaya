@@ -155,10 +155,8 @@ class prKeepOut(om.MPxNode):
             if targetType == om.MFnMeshData.kMesh:
                 meshFn = om.MFnMesh(targetData)
                 for index, raySource, rayDirection in zip(indices, raySources, rayDirections):
-                    hitPoints = meshFn.allIntersections(raySource, rayDirection, om.MSpace.kWorld, 1, False, sortHits=True)[0]
-                    # hitPoints = meshFn.closestIntersection(points[0], vectors[0], om.MSpace.kWorld, 1, False)[0]
-                    if hitPoints:
-                        closestHit = hitPoints[0]
+                    closestHit = meshFn.closestIntersection(raySource, rayDirection, om.MSpace.kWorld, 1, False)[0]
+                    if closestHit != om.MFloatPoint():
                         if closestHits[index] is None:
                             closestHits[index] = closestHit
                         elif (closestHit - raySource).length() < (closestHits[index] - raySource).length():
