@@ -125,7 +125,6 @@ class prKeepOut(om.MPxNode):
         raySources = []
         rayTargets = []
         rayDirections = []
-        maxParams = []
         inverseMatrices = []
 
         # get rays
@@ -135,15 +134,13 @@ class prKeepOut(om.MPxNode):
             inputTargetHandle = inputArrayHandle.inputValue()
 
             indices.append(inputArrayHandle.elementLogicalIndex())
-
             position1 = om.MFloatPoint(inputTargetHandle.child(self.inputPosition1).asFloat3())
-            raySources.append(position1)
             position2 = om.MFloatPoint(inputTargetHandle.child(self.inputPosition2).asFloat3())
-            rayTargets.append(position2)
-            rayDirection = position2-position1
-            rayDirections.append(rayDirection)
-            maxParams.append(rayDirection.length())
             inverseMatrices.append(inputTargetHandle.child(self.inputParentInverseMatrix).asMatrix())
+
+            raySources.append(position1)
+            rayTargets.append(position2)
+            rayDirections.append(position2-position1)
 
         # get inputGeometry and closest hits
         closestHits = {i: None for i in indices}
@@ -157,9 +154,9 @@ class prKeepOut(om.MPxNode):
             targetType = inputGeometryHandle.type()
             if targetType == om.MFnMeshData.kMesh:
                 meshFn = om.MFnMesh(targetData)
-                for index, raySource, rayDirection, maxParam in zip(indices, raySources, rayDirections, maxParams):
-                    hitPoints = meshFn.allIntersections(raySource, rayDirection, om.MSpace.kWorld, maxParam, False, sortHits=True)[0]
-                    # hitPoints = meshFn.closestIntersection(points[0], vectors[0], om.MSpace.kWorld, 100, False)[0]
+                for index, raySource, rayDirection in zip(indices, raySources, rayDirections):
+                    hitPoints = meshFn.allIntersections(raySource, rayDirection, om.MSpace.kWorld, 1, False, sortHits=True)[0]
+                    # hitPoints = meshFn.closestIntersection(points[0], vectors[0], om.MSpace.kWorld, 1, False)[0]
                     if hitPoints:
                         closestHit = hitPoints[0]
                         if closestHits[index] is None:
