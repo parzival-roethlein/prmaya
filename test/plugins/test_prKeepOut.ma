@@ -1,9 +1,10 @@
 //Maya ASCII 2018 scene
 //Name: test_prKeepOut.ma
-//Last modified: Tue, Oct 08, 2019 02:43:36 AM
+//Last modified: Wed, Oct 09, 2019 01:35:55 AM
 //Codeset: 1252
 requires maya "2018";
 requires -nodeType "prKeepOut" "prKeepOut.py" "0.0.1";
+requires "stereoCamera" "10.0";
 requires "stereoCamera" "10.0";
 currentUnit -l centimeter -a degree -t film;
 fileInfo "application" "maya";
@@ -14,13 +15,13 @@ fileInfo "osv" "Microsoft Windows 8 Business Edition, 64-bit  (Build 9200)\n";
 createNode transform -s -n "persp";
 	rename -uid "22CAAC4C-4C3C-563E-BA5D-E980DEE3094C";
 	setAttr ".v" no;
-	setAttr ".t" -type "double3" 11.36959127053157 1.7001242553561435 -2.2723172806599949 ;
-	setAttr ".r" -type "double3" -5.138352729598159 105.39999999999459 0 ;
+	setAttr ".t" -type "double3" 9.279001463478652 2.7415355611881482 -2.2166378117101582 ;
+	setAttr ".r" -type "double3" -5.738352729603414 106.99999999998857 0 ;
 createNode camera -s -n "perspShape" -p "persp";
 	rename -uid "5E2C5F39-41EC-DF3B-4DF0-8CB25B8E4905";
 	setAttr -k off ".v" no;
 	setAttr ".fl" 34.999999999999993;
-	setAttr ".coi" 12.973200840178933;
+	setAttr ".coi" 11.147630767354233;
 	setAttr ".imn" -type "string" "persp";
 	setAttr ".den" -type "string" "persp_depth";
 	setAttr ".man" -type "string" "persp_mask";
@@ -74,11 +75,10 @@ createNode camera -s -n "sideShape" -p "side";
 	setAttr ".o" yes;
 createNode transform -n "pSphere1";
 	rename -uid "8368A2D1-40A6-1A40-117A-46960155627E";
-	setAttr ".t" -type "double3" 0.053766910592706663 1.8761687116212151 -0.18495702270200892 ;
+	setAttr ".t" -type "double3" -0.099151176909633598 2.6202653151388517 1.0273065446234901 ;
 createNode mesh -n "pSphereShape1" -p "pSphere1";
 	rename -uid "837541CE-4FB6-A4C3-D430-EEBA99318185";
 	setAttr -k off ".v";
-	setAttr -s 2 ".iog";
 	setAttr ".vir" yes;
 	setAttr ".vif" yes;
 	setAttr ".uvst[0].uvsn" -type "string" "map1";
@@ -1217,7 +1217,7 @@ createNode locator -n "locatorShape1" -p "|group1|locator1";
 	setAttr ".los" -type "double3" 0.20999999999999996 0.20999999999999996 0.20999999999999996 ;
 createNode transform -n "locator2" -p "group1";
 	rename -uid "AC784EC6-4560-B0C0-F91C-3CAFC4120674";
-	setAttr ".t" -type "double3" 0.61039949270977978 3.820050059814827 -0.18167563392082275 ;
+	setAttr ".t" -type "double3" 0.59889741748898473 3.264722270157165 -0.51976195867697839 ;
 createNode locator -n "locatorShape2" -p "|group1|locator2";
 	rename -uid "FA1EBF41-4733-2B90-22A2-048E414FFB84";
 	setAttr -k off ".v";
@@ -1227,7 +1227,50 @@ createNode transform -n "locator3" -p "group1";
 createNode locator -n "locatorShape3" -p "|group1|locator3";
 	rename -uid "310BC31D-4D8F-75CB-1E18-818D20B5B11F";
 	setAttr -k off ".v";
-	setAttr ".los" -type "double3" 0.20999999999999996 0.20999999999999996 0.20999999999999996 ;
+	setAttr ".los" -type "double3" 0.1 0.1 0.1 ;
+createNode transform -n "pCube1" -p "|group1|locator3";
+	rename -uid "8DD60835-4D4C-E7CF-394C-8BB3C1D8DC4B";
+	setAttr ".ovdt" 2;
+	setAttr ".ove" yes;
+createNode mesh -n "pCubeShape1" -p "pCube1";
+	rename -uid "66DFF497-40C4-3BA0-A798-BE8ED3DC1529";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".pv" -type "double2" 0.5 0.5 ;
+	setAttr ".uvst[0].uvsn" -type "string" "map1";
+	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
+		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
+		 0.875 0.25 0.125 0 0.125 0.25;
+	setAttr ".cuvs" -type "string" "map1";
+	setAttr ".dcc" -type "string" "Ambient+Diffuse";
+	setAttr ".covm[0]"  0 1 1;
+	setAttr ".cdvm[0]"  0 1 1;
+	setAttr -s 8 ".pt[0:7]" -type "float3"  0.35186422 0.35186422 -0.35186422 
+		-0.35186422 0.35186422 -0.35186422 0.35186422 -0.35186422 -0.35186422 -0.35186422 
+		-0.35186422 -0.35186422 0.35186422 -0.35186422 0.35186422 -0.35186422 -0.35186422 
+		0.35186422 0.35186422 0.35186422 0.35186422 -0.35186422 0.35186422 0.35186422;
+	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
+		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
+	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
+		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
+	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
+		f 4 0 5 -2 -5
+		mu 0 4 0 1 3 2
+		f 4 1 7 -3 -7
+		mu 0 4 2 3 5 4
+		f 4 2 9 -4 -9
+		mu 0 4 4 5 7 6
+		f 4 3 11 -1 -11
+		mu 0 4 6 7 9 8
+		f 4 -12 -10 -8 -6
+		mu 0 4 1 10 11 3
+		f 4 10 4 6 8
+		mu 0 4 12 0 2 13;
+	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
+	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
+	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
+	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -n "group2";
 	rename -uid "29477C1F-4FB1-0E3A-5CBB-39934A0220BA";
 createNode transform -n "locator1" -p "group2";
@@ -1239,7 +1282,7 @@ createNode locator -n "locatorShape1" -p "|group2|locator1";
 	setAttr ".los" -type "double3" 0.20999999999999996 0.20999999999999996 0.20999999999999996 ;
 createNode transform -n "locator2" -p "group2";
 	rename -uid "38C5CF26-4A9E-1232-23B9-1A9E8A176A83";
-	setAttr ".t" -type "double3" 0.61039949270977978 3.820050059814827 0.92548450696203099 ;
+	setAttr ".t" -type "double3" 0.56160023162252948 3.6692368581196413 1.2894055919891525 ;
 createNode locator -n "locatorShape2" -p "|group2|locator2";
 	rename -uid "C3F57FA7-40E2-7BE5-2731-D0A72C50A6D6";
 	setAttr -k off ".v";
@@ -1249,15 +1292,57 @@ createNode transform -n "locator3" -p "group2";
 createNode locator -n "locatorShape3" -p "|group2|locator3";
 	rename -uid "0EED727F-41F8-25F3-E5D7-7188876BA274";
 	setAttr -k off ".v";
-	setAttr ".los" -type "double3" 0.20999999999999996 0.20999999999999996 0.20999999999999996 ;
+	setAttr ".los" -type "double3" 0.1 0.1 0.1 ;
+createNode transform -n "pCube2" -p "|group2|locator3";
+	rename -uid "42AD4993-43EB-DEF1-3564-179512715BD9";
+	setAttr ".ovdt" 2;
+	setAttr ".ove" yes;
+createNode mesh -n "pCubeShape2" -p "pCube2";
+	rename -uid "51B7561A-4D33-543A-2369-E4A893E81D13";
+	setAttr -k off ".v";
+	setAttr ".vir" yes;
+	setAttr ".vif" yes;
+	setAttr ".pv" -type "double2" 0.5 0.5 ;
+	setAttr ".uvst[0].uvsn" -type "string" "map1";
+	setAttr -s 14 ".uvst[0].uvsp[0:13]" -type "float2" 0.375 0 0.625 0 0.375
+		 0.25 0.625 0.25 0.375 0.5 0.625 0.5 0.375 0.75 0.625 0.75 0.375 1 0.625 1 0.875 0
+		 0.875 0.25 0.125 0 0.125 0.25;
+	setAttr ".cuvs" -type "string" "map1";
+	setAttr ".dcc" -type "string" "Ambient+Diffuse";
+	setAttr ".covm[0]"  0 1 1;
+	setAttr ".cdvm[0]"  0 1 1;
+	setAttr -s 8 ".pt[0:7]" -type "float3"  0.35186422 0.35186422 -0.35186422 
+		-0.35186422 0.35186422 -0.35186422 0.35186422 -0.35186422 -0.35186422 -0.35186422 
+		-0.35186422 -0.35186422 0.35186422 -0.35186422 0.35186422 -0.35186422 -0.35186422 
+		0.35186422 0.35186422 0.35186422 0.35186422 -0.35186422 0.35186422 0.35186422;
+	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
+		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
+	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
+		 3 5 0 4 6 0 5 7 0 6 0 0 7 1 0;
+	setAttr -s 6 -ch 24 ".fc[0:5]" -type "polyFaces" 
+		f 4 0 5 -2 -5
+		mu 0 4 0 1 3 2
+		f 4 1 7 -3 -7
+		mu 0 4 2 3 5 4
+		f 4 2 9 -4 -9
+		mu 0 4 4 5 7 6
+		f 4 3 11 -1 -11
+		mu 0 4 6 7 9 8
+		f 4 -12 -10 -8 -6
+		mu 0 4 1 10 11 3
+		f 4 10 4 6 8
+		mu 0 4 12 0 2 13;
+	setAttr ".cd" -type "dataPolyComponent" Index_Data Edge 0 ;
+	setAttr ".cvd" -type "dataPolyComponent" Index_Data Vertex 0 ;
+	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
+	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -n "pSphere2";
 	rename -uid "47BD885B-4B64-7C31-5399-278B5ED40302";
-	setAttr ".t" -type "double3" 0.18620839746936202 2.8145907730947162 0.34007507614400112 ;
-	setAttr ".s" -type "double3" 1.3782071774697098 0.32506982716426308 1.3782071774697098 ;
+	setAttr ".t" -type "double3" 0.79136999129714924 2.5077384322350955 0.4703691551760556 ;
+	setAttr ".s" -type "double3" 1.3782071774697098 0.067636727666525315 1.3782071774697098 ;
 createNode mesh -n "pSphereShape2" -p "pSphere2";
 	rename -uid "48D5E3CE-433A-333A-7A6A-B7952C8C5D4A";
 	setAttr -k off ".v";
-	setAttr -s 2 ".iog";
 	setAttr ".vir" yes;
 	setAttr ".vif" yes;
 	setAttr ".uvst[0].uvsn" -type "string" "map1";
@@ -2386,19 +2471,19 @@ createNode mesh -n "pSphereShape2" -p "pSphere2";
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode lightLinker -s -n "lightLinker1";
-	rename -uid "37362909-440F-E7AC-85BE-D0B38D21FF0F";
+	rename -uid "02B0E252-40B3-E986-18A7-7EBEC4E9F464";
 	setAttr -s 2 ".lnk";
 	setAttr -s 2 ".slnk";
 createNode shapeEditorManager -n "shapeEditorManager";
-	rename -uid "04095C0B-4B32-DACC-ACE7-D98E7DB7649E";
+	rename -uid "F53E8D1C-43ED-64F8-EC00-CEB7805D4ED5";
 createNode poseInterpolatorManager -n "poseInterpolatorManager";
-	rename -uid "7C2967DF-4509-68E5-763C-4CA54A12CC07";
+	rename -uid "B740BB2A-44A6-05BA-6A48-038A6632C6F3";
 createNode displayLayerManager -n "layerManager";
-	rename -uid "F29D2A15-4CDC-14E2-104B-19978DEC70FF";
+	rename -uid "C5CBE6B6-4DD9-548E-8A88-72A510050F19";
 createNode displayLayer -n "defaultLayer";
 	rename -uid "DAA19ED2-4087-F935-C065-7980C0315917";
 createNode renderLayerManager -n "renderLayerManager";
-	rename -uid "55ED9B93-4C22-5849-0771-4EA5EBD96E41";
+	rename -uid "E8FC6C8A-42FE-943E-4F40-6A9EC3C33651";
 createNode renderLayer -n "defaultRenderLayer";
 	rename -uid "1745112B-4B77-7A8E-51C6-93AC385A90D9";
 	setAttr ".g" yes;
@@ -2406,13 +2491,11 @@ createNode prKeepOut -n "prKeepOut1";
 	rename -uid "55DB3902-4A19-678F-5234-658B7CFEB526";
 	setAttr -s 2 ".output";
 	setAttr -s 2 ".inputGeometry";
-	setAttr -s 3 ".input";
+	setAttr -s 2 ".input";
 createNode script -n "sceneConfigurationScriptNode";
 	rename -uid "0E8EE482-4546-CFCF-AAF7-DDB184F110BC";
 	setAttr ".b" -type "string" "playbackOptions -min 1 -max 120 -ast 1 -aet 200 ";
 	setAttr ".st" 6;
-createNode prKeepOut -n "prKeepOut2";
-	rename -uid "7AAB8338-463C-4FA1-7975-0092714D79AD";
 createNode nodeGraphEditorInfo -n "MayaNodeEditorSavedTabsInfo";
 	rename -uid "CFBCA917-47ED-B3C1-F924-FCB172AC21CB";
 	setAttr ".tgi[0].tn" -type "string" "Untitled_1";
@@ -2464,7 +2547,7 @@ select -ne :postProcessList1;
 	setAttr -s 2 ".p";
 select -ne :defaultRenderingList1;
 select -ne :initialShadingGroup;
-	setAttr -s 2 ".dsm";
+	setAttr -s 4 ".dsm";
 	setAttr ".ro" yes;
 select -ne :initialParticleSE;
 	setAttr ".ro" yes;
@@ -2509,4 +2592,6 @@ connectAttr "|group2|locator1|locatorShape1.msg" "MayaNodeEditorSavedTabsInfo.tg
 connectAttr "defaultRenderLayer.msg" ":defaultRenderingList1.r" -na;
 connectAttr "pSphereShape1.iog" ":initialShadingGroup.dsm" -na;
 connectAttr "pSphereShape2.iog" ":initialShadingGroup.dsm" -na;
+connectAttr "pCubeShape1.iog" ":initialShadingGroup.dsm" -na;
+connectAttr "pCubeShape2.iog" ":initialShadingGroup.dsm" -na;
 // End of test_prKeepOut.ma
