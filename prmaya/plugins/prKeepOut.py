@@ -156,11 +156,8 @@ class prKeepOut(om.MPxNode):
             rayDirections.append(position2-position1)
             enableds.append(inputTargetHandle.child(self.inputEnabledExtra).asBool())
 
-        if not inputEnabled:
-            closestHits = dict(zip(indices, rayTargets))
-        else:
-            # get inputGeometry and closest hits
-            closestHits = {i: None for i in indices}
+        closestHits = {i: None for i in indices}
+        if inputEnabled:
             inputGeometryArrayHandle = dataBlock.inputArrayValue(self.inputGeometry)
             for i in range(len(inputGeometryArrayHandle)):
                 inputGeometryArrayHandle.jumpToPhysicalElement(i)
