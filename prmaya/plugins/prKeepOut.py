@@ -100,6 +100,7 @@ class prKeepOut(om.MPxNode):
         compoundAttr.addChild(prKeepOut.inputParentInverseMatrix)
         compoundAttr.array = True
         prKeepOut.addAttribute(prKeepOut.input)
+        prKeepOut.attributeAffects(prKeepOut.inputEnabledExtra, prKeepOut.output)
         prKeepOut.attributeAffects(prKeepOut.inputOffsetExtra, prKeepOut.output)
         prKeepOut.attributeAffects(prKeepOut.inputPosition1, prKeepOut.output)
         prKeepOut.attributeAffects(prKeepOut.inputPosition2, prKeepOut.output)
@@ -138,7 +139,7 @@ class prKeepOut(om.MPxNode):
         rayDirections = []
         inverseMatrices = []
         offsets = []
-        enableds = []
+        enablesExtra = []
 
         # get rays
         inputArrayHandle = dataBlock.inputArrayValue(self.input)
@@ -154,9 +155,10 @@ class prKeepOut(om.MPxNode):
             raySources.append(position1)
             rayTargets.append(position2)
             rayDirections.append(position2-position1)
-            enableds.append(inputTargetHandle.child(self.inputEnabledExtra).asBool())
+            enablesExtra.append(inputTargetHandle.child(self.inputEnabledExtra).asBool())
 
         closestHits = {i: None for i in indices}
+        offsetVectors = {i: None for i in indices}
         if inputEnabled:
             inputGeometryArrayHandle = dataBlock.inputArrayValue(self.inputGeometry)
             for i in range(len(inputGeometryArrayHandle)):
@@ -168,13 +170,25 @@ class prKeepOut(om.MPxNode):
                 targetType = inputGeometryHandle.type()
                 if targetType == om.MFnMeshData.kMesh:
                     meshFn = om.MFnMesh(targetData)
-                    for index, raySource, rayDirection in zip(indices, raySources, rayDirections):
-                        closestHit = meshFn.closestIntersection(raySource, rayDirection, om.MSpace.kWorld, 1, False)[0]
-                        if closestHit != om.MFloatPoint():
-                            if closestHits[index] is None:
-                                closestHits[index] = closestHit
-                            elif (closestHit - raySource).length() < (closestHits[index] - raySource).length():
-                                closestHits[index] = closestHit
+                    for index, raySource, rayDirection, offset, enabled in zip(
+                            indices, raySources, rayDirections, offsets, enablesExtra):
+                        if not enabled:
+                            continue
+                        closestHit = meshFn.closestIntersection(raySource,
+                                                                rayDirection+rayDirection.normal()*offset,
+                                                                om.MSpace.kWorld, 1, False)[0]
+                        if closestHit == om.MFloatPoint():
+                            continue
+                        if closestHits[index] is None or \
+                                (closestHit - raySource).length() < (closestHits[index] - raySource).length():
+                            closestHits[index] = closestHit
+                            if offset:
+                                closestHitVector = raySource - closestHit
+                                closestHitVectorLength = closestHitVector.length()
+                                if offset > closestHitVectorLength:
+                                    offsetVectors[index] = closestHitVector
+                                else:
+                                    offsetVectors[index] = closestHitVector.normal() * offset
                 elif targetType == om.MFnNurbsSurfaceData.kNurbsSurface:
                     pass
 
@@ -183,6 +197,8 @@ class prKeepOut(om.MPxNode):
             output_handle = output_builder.addElement(index)
             if hit is None:
                 hit = rayTargets[indices.index(index)]
+            elif offsetVectors[index]:
+                hit += offsetVectors[index]
             output_handle.set3Float(hit[0], hit[1], hit[2])
 
         output_arrayHandle.set(output_builder)
@@ -229,8 +245,8 @@ def evalAETemplate():
             AEdependNodeTemplate $nodeName;
             editorTemplate -addExtraControls;
         editorTemplate -endScrollLayout;
-        editorTemplate -suppress "input.inputGeometryExtra"; // not working
-        editorTemplate -suppress "input.inputParentInverseMatrix"; // not working
+        //editorTemplate -suppress "input.inputGeometryExtra"; // not working
+        //editorTemplate -suppress "input.inputParentInverseMatrix"; // not working
         //editorTemplate -suppress "output";
     };
     ''')
