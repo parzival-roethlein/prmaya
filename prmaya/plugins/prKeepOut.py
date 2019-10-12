@@ -184,8 +184,7 @@ class prKeepOut(om.MPxNode):
                             closestHits[index] = closestHit
                             if offset:
                                 closestHitVector = raySource - closestHit
-                                closestHitVectorLength = closestHitVector.length()
-                                if offset > closestHitVectorLength:
+                                if offset > closestHitVector.length():
                                     offsetVectors[index] = closestHitVector
                                 else:
                                     offsetVectors[index] = closestHitVector.normal() * offset
