@@ -12,14 +12,14 @@ Array version of Mayas "keepOut" with added features.
 
 ATTRIBUTES
 prKeepOut.enabled
-prKeepOut.inputOffset
+prKeepOut.offset
 prKeepOut.inputGeometry[0]
 prKeepOut.input[0]
-prKeepOut.input[0].inputOffsetExtra
+prKeepOut.input[0].offsetExtra
 prKeepOut.input[0].inputGeometryExtra[0]
-prKeepOut.input[0].inputPosition1
-prKeepOut.input[0].inputPosition2
-prKeepOut.input[0].inputParentInverseMatrix
+prKeepOut.input[0].position1
+prKeepOut.input[0].position2
+prKeepOut.input[0].parentInverseMatrix
 prKeepOut.output[0].outputX
 prKeepOut.output[0].outputY
 prKeepOut.output[0].outputZ
@@ -59,15 +59,20 @@ class prKeepOut(om.MPxNode):
         prKeepOut.addAttribute(prKeepOut.output)
 
         # input
-        prKeepOut.inputEnabled = numericAttr.create('inputEnabled', 'inputEnabled', om.MFnNumericData.kBoolean, True)
+        prKeepOut.enabled = numericAttr.create('enabled', 'enabled', om.MFnNumericData.kBoolean, True)
         numericAttr.keyable = True
-        prKeepOut.addAttribute(prKeepOut.inputEnabled)
-        prKeepOut.attributeAffects(prKeepOut.inputEnabled, prKeepOut.output)
+        prKeepOut.addAttribute(prKeepOut.enabled)
+        prKeepOut.attributeAffects(prKeepOut.enabled, prKeepOut.output)
 
-        prKeepOut.inputOffset = numericAttr.create('inputOffset', 'inputOffset', om.MFnNumericData.kFloat, 0.0)
+        prKeepOut.offsetExtendsPositions = numericAttr.create('offsetExtendsPositions', 'offsetExtendsPositions', om.MFnNumericData.kBoolean, True)
         numericAttr.keyable = True
-        prKeepOut.addAttribute(prKeepOut.inputOffset)
-        prKeepOut.attributeAffects(prKeepOut.inputOffset, prKeepOut.output)
+        prKeepOut.addAttribute(prKeepOut.offsetExtendsPositions)
+        prKeepOut.attributeAffects(prKeepOut.offsetExtendsPositions, prKeepOut.output)
+
+        prKeepOut.offset = numericAttr.create('offset', 'offset', om.MFnNumericData.kFloat, 0.0)
+        numericAttr.keyable = True
+        prKeepOut.addAttribute(prKeepOut.offset)
+        prKeepOut.attributeAffects(prKeepOut.offset, prKeepOut.output)
 
         prKeepOut.inputGeometry = genericAttr.create('inputGeometry', 'inputGeometry')
         genericAttr.addDataType(om.MFnMeshData.kMesh)
@@ -76,35 +81,35 @@ class prKeepOut(om.MPxNode):
         prKeepOut.addAttribute(prKeepOut.inputGeometry)
         prKeepOut.attributeAffects(prKeepOut.inputGeometry, prKeepOut.output)
 
-        prKeepOut.inputEnabledExtra = numericAttr.create('inputEnabledExtra', 'inputEnabledExtra', om.MFnNumericData.kBoolean, True)
+        prKeepOut.enabledExtra = numericAttr.create('enabledExtra', 'enabledExtra', om.MFnNumericData.kBoolean, True)
         numericAttr.keyable = True
-        prKeepOut.inputOffsetExtra = numericAttr.create('inputOffsetExtra', 'inputOffsetExtra', om.MFnNumericData.kFloat, 0.0)
+        prKeepOut.offsetExtra = numericAttr.create('offsetExtra', 'offsetExtra', om.MFnNumericData.kFloat, 0.0)
         numericAttr.keyable = True
-        prKeepOut.inputPosition1 = numericAttr.createPoint('inputPosition1', 'inputPosition1')
+        prKeepOut.position1 = numericAttr.createPoint('position1', 'position1')
         numericAttr.keyable = True
-        prKeepOut.inputPosition2 = numericAttr.createPoint('inputPosition2', 'inputPosition2')
+        prKeepOut.position2 = numericAttr.createPoint('position2', 'position2')
         numericAttr.keyable = True
         prKeepOut.inputGeometryExtra = genericAttr.create('inputGeometryExtra', 'inputGeometryExtra')
         genericAttr.addDataType(om.MFnMeshData.kMesh)
         genericAttr.addDataType(om.MFnNurbsSurfaceData.kNurbsSurface)
         genericAttr.array = True
-        prKeepOut.inputParentInverseMatrix = matrixAttr.create('inputParentInverseMatrix', 'inputParentInverseMatrix')
+        prKeepOut.parentInverseMatrix = matrixAttr.create('parentInverseMatrix', 'parentInverseMatrix')
         matrixAttr.keyable = True
 
         prKeepOut.input = compoundAttr.create('input', 'input')
-        compoundAttr.addChild(prKeepOut.inputEnabledExtra)
-        compoundAttr.addChild(prKeepOut.inputOffsetExtra)
-        compoundAttr.addChild(prKeepOut.inputPosition1)
-        compoundAttr.addChild(prKeepOut.inputPosition2)
+        compoundAttr.addChild(prKeepOut.enabledExtra)
+        compoundAttr.addChild(prKeepOut.offsetExtra)
+        compoundAttr.addChild(prKeepOut.position1)
+        compoundAttr.addChild(prKeepOut.position2)
         compoundAttr.addChild(prKeepOut.inputGeometryExtra)
-        compoundAttr.addChild(prKeepOut.inputParentInverseMatrix)
+        compoundAttr.addChild(prKeepOut.parentInverseMatrix)
         compoundAttr.array = True
         prKeepOut.addAttribute(prKeepOut.input)
-        prKeepOut.attributeAffects(prKeepOut.inputEnabledExtra, prKeepOut.output)
-        prKeepOut.attributeAffects(prKeepOut.inputOffsetExtra, prKeepOut.output)
-        prKeepOut.attributeAffects(prKeepOut.inputPosition1, prKeepOut.output)
-        prKeepOut.attributeAffects(prKeepOut.inputPosition2, prKeepOut.output)
-        prKeepOut.attributeAffects(prKeepOut.inputParentInverseMatrix, prKeepOut.output)
+        prKeepOut.attributeAffects(prKeepOut.enabledExtra, prKeepOut.output)
+        prKeepOut.attributeAffects(prKeepOut.offsetExtra, prKeepOut.output)
+        prKeepOut.attributeAffects(prKeepOut.position1, prKeepOut.output)
+        prKeepOut.attributeAffects(prKeepOut.position2, prKeepOut.output)
+        prKeepOut.attributeAffects(prKeepOut.parentInverseMatrix, prKeepOut.output)
         prKeepOut.attributeAffects(prKeepOut.inputGeometryExtra, prKeepOut.output)
 
     @staticmethod
@@ -127,19 +132,22 @@ class prKeepOut(om.MPxNode):
             self.displayWarning(error='Unknown plug: {}'.format(plug))
             return
 
-        inputEnabled = dataBlock.inputValue(self.inputEnabled).asBool()
-        offset = dataBlock.inputValue(self.inputOffset).asFloat()
+        enabled = dataBlock.inputValue(self.enabled).asBool()
+        offsetExtendsPositions = dataBlock.inputValue(self.offsetExtendsPositions).asBool()
+        offset = dataBlock.inputValue(self.offset).asFloat()
 
         output_arrayHandle = dataBlock.outputArrayValue(self.output)
         output_builder = output_arrayHandle.builder()
 
         indices = []
-        raySources = []
-        rayTargets = []
-        rayDirections = []
+        position1_list = []
+        position2_list = []
         inverseMatrices = []
         offsets = []
         enablesExtra = []
+
+        raySources = []
+        rayDirections = []
 
         # get rays
         inputArrayHandle = dataBlock.inputArrayValue(self.input)
@@ -148,18 +156,28 @@ class prKeepOut(om.MPxNode):
             inputTargetHandle = inputArrayHandle.inputValue()
 
             indices.append(inputArrayHandle.elementLogicalIndex())
-            position1 = om.MFloatPoint(inputTargetHandle.child(self.inputPosition1).asFloat3())
-            position2 = om.MFloatPoint(inputTargetHandle.child(self.inputPosition2).asFloat3())
-            inverseMatrices.append(inputTargetHandle.child(self.inputParentInverseMatrix).asMatrix())
-            offsets.append(offset+inputTargetHandle.child(self.inputOffsetExtra).asFloat())
-            raySources.append(position1)
-            rayTargets.append(position2)
-            rayDirections.append(position2-position1)
-            enablesExtra.append(inputTargetHandle.child(self.inputEnabledExtra).asBool())
+            position1 = om.MFloatPoint(inputTargetHandle.child(self.position1).asFloat3())
+            position1_list.append(position1)
+            position2 = om.MFloatPoint(inputTargetHandle.child(self.position2).asFloat3())
+            position2_list.append(position2)
+            finalOffset = offset + inputTargetHandle.child(self.offsetExtra).asFloat()
+            raySource = position1
+            rayDirection = position2 - position1
+            if offsetExtendsPositions and finalOffset:
+                offsetVector = rayDirection.normal() * offset
+                if finalOffset > 0:
+                    rayDirection += offsetVector
+                elif finalOffset < 0:
+                    raySource += offsetVector
+            raySources.append(raySource)
+            rayDirections.append(rayDirection)
+            offsets.append(finalOffset)
+            inverseMatrices.append(inputTargetHandle.child(self.parentInverseMatrix).asMatrix())
+            enablesExtra.append(inputTargetHandle.child(self.enabledExtra).asBool())
 
         closestHits = {i: None for i in indices}
         offsetVectors = {i: None for i in indices}
-        if inputEnabled:
+        if enabled:
             inputGeometryArrayHandle = dataBlock.inputArrayValue(self.inputGeometry)
             for i in range(len(inputGeometryArrayHandle)):
                 inputGeometryArrayHandle.jumpToPhysicalElement(i)
@@ -174,9 +192,7 @@ class prKeepOut(om.MPxNode):
                             indices, raySources, rayDirections, offsets, enablesExtra):
                         if not enabled:
                             continue
-                        closestHit = meshFn.closestIntersection(raySource,
-                                                                rayDirection+rayDirection.normal()*offset,
-                                                                om.MSpace.kWorld, 1, False)[0]
+                        closestHit = meshFn.closestIntersection(raySource, rayDirection, om.MSpace.kWorld, 1, False)[0]
                         if closestHit == om.MFloatPoint():
                             continue
                         if closestHits[index] is None or \
@@ -195,7 +211,7 @@ class prKeepOut(om.MPxNode):
         for index, hit in closestHits.iteritems():
             output_handle = output_builder.addElement(index)
             if hit is None:
-                hit = rayTargets[indices.index(index)]
+                hit = position2_list[indices.index(index)]
             elif offsetVectors[index]:
                 hit += offsetVectors[index]
             output_handle.set3Float(hit[0], hit[1], hit[2])
@@ -236,8 +252,8 @@ def evalAETemplate():
         AEswatchDisplay $nodeName;
         editorTemplate -beginScrollLayout;
             editorTemplate -beginLayout "prKeepOut Attributes" -collapse 0;
-                editorTemplate -label "inputEnabled" -addControl "inputEnabled";
-                editorTemplate -label "inputOffset" -addControl "inputOffset";
+                editorTemplate -label "enabled" -addControl "enabled";
+                editorTemplate -label "offset" -addControl "offset";
                 editorTemplate -label "input" -addControl "input";
                 editorTemplate -label "inputGeometry" -addControl "inputGeometry";
             editorTemplate -endLayout;
@@ -245,7 +261,7 @@ def evalAETemplate():
             editorTemplate -addExtraControls;
         editorTemplate -endScrollLayout;
         //editorTemplate -suppress "input.inputGeometryExtra"; // not working
-        //editorTemplate -suppress "input.inputParentInverseMatrix"; // not working
+        //editorTemplate -suppress "input.parentInverseMatrix"; // not working
         //editorTemplate -suppress "output";
     };
     ''')

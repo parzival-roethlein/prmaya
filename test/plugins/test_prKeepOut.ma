@@ -2564,13 +2564,13 @@ relationship "shadowLink" ":lightLinker1" ":initialShadingGroup.message" ":defau
 relationship "shadowLink" ":lightLinker1" ":initialParticleSE.message" ":defaultLightSet.message";
 connectAttr "layerManager.dli[0]" "defaultLayer.id";
 connectAttr "renderLayerManager.rlmi[0]" "defaultRenderLayer.rlid";
-connectAttr "|group1|locator1|locatorShape1.wp" "prKeepOut1.input[0].inputPosition1"
+connectAttr "|group1|locator1|locatorShape1.wp" "prKeepOut1.input[0].position1"
 		;
-connectAttr "|group1|locator2|locatorShape2.wp" "prKeepOut1.input[0].inputPosition2"
+connectAttr "|group1|locator2|locatorShape2.wp" "prKeepOut1.input[0].position2"
 		;
-connectAttr "|group2|locator1|locatorShape1.wp" "prKeepOut1.input[1].inputPosition1"
+connectAttr "|group2|locator1|locatorShape1.wp" "prKeepOut1.input[1].position1"
 		;
-connectAttr "|group2|locator2|locatorShape2.wp" "prKeepOut1.input[1].inputPosition2"
+connectAttr "|group2|locator2|locatorShape2.wp" "prKeepOut1.input[1].position2"
 		;
 connectAttr "pSphereShape1.w" "prKeepOut1.inputGeometry[0]";
 connectAttr "pSphereShape2.w" "prKeepOut1.inputGeometry[1]";
