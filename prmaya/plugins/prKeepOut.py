@@ -15,6 +15,7 @@ prKeepOut.enabled
 prKeepOut.offset
 prKeepOut.inputGeometry[0]
 prKeepOut.input[0]
+prKeepOut.input[0].enabledExtra
 prKeepOut.input[0].offsetExtra
 prKeepOut.input[0].inputGeometryExtra[0]
 prKeepOut.input[0].position1
@@ -93,7 +94,7 @@ class prKeepOut(om.MPxNode):
         genericAttr.addDataType(om.MFnMeshData.kMesh)
         genericAttr.addDataType(om.MFnNurbsSurfaceData.kNurbsSurface)
         genericAttr.array = True
-        prKeepOut.parentInverseMatrix = matrixAttr.create('parentInverseMatrix', 'parentInverseMatrix')
+        prKeepOut.parentInverseMatrix = matrixAttr.create('parentInverseMatrix', 'parentInverseMatrix', type=matrixAttr.kFloat)
         matrixAttr.keyable = True
 
         prKeepOut.input = compoundAttr.create('input', 'input')
@@ -142,8 +143,8 @@ class prKeepOut(om.MPxNode):
         indices = []
         position1_list = []
         position2_list = []
-        inverseMatrices = []
-        offsets = []
+        inverseMatrices = {}
+        finalOffsets = []
         enablesExtra = []
 
         raySources = []
@@ -154,8 +155,8 @@ class prKeepOut(om.MPxNode):
         for i in range(len(inputArrayHandle)):
             inputArrayHandle.jumpToPhysicalElement(i)
             inputTargetHandle = inputArrayHandle.inputValue()
-
-            indices.append(inputArrayHandle.elementLogicalIndex())
+            index = inputArrayHandle.elementLogicalIndex()
+            indices.append(index)
             position1 = om.MFloatPoint(inputTargetHandle.child(self.position1).asFloat3())
             position1_list.append(position1)
             position2 = om.MFloatPoint(inputTargetHandle.child(self.position2).asFloat3())
@@ -164,15 +165,15 @@ class prKeepOut(om.MPxNode):
             raySource = position1
             rayDirection = position2 - position1
             if offsetExtendsPositions and finalOffset:
-                offsetVector = rayDirection.normal() * offset
+                offsetVector = rayDirection.normal() * finalOffset
                 if finalOffset > 0:
                     rayDirection += offsetVector
                 elif finalOffset < 0:
                     raySource += offsetVector
             raySources.append(raySource)
             rayDirections.append(rayDirection)
-            offsets.append(finalOffset)
-            inverseMatrices.append(inputTargetHandle.child(self.parentInverseMatrix).asMatrix())
+            finalOffsets.append(finalOffset)
+            inverseMatrices[index] = inputTargetHandle.child(self.parentInverseMatrix).asFloatMatrix()
             enablesExtra.append(inputTargetHandle.child(self.enabledExtra).asBool())
 
         closestHits = {i: None for i in indices}
@@ -188,22 +189,22 @@ class prKeepOut(om.MPxNode):
                 targetType = inputGeometryHandle.type()
                 if targetType == om.MFnMeshData.kMesh:
                     meshFn = om.MFnMesh(targetData)
-                    for index, raySource, rayDirection, offset, enabled in zip(
-                            indices, raySources, rayDirections, offsets, enablesExtra):
-                        if not enabled:
+                    for index, raySource, rayDirection, finalOffset, enabledExtra in zip(
+                            indices, raySources, rayDirections, finalOffsets, enablesExtra):
+                        if not enabledExtra:
                             continue
-                        closestHit = meshFn.closestIntersection(raySource, rayDirection, om.MSpace.kWorld, 1, False)[0]
-                        if closestHit == om.MFloatPoint():
+                        hit = meshFn.closestIntersection(raySource, rayDirection, om.MSpace.kWorld, 1, False)[0]
+                        if hit == om.MFloatPoint():
                             continue
                         if closestHits[index] is None or \
-                                (closestHit - raySource).length() < (closestHits[index] - raySource).length():
-                            closestHits[index] = closestHit
-                            if offset:
-                                closestHitVector = raySource - closestHit
-                                if offset > closestHitVector.length():
+                                (hit - raySource).length() < (closestHits[index] - raySource).length():
+                            closestHits[index] = hit
+                            if finalOffset:
+                                closestHitVector = raySource - hit
+                                if finalOffset > closestHitVector.length():
                                     offsetVectors[index] = closestHitVector
                                 else:
-                                    offsetVectors[index] = closestHitVector.normal() * offset
+                                    offsetVectors[index] = closestHitVector.normal() * finalOffset
                 elif targetType == om.MFnNurbsSurfaceData.kNurbsSurface:
                     pass
 
@@ -214,6 +215,7 @@ class prKeepOut(om.MPxNode):
                 hit = position2_list[indices.index(index)]
             elif offsetVectors[index]:
                 hit += offsetVectors[index]
+            hit *= inverseMatrices[index]
             output_handle.set3Float(hit[0], hit[1], hit[2])
 
         output_arrayHandle.set(output_builder)

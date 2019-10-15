@@ -1,10 +1,9 @@
 //Maya ASCII 2018 scene
 //Name: test_prKeepOut.ma
-//Last modified: Wed, Oct 09, 2019 01:35:55 AM
+//Last modified: Tue, Oct 15, 2019 12:31:26 AM
 //Codeset: 1252
 requires maya "2018";
 requires -nodeType "prKeepOut" "prKeepOut.py" "0.0.1";
-requires "stereoCamera" "10.0";
 requires "stereoCamera" "10.0";
 currentUnit -l centimeter -a degree -t film;
 fileInfo "application" "maya";
@@ -15,8 +14,8 @@ fileInfo "osv" "Microsoft Windows 8 Business Edition, 64-bit  (Build 9200)\n";
 createNode transform -s -n "persp";
 	rename -uid "22CAAC4C-4C3C-563E-BA5D-E980DEE3094C";
 	setAttr ".v" no;
-	setAttr ".t" -type "double3" 9.279001463478652 2.7415355611881482 -2.2166378117101582 ;
-	setAttr ".r" -type "double3" -5.738352729603414 106.99999999998857 0 ;
+	setAttr ".t" -type "double3" 9.5497289946271522 2.5090026372648353 -1.2462174099093195 ;
+	setAttr ".r" -type "double3" -4.5383527296033872 101.79999999998824 0 ;
 createNode camera -s -n "perspShape" -p "persp";
 	rename -uid "5E2C5F39-41EC-DF3B-4DF0-8CB25B8E4905";
 	setAttr -k off ".v" no;
@@ -79,6 +78,7 @@ createNode transform -n "pSphere1";
 createNode mesh -n "pSphereShape1" -p "pSphere1";
 	rename -uid "837541CE-4FB6-A4C3-D430-EEBA99318185";
 	setAttr -k off ".v";
+	setAttr -s 2 ".iog";
 	setAttr ".vir" yes;
 	setAttr ".vif" yes;
 	setAttr ".uvst[0].uvsn" -type "string" "map1";
@@ -1343,6 +1343,7 @@ createNode transform -n "pSphere2";
 createNode mesh -n "pSphereShape2" -p "pSphere2";
 	rename -uid "48D5E3CE-433A-333A-7A6A-B7952C8C5D4A";
 	setAttr -k off ".v";
+	setAttr -s 2 ".iog";
 	setAttr ".vir" yes;
 	setAttr ".vif" yes;
 	setAttr ".uvst[0].uvsn" -type "string" "map1";
@@ -2471,19 +2472,19 @@ createNode mesh -n "pSphereShape2" -p "pSphere2";
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode lightLinker -s -n "lightLinker1";
-	rename -uid "02B0E252-40B3-E986-18A7-7EBEC4E9F464";
+	rename -uid "E1633458-461E-4175-BFAE-F6AAE00F659D";
 	setAttr -s 2 ".lnk";
 	setAttr -s 2 ".slnk";
 createNode shapeEditorManager -n "shapeEditorManager";
-	rename -uid "F53E8D1C-43ED-64F8-EC00-CEB7805D4ED5";
+	rename -uid "26B28FBA-4261-9FF2-64D9-C198DEF9F0F5";
 createNode poseInterpolatorManager -n "poseInterpolatorManager";
-	rename -uid "B740BB2A-44A6-05BA-6A48-038A6632C6F3";
+	rename -uid "1A2DDC16-4871-D056-4051-C8BE8B986620";
 createNode displayLayerManager -n "layerManager";
-	rename -uid "C5CBE6B6-4DD9-548E-8A88-72A510050F19";
+	rename -uid "5F79D5C5-4913-E89A-3C4D-14B30F2901D1";
 createNode displayLayer -n "defaultLayer";
 	rename -uid "DAA19ED2-4087-F935-C065-7980C0315917";
 createNode renderLayerManager -n "renderLayerManager";
-	rename -uid "E8FC6C8A-42FE-943E-4F40-6A9EC3C33651";
+	rename -uid "0FBEFF03-4850-3505-4C98-1BACC5772C36";
 createNode renderLayer -n "defaultRenderLayer";
 	rename -uid "1745112B-4B77-7A8E-51C6-93AC385A90D9";
 	setAttr ".g" yes;
@@ -2491,44 +2492,44 @@ createNode prKeepOut -n "prKeepOut1";
 	rename -uid "55DB3902-4A19-678F-5234-658B7CFEB526";
 	setAttr -s 2 ".output";
 	setAttr -s 2 ".inputGeometry";
-	setAttr -s 2 ".input";
+	setAttr -s 3 ".input";
 createNode script -n "sceneConfigurationScriptNode";
 	rename -uid "0E8EE482-4546-CFCF-AAF7-DDB184F110BC";
 	setAttr ".b" -type "string" "playbackOptions -min 1 -max 120 -ast 1 -aet 200 ";
 	setAttr ".st" 6;
 createNode nodeGraphEditorInfo -n "MayaNodeEditorSavedTabsInfo";
-	rename -uid "CFBCA917-47ED-B3C1-F924-FCB172AC21CB";
+	rename -uid "3AD703FF-441B-94BB-183F-0F8AB9AB5C1F";
 	setAttr ".tgi[0].tn" -type "string" "Untitled_1";
-	setAttr ".tgi[0].vl" -type "double2" -298.43796754223717 -805.2359347967955 ;
-	setAttr ".tgi[0].vh" -type "double2" 1033.1479473881641 603.13868296052283 ;
+	setAttr ".tgi[0].vl" -type "double2" 7.0534002040725294 -729.99837355087857 ;
+	setAttr ".tgi[0].vh" -type "double2" 1144.5567353522079 473.1014842008189 ;
 	setAttr -s 9 ".tgi[0].ni";
-	setAttr ".tgi[0].ni[0].x" 697.802978515625;
-	setAttr ".tgi[0].ni[0].y" 125.15720367431641;
+	setAttr ".tgi[0].ni[0].x" 230.10313415527344;
+	setAttr ".tgi[0].ni[0].y" -363.65072631835938;
 	setAttr ".tgi[0].ni[0].nvs" 18306;
-	setAttr ".tgi[0].ni[1].x" -184.48365783691406;
-	setAttr ".tgi[0].ni[1].y" -181.638671875;
-	setAttr ".tgi[0].ni[1].nvs" 18305;
-	setAttr ".tgi[0].ni[2].x" -41.428569793701172;
-	setAttr ".tgi[0].ni[2].y" 355.71429443359375;
-	setAttr ".tgi[0].ni[2].nvs" 18305;
-	setAttr ".tgi[0].ni[3].x" -41.428569793701172;
-	setAttr ".tgi[0].ni[3].y" 155.71427917480469;
-	setAttr ".tgi[0].ni[3].nvs" 18306;
-	setAttr ".tgi[0].ni[4].x" 350.30398559570313;
-	setAttr ".tgi[0].ni[4].y" 237.45256042480469;
-	setAttr ".tgi[0].ni[4].nvs" 19010;
-	setAttr ".tgi[0].ni[5].x" 230.10313415527344;
-	setAttr ".tgi[0].ni[5].y" -363.65072631835938;
-	setAttr ".tgi[0].ni[5].nvs" 18306;
-	setAttr ".tgi[0].ni[6].x" 725.023681640625;
-	setAttr ".tgi[0].ni[6].y" -323.51919555664063;
+	setAttr ".tgi[0].ni[1].x" -122.18283843994141;
+	setAttr ".tgi[0].ni[1].y" -382.58807373046875;
+	setAttr ".tgi[0].ni[1].nvs" 18306;
+	setAttr ".tgi[0].ni[2].x" -174.23765563964844;
+	setAttr ".tgi[0].ni[2].y" 201.14897155761719;
+	setAttr ".tgi[0].ni[2].nvs" 18306;
+	setAttr ".tgi[0].ni[3].x" -111.08916473388672;
+	setAttr ".tgi[0].ni[3].y" -232.31582641601563;
+	setAttr ".tgi[0].ni[3].nvs" 18305;
+	setAttr ".tgi[0].ni[4].x" 810.0009765625;
+	setAttr ".tgi[0].ni[4].y" -251.9593505859375;
+	setAttr ".tgi[0].ni[4].nvs" 18306;
+	setAttr ".tgi[0].ni[5].x" 118.63897705078125;
+	setAttr ".tgi[0].ni[5].y" 577.4444580078125;
+	setAttr ".tgi[0].ni[5].nvs" 18305;
+	setAttr ".tgi[0].ni[6].x" 830.612060546875;
+	setAttr ".tgi[0].ni[6].y" 271.94619750976563;
 	setAttr ".tgi[0].ni[6].nvs" 18306;
-	setAttr ".tgi[0].ni[7].x" 118.63897705078125;
-	setAttr ".tgi[0].ni[7].y" 577.4444580078125;
+	setAttr ".tgi[0].ni[7].x" -41.428569793701172;
+	setAttr ".tgi[0].ni[7].y" 355.71429443359375;
 	setAttr ".tgi[0].ni[7].nvs" 18305;
-	setAttr ".tgi[0].ni[8].x" -36.555927276611328;
-	setAttr ".tgi[0].ni[8].y" -263.75888061523438;
-	setAttr ".tgi[0].ni[8].nvs" 18306;
+	setAttr ".tgi[0].ni[8].x" 421.95098876953125;
+	setAttr ".tgi[0].ni[8].y" 223.47265625;
+	setAttr ".tgi[0].ni[8].nvs" 19010;
 select -ne :time1;
 	setAttr ".o" 1;
 	setAttr ".unw" 1;
@@ -2564,31 +2565,29 @@ relationship "shadowLink" ":lightLinker1" ":initialShadingGroup.message" ":defau
 relationship "shadowLink" ":lightLinker1" ":initialParticleSE.message" ":defaultLightSet.message";
 connectAttr "layerManager.dli[0]" "defaultLayer.id";
 connectAttr "renderLayerManager.rlmi[0]" "defaultRenderLayer.rlid";
-connectAttr "|group1|locator1|locatorShape1.wp" "prKeepOut1.input[0].position1"
-		;
-connectAttr "|group1|locator2|locatorShape2.wp" "prKeepOut1.input[0].position2"
-		;
-connectAttr "|group2|locator1|locatorShape1.wp" "prKeepOut1.input[1].position1"
-		;
-connectAttr "|group2|locator2|locatorShape2.wp" "prKeepOut1.input[1].position2"
-		;
+connectAttr "|group1|locator1|locatorShape1.wp" "prKeepOut1.input[0].position1";
+connectAttr "|group1|locator2|locatorShape2.wp" "prKeepOut1.input[0].position2";
+connectAttr "|group1|locator3.pim" "prKeepOut1.input[0].parentInverseMatrix";
+connectAttr "|group2|locator1|locatorShape1.wp" "prKeepOut1.input[1].position1";
+connectAttr "|group2|locator2|locatorShape2.wp" "prKeepOut1.input[1].position2";
+connectAttr "|group2|locator3.pim" "prKeepOut1.input[1].parentInverseMatrix";
 connectAttr "pSphereShape1.w" "prKeepOut1.inputGeometry[0]";
 connectAttr "pSphereShape2.w" "prKeepOut1.inputGeometry[1]";
-connectAttr "|group1|locator3.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[0].dn"
+connectAttr "|group2|locator2|locatorShape2.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[0].dn"
 		;
-connectAttr "|group1|locator1|locatorShape1.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[1].dn"
+connectAttr "|group2|locator1|locatorShape1.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[1].dn"
 		;
-connectAttr "pSphereShape1.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[2].dn";
-connectAttr "|group1|locator2|locatorShape2.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[3].dn"
+connectAttr "|group1|locator2|locatorShape2.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[2].dn"
 		;
-connectAttr "prKeepOut1.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[4].dn";
-connectAttr "|group2|locator2|locatorShape2.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[5].dn"
+connectAttr "|group1|locator1|locatorShape1.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[3].dn"
 		;
-connectAttr "|group2|locator3.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[6].dn"
+connectAttr "|group2|locator3.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[4].dn"
 		;
-connectAttr "pSphereShape2.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[7].dn";
-connectAttr "|group2|locator1|locatorShape1.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[8].dn"
+connectAttr "pSphereShape2.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[5].dn";
+connectAttr "|group1|locator3.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[6].dn"
 		;
+connectAttr "pSphereShape1.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[7].dn";
+connectAttr "prKeepOut1.msg" "MayaNodeEditorSavedTabsInfo.tgi[0].ni[8].dn";
 connectAttr "defaultRenderLayer.msg" ":defaultRenderingList1.r" -na;
 connectAttr "pSphereShape1.iog" ":initialShadingGroup.dsm" -na;
 connectAttr "pSphereShape2.iog" ":initialShadingGroup.dsm" -na;
