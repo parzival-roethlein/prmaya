@@ -9,6 +9,7 @@ Scripts, plugins and posts (tutorials, notes) for Autodesk Maya. Any feedback is
   * plugins (None tested in production, unsave IDs)
     * __prClosestPoint__: Deformer that moves points to closest: matrix (position) / mesh shape (or vertex) / nurbs-curve shape / nurbs-surface shape
     * __prDecomposeMatrix__: Array version of Mayas "decomposeMatrix" with added features.
+    * __prKeepOut__: Array version of Mayas "keepOut" with changed/added features.
     * __prPyMath__: The Python math module as Maya node.
     * __prRange__: Creates a list of scalars between two values with even spacing.
     * __prRemapValue__: Array version of Mayas "remapValue".
