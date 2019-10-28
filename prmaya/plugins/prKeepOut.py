@@ -4,17 +4,18 @@ https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
 Array version of Mayas "keepOut" with changed/added features.
-- Instead of one ray and one target muscleSkin, unlimited number of rays with unlimited number of surfaces
-- Defines intersection ray from two positions (start, end) instead of a position + vector
-- Works with default Maya surfaces instead of converting to muscleSkin
+improvements:
+- unlimited number of rays per node instead of just one
+- unlimited number of standard maya shapes as targets (mesh, nurbsSurface) instead of just one muscleSkin
 - parentInverseMatrix to adjust output to target space
-- TODO support nurbsSurfaces and primitives as inputGeometry
-- TODO smooth collide
-- TODO smooth offset falloff
+- offsetExtendsPositions: "smart" ray extension to prevent snapping when using offsets
+changes:
+- Intersection ray generated from two positions (start, end) instead of a position + vector
 
 ATTRIBUTES
 prKeepOut.enabled
 prKeepOut.offset
+prKeepOut.offsetExtendsPositions
 prKeepOut.inputGeometry[0]
 prKeepOut.input[0]
 prKeepOut.input[0].enabledExtra
@@ -35,6 +36,11 @@ TODO
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
+- make enabled a blendable attribute
+- support primitives as inputGeometry
+- smooth collide
+- smooth offset falloff
+- optimize/cleanup (at the very end!!!!)
 """
 
 import sys
