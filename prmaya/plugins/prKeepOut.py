@@ -17,7 +17,6 @@ prKeepOut.inputGeometry[0]
 prKeepOut.input[0]
 prKeepOut.input[0].enabledExtra
 prKeepOut.input[0].offsetExtra
-prKeepOut.input[0].inputGeometryExtra[0]
 prKeepOut.input[0].position1
 prKeepOut.input[0].position2
 prKeepOut.input[0].parentInverseMatrix
@@ -90,10 +89,6 @@ class prKeepOut(om.MPxNode):
         numericAttr.keyable = True
         prKeepOut.position2 = numericAttr.createPoint('position2', 'position2')
         numericAttr.keyable = True
-        prKeepOut.inputGeometryExtra = genericAttr.create('inputGeometryExtra', 'inputGeometryExtra')
-        genericAttr.addDataType(om.MFnMeshData.kMesh)
-        genericAttr.addDataType(om.MFnNurbsSurfaceData.kNurbsSurface)
-        genericAttr.array = True
         prKeepOut.parentInverseMatrix = matrixAttr.create('parentInverseMatrix', 'parentInverseMatrix', type=matrixAttr.kFloat)
         matrixAttr.keyable = True
 
@@ -102,7 +97,6 @@ class prKeepOut(om.MPxNode):
         compoundAttr.addChild(prKeepOut.offsetExtra)
         compoundAttr.addChild(prKeepOut.position1)
         compoundAttr.addChild(prKeepOut.position2)
-        compoundAttr.addChild(prKeepOut.inputGeometryExtra)
         compoundAttr.addChild(prKeepOut.parentInverseMatrix)
         compoundAttr.array = True
         prKeepOut.addAttribute(prKeepOut.input)
@@ -111,7 +105,6 @@ class prKeepOut(om.MPxNode):
         prKeepOut.attributeAffects(prKeepOut.position1, prKeepOut.output)
         prKeepOut.attributeAffects(prKeepOut.position2, prKeepOut.output)
         prKeepOut.attributeAffects(prKeepOut.parentInverseMatrix, prKeepOut.output)
-        prKeepOut.attributeAffects(prKeepOut.inputGeometryExtra, prKeepOut.output)
 
     @staticmethod
     def creator():
@@ -256,13 +249,13 @@ def evalAETemplate():
             editorTemplate -beginLayout "prKeepOut Attributes" -collapse 0;
                 editorTemplate -label "enabled" -addControl "enabled";
                 editorTemplate -label "offset" -addControl "offset";
+                editorTemplate -label "offsetExtendsPositions" -addControl "offsetExtendsPositions";
                 editorTemplate -label "input" -addControl "input";
                 editorTemplate -label "inputGeometry" -addControl "inputGeometry";
             editorTemplate -endLayout;
             AEdependNodeTemplate $nodeName;
             editorTemplate -addExtraControls;
         editorTemplate -endScrollLayout;
-        //editorTemplate -suppress "input.inputGeometryExtra"; // not working
         //editorTemplate -suppress "input.parentInverseMatrix"; // not working
         //editorTemplate -suppress "output";
     };
