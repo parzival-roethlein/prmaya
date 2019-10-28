@@ -36,6 +36,7 @@ TODO
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
+- way to fix nurbsSurface world space? (maya bug?)
 - make enabled a blendable attribute
 - support primitives as inputGeometry
 - smooth collide
