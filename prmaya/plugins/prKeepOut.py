@@ -3,12 +3,14 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Array version of Mayas "keepOut" with added features.
-- get first intersection with shape from input[].position1 to input[].position2
-- works with multiple default Maya surface types: mesh, nurbsSurface, primitives
-- offset
-- smooth collide
-- smooth offset falloff
+Array version of Mayas "keepOut" with changed/added features.
+- Instead of one ray and one target muscleSkin, unlimited number of rays with unlimited number of surfaces
+- Defines intersection ray from two positions (start, end) instead of a position + vector
+- Works with default Maya surfaces instead of converting to muscleSkin
+- parentInverseMatrix to adjust output to target space
+- TODO support nurbsSurfaces and primitives as inputGeometry
+- TODO smooth collide
+- TODO smooth offset falloff
 
 ATTRIBUTES
 prKeepOut.enabled
