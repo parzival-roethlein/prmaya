@@ -179,27 +179,41 @@ class prKeepOut(om.MPxNode):
                 targetData = inputGeometryHandle.data()
                 if targetData.isNull():
                     continue
+
                 targetType = inputGeometryHandle.type()
                 if targetType == om.MFnMeshData.kMesh:
                     meshFn = om.MFnMesh(targetData)
-                    for index, raySource, rayDirection, finalOffset, enabledExtra in zip(
-                            indices, raySources, rayDirections, finalOffsets, enablesExtra):
-                        if not enabledExtra:
-                            continue
-                        hit = meshFn.closestIntersection(raySource, rayDirection, om.MSpace.kWorld, 1, False)[0]
-                        if hit == om.MFloatPoint():
-                            continue
-                        if closestHits[index] is None or \
-                                (hit - raySource).length() < (closestHits[index] - raySource).length():
-                            closestHits[index] = hit
-                            if finalOffset:
-                                closestHitVector = raySource - hit
-                                if finalOffset > closestHitVector.length():
-                                    offsetVectors[index] = closestHitVector
-                                else:
-                                    offsetVectors[index] = closestHitVector.normal() * finalOffset
+                    def getClosestHit(source, direction):
+                        meshHit = meshFn.closestIntersection(source, direction, om.MSpace.kWorld, 1, False)[0]
+                        if meshHit == om.MFloatPoint():
+                            return None
+                        return meshHit
                 elif targetType == om.MFnNurbsSurfaceData.kNurbsSurface:
-                    pass
+                    nurbsFn = om.MFnNurbsSurface(targetData)
+                    def getClosestHit(source, direction):
+                        nurbsHit = nurbsFn.intersect(om.MPoint(source), om.MVector(direction), om.MSpace.kWorld)
+                        if nurbsHit is None:
+                            return None
+                        return om.MFloatPoint(nurbsHit[0])
+                else:
+                    raise ValueError('unknown targetType: {}'.format(targetType))
+
+                for index, raySource, rayDirection, finalOffset, enabledExtra in zip(
+                        indices, raySources, rayDirections, finalOffsets, enablesExtra):
+                    if not enabledExtra:
+                        continue
+                    hit = getClosestHit(raySource, rayDirection)
+                    if hit is None:
+                        continue
+                    if closestHits[index] is None or \
+                            (hit - raySource).length() < (closestHits[index] - raySource).length():
+                        closestHits[index] = hit
+                        if finalOffset:
+                            closestHitVector = raySource - hit
+                            if finalOffset > closestHitVector.length():
+                                offsetVectors[index] = closestHitVector
+                            else:
+                                offsetVectors[index] = closestHitVector.normal() * finalOffset
 
         # set output
         for index, hit in closestHits.iteritems():
