@@ -7,8 +7,8 @@ Array version of Mayas "keepOut" with changed/added features.
 improvements:
 - unlimited number of rays per node instead of just one
 - unlimited number of standard maya shapes as targets (mesh, nurbsSurface) instead of just one muscleSkin
-- parentInverseMatrix to adjust output to target space
 - offsetExtendsPositions: "smart" ray extension to prevent snapping when using offsets
+- parentInverseMatrix to adjust output to target space
 changes:
 - Intersection ray generated from two positions (start, end) instead of a position + vector
 
@@ -31,7 +31,7 @@ LINKS
 - Demo:
 TODO
 - Making-of:
-TODO
+https://pazrot3d.blogspot.com/2019/12/prkeepoutpy-making-of.html
 - Donate: (This was written in my spare time. If you found it useful in Maya or for coding, consider supporting the author)
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
