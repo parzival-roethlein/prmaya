@@ -6,10 +6,11 @@ DESCRIPTION
 Array version of Mayas "decomposeMatrix" with added features.
 - "output..." attributes shortened to "out..."
 - inputInverseMatrix added
+- inputRotateOrder attribute working. It is (was?) bugged in Mayas decomposeMatrix, by always acting like xyz
 
 USE CASES
 - Replace multiple decomposeMatrix nodes (+multMatrix) with fewer prDecomposeMatrix nodes
-- inputRotateOrder working. Was bugged in Maya until some version before 2018
+
 
 USAGE
 (MEL): createNode prDecomposeMatrix
@@ -31,6 +32,7 @@ LINKS
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
+- rotateOrder for outRotate?
 - test performance difference with bool attributes (.calculateTranslate, .calculateRotate, ...)
 - optional cleanup (icon, aeTemplate array attr, nodeBehavior attr)
 """
@@ -145,7 +147,12 @@ class prDecomposeMatrix(om.MPxNode):
         om.MGlobal.displayWarning(message)
 
     def compute(self, plug, dataBlock):
-        if plug not in [self.output, self.outTranslate, self.outRotate, self.outScale, self.outShear]:
+        if plug not in [self.output,
+                        self.outTranslate,
+                        self.outRotate, self.outRotateX, self.outRotateY, self.outRotateZ,
+                        self.outScale,
+                        self.outShear,
+                        self.outQuat, self.outQuatX, self.outQuatY, self.outQuatZ, self.outQuatW]:
             self.displayWarning(error='Unknown plug: {}'.format(plug))
             return
 

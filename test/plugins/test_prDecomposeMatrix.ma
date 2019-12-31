@@ -1,22 +1,22 @@
-//Maya ASCII 2018ff08 scene
+//Maya ASCII 2018 scene
 //Name: test_prDecomposeMatrix.ma
-//Last modified: Sun, Oct 06, 2019 07:44:26 PM
-//Codeset: UTF-8
-requires maya "2018ff08";
+//Last modified: Tue, Dec 31, 2019 11:08:25 AM
+//Codeset: 1252
+requires maya "2018";
 requires -nodeType "decomposeMatrix" "matrixNodes" "1.0";
 requires "stereoCamera" "10.0";
 currentUnit -l centimeter -a degree -t film;
 fileInfo "application" "maya";
 fileInfo "product" "Maya 2018";
 fileInfo "version" "2018";
-fileInfo "cutIdentifier" "201804211841-f3d65dda2a";
-fileInfo "osv" "Linux 3.10.0-693.21.1.el7.x86_64 #1 SMP Wed Mar 7 19:03:37 UTC 2018 x86_64";
+fileInfo "cutIdentifier" "201706261615-f9658c4cfc";
+fileInfo "osv" "Microsoft Windows 8 Business Edition, 64-bit  (Build 9200)\n";
 fileInfo "modified-by" "prthlein";
 fileInfo "modified-in" "Montreal";
 createNode transform -s -n "persp";
 	rename -uid "781BF7F8-4A4A-23F1-1705-5C8EBBB4C932";
 	setAttr ".v" no;
-	setAttr ".t" -type "double3" -1.4385386936410849 1.6906327455238781 1.9553381626705595 ;
+	setAttr ".t" -type "double3" -1.4564035193479199 1.6946887961480621 1.939659710180748 ;
 	setAttr ".r" -type "double3" -30.938352729604684 -35.400000000000276 -1.9509546221649667e-15 ;
 createNode camera -s -n "perspShape" -p "persp";
 	rename -uid "518D0D04-4B2D-7103-421E-788887B0179D";
@@ -135,9 +135,10 @@ createNode mesh -n "maya_outputShape" -p "maya_output";
 	setAttr ".covm[0]"  0 1 1;
 	setAttr ".cdvm[0]"  0 1 1;
 	setAttr ".sdt" 0;
-	setAttr -s 8 ".pt[0:7]" -type "float3"  -0.01851755 -0.01851755 0.01851755 0.01851755 
-		-0.01851755 0.01851755 -0.01851755 0.01851755 0.01851755 0.01851755 0.01851755 0.01851755 -0.01851755 0.01851755 -0.01851755 0.01851755 
-		0.01851755 -0.01851755 -0.01851755 -0.01851755 -0.01851755 0.01851755 -0.01851755 -0.01851755;
+	setAttr -s 8 ".pt[0:7]" -type "float3"  -0.01851755 -0.01851755 0.01851755 
+		0.01851755 -0.01851755 0.01851755 -0.01851755 0.01851755 0.01851755 0.01851755 0.01851755 
+		0.01851755 -0.01851755 0.01851755 -0.01851755 0.01851755 0.01851755 -0.01851755 -0.01851755 
+		-0.01851755 -0.01851755 0.01851755 -0.01851755 -0.01851755;
 	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
 		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
 	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
@@ -176,9 +177,10 @@ createNode mesh -n "prnode_outQuatShape" -p "prnode_outQuat";
 	setAttr ".dcc" -type "string" "Ambient+Diffuse";
 	setAttr ".covm[0]"  0 1 1;
 	setAttr ".cdvm[0]"  0 1 1;
-	setAttr -s 8 ".pt[0:7]" -type "float3"  0.28209591 -0.28246999 -0.28209639 -0.28209639 
-		-0.2824707 -0.28209621 0.28209636 0.28246999 -0.28209639 -0.28209618 0.28246939 -0.28209636 0.28209639 0.2824707 0.28209621 -0.28209591 
-		0.28246999 0.28209639 0.28209618 -0.28246939 0.28209636 -0.28209636 -0.28246999 0.28209639;
+	setAttr -s 8 ".pt[0:7]" -type "float3"  0.28209591 -0.28246999 -0.28209639 
+		-0.28209639 -0.2824707 -0.28209621 0.28209636 0.28246999 -0.28209639 -0.28209618 
+		0.28246939 -0.28209636 0.28209639 0.2824707 0.28209621 -0.28209591 0.28246999 0.28209639 
+		0.28209618 -0.28246939 0.28209636 -0.28209636 -0.28246999 0.28209639;
 	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
 		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
 	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
@@ -219,9 +221,10 @@ createNode mesh -n "maya_outQuatShape" -p "maya_outQuat";
 	setAttr ".dcc" -type "string" "Ambient+Diffuse";
 	setAttr ".covm[0]"  0 1 1;
 	setAttr ".cdvm[0]"  0 1 1;
-	setAttr -s 8 ".pt[0:7]" -type "float3"  0.27402645 -0.29211515 -0.27402633 -0.27402624 
-		-0.29211554 -0.27402619 0.27402619 0.29211551 -0.27402633 -0.27402651 0.29211444 -0.27402651 0.27402624 0.29211554 0.27402619 -0.27402645 
-		0.29211515 0.27402633 0.27402651 -0.29211444 0.27402651 -0.27402619 -0.29211551 0.27402633;
+	setAttr -s 8 ".pt[0:7]" -type "float3"  0.27402645 -0.29211515 -0.27402633 
+		-0.27402624 -0.29211554 -0.27402619 0.27402619 0.29211551 -0.27402633 -0.27402651 
+		0.29211444 -0.27402651 0.27402624 0.29211554 0.27402619 -0.27402645 0.29211515 0.27402633 
+		0.27402651 -0.29211444 0.27402651 -0.27402619 -0.29211551 0.27402633;
 	setAttr -s 8 ".vt[0:7]"  -0.5 -0.5 0.5 0.5 -0.5 0.5 -0.5 0.5 0.5 0.5 0.5 0.5
 		 -0.5 0.5 -0.5 0.5 0.5 -0.5 -0.5 -0.5 -0.5 0.5 -0.5 -0.5;
 	setAttr -s 12 ".ed[0:11]"  0 1 0 2 3 0 4 5 0 6 7 0 0 2 0 1 3 0 2 4 0
@@ -256,28 +259,24 @@ createNode locator -n "inputMatrixShape" -p "inputMatrix";
 	rename -uid "2B5BA8B0-472F-DFF9-A349-86ACD32232AC";
 	setAttr -k off ".v";
 createNode lightLinker -s -n "lightLinker1";
-	rename -uid "6009A900-0001-7B6C-5D9A-7A560000046E";
+	rename -uid "75270E88-4212-F18C-939E-5AAE977F7708";
 	setAttr -s 2 ".lnk";
 	setAttr -s 2 ".slnk";
 createNode shapeEditorManager -n "shapeEditorManager";
-	rename -uid "6009A900-0001-7B6C-5D9A-7A560000046F";
+	rename -uid "1191960D-47AD-B1DD-F30A-DF9871A34C0F";
 createNode poseInterpolatorManager -n "poseInterpolatorManager";
-	rename -uid "6009A900-0001-7B6C-5D9A-7A5600000470";
+	rename -uid "601562E9-44D0-219E-66CB-1F90D93AA484";
 createNode displayLayerManager -n "layerManager";
-	rename -uid "6009A900-0001-7B6C-5D9A-7A5600000471";
+	rename -uid "D7F75F84-4735-43AC-BB7B-BFA71504725E";
 createNode displayLayer -n "defaultLayer";
 	rename -uid "48AC7BA3-49A7-061B-983C-209E1ED57053";
 createNode renderLayerManager -n "renderLayerManager";
-	rename -uid "6009A900-0001-7B6C-5D9A-7A5600000473";
+	rename -uid "765339B9-43A4-ADE0-7659-949FA8BE2E2E";
 createNode renderLayer -n "defaultRenderLayer";
 	rename -uid "8B5BF3C3-4EE7-EDE3-FAB2-FD931A64E9C3";
 	setAttr ".g" yes;
 createNode decomposeMatrix -n "decomposeMatrix1";
 	rename -uid "15C5282F-48FF-4F65-B7B9-58921BAB9937";
-createNode script -n "sceneConfigurationScriptNode";
-	rename -uid "51775098-4AD4-FD8E-6459-4FBA829889D9";
-	setAttr ".b" -type "string" "playbackOptions -min 1 -max 120 -ast 1 -aet 200 ";
-	setAttr ".st" 6;
 createNode multMatrix -n "multMatrix1";
 	rename -uid "522DD900-0001-7B44-5D9A-6DD7000006F9";
 	setAttr -s 2 ".i";
@@ -300,7 +299,7 @@ createNode nodeGraphEditorInfo -n "MayaNodeEditorSavedTabsInfo";
 	setAttr ".tgi[0].ni[2].y" 425.71429443359375;
 	setAttr ".tgi[0].ni[2].nvs" 18306;
 	setAttr ".tgi[0].ni[3].x" -950;
-	setAttr ".tgi[0].ni[3].y" 358.57144165039062;
+	setAttr ".tgi[0].ni[3].y" 358.57144165039063;
 	setAttr ".tgi[0].ni[3].nvs" 18305;
 	setAttr ".tgi[0].ni[4].x" 321.30587768554688;
 	setAttr ".tgi[0].ni[4].y" 670.14569091796875;
@@ -308,6 +307,15 @@ createNode nodeGraphEditorInfo -n "MayaNodeEditorSavedTabsInfo";
 	setAttr ".tgi[0].ni[5].x" -950;
 	setAttr ".tgi[0].ni[5].y" 864.28570556640625;
 	setAttr ".tgi[0].ni[5].nvs" 18306;
+createNode script -n "sceneConfigurationScriptNode";
+	rename -uid "C790C8F1-416C-FC8D-ECE4-DD9F0639F837";
+	setAttr ".b" -type "string" "playbackOptions -min 1 -max 120 -ast 1 -aet 200 ";
+	setAttr ".st" 6;
+createNode nodeGraphEditorInfo -n "hyperShadePrimaryNodeEditorSavedTabsInfo";
+	rename -uid "BE63524B-4128-A4E8-3396-E0848B344488";
+	setAttr ".tgi[0].tn" -type "string" "Untitled_1";
+	setAttr ".tgi[0].vl" -type "double2" -330.95236780151544 -323.80951094248991 ;
+	setAttr ".tgi[0].vh" -type "double2" 317.85713022663526 338.09522466054096 ;
 select -ne :time1;
 	setAttr ".o" 1;
 	setAttr ".unw" 1;
@@ -316,7 +324,6 @@ select -ne :hardwareRenderingGlobals;
 	setAttr ".otfva" -type "Int32Array" 22 0 1 1 1 1 1
 		 1 1 1 0 0 0 0 0 0 0 0 0
 		 0 0 0 0 ;
-	setAttr ".fprt" yes;
 select -ne :renderPartition;
 	setAttr -s 2 ".st";
 select -ne :renderGlobalsList1;
@@ -334,13 +341,9 @@ select -ne :initialParticleSE;
 select -ne :defaultResolution;
 	setAttr ".pa" 1;
 select -ne :defaultColorMgtGlobals;
-	setAttr ".cfe" yes;
+	setAttr ".cme" no;
 	setAttr ".cfp" -type "string" "/work/20554_SCOOBYDOO/config/ocio/config.ocio";
-	setAttr ".vtn" -type "string" "Film (Monitor)";
-	setAttr ".wsn" -type "string" "linear";
 	setAttr ".pote" no;
-	setAttr ".otn" -type "string" "Film (Monitor)";
-	setAttr ".potn" -type "string" "Film (Monitor)";
 select -ne :hardwareRenderGlobals;
 	setAttr ".ctrs" 256;
 	setAttr ".btrs" 512;
