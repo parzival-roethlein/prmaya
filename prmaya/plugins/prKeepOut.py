@@ -178,6 +178,7 @@ class prKeepOut(om.MPxNode):
             inverseMatrices[index] = inputTargetHandle.child(self.parentInverseMatrix).asFloatMatrix()
             enablesExtra.append(inputTargetHandle.child(self.enabledExtra).asBool())
 
+        # find closest intersections
         closestHits = {i: None for i in indices}
         offsetVectors = {i: None for i in indices}
         if enabled:
