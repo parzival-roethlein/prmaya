@@ -32,7 +32,6 @@ LINKS
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
-- rotateOrder for outRotate?
 - test performance difference with bool attributes (.calculateTranslate, .calculateRotate, ...)
 - optional cleanup (icon, aeTemplate array attr, nodeBehavior attr)
 """
