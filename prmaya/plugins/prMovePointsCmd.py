@@ -1,5 +1,7 @@
 """
-move mesh vertex
+move mesh vertices with the Maya API (MItMeshVertex) for speed
+MPxCommand for undo support
+
 
 # TODO
 - proper MPxCommand argument usage
