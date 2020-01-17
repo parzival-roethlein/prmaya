@@ -1,25 +1,13 @@
 """
 move mesh vertices with the Maya API (MItMeshVertex) for speed
-MPxCommand for undo support
+made into MPxCommand for undo support
 
-
-# TODO
-- proper MPxCommand argument usage
-
-
-# TEST
+USAGE:
 import maya.cmds as mc
-mc.file(new=True, force=True)
-mc.unloadPlugin('prMovePointsCmd.py')
-mc.loadPlugin('/home/prthlein/private/code/prmaya/prmaya/plugins/prMovePointsCmd.py')
-
-from prmaya.plugins import prMovePointsCmd;reload(prMovePointsCmd)
-mc.setAttr(cube+'.s', 100, 100, 100)
-
-movePoints(mesh=cube, deltas=[[0, -0.5, 0]])
-movePoints(mesh=cube, deltas={4: [0, 0.5, 0]})
-movePoints(mesh=cube, deltas={5: om.MVector([0, 0.5, 0])})
-
+import maya.api.OpenMaya as om
+mc.polySphere(ch=False)
+mc.prMovePointsCmd('pSphereShape1', om.MSpace.kObject, [294, 297, 280],
+                   om.MVector(0, 0.25, 0), om.MVector(0, 0.5, 0), om.MVector(0, 1, 0))
 """
 
 import sys

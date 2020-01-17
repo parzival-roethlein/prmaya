@@ -5,8 +5,8 @@ sys.path.append('C:/Users/paz/Documents/git/prmaya/test/plugins')
 import test_prMovePointsCmd
 reload(test_prMovePointsCmd)
 test_prMovePointsCmd.run()
-mc.prMovePointsCmd('sphereShape', om.MSpace.kObject, [292, 294], om.MVector(0, 1.0, 0), om.MVector(0, 0.5, 0))
-
+mc.prMovePointsCmd('pSphereShape1', om.MSpace.kObject, [294, 297, 280],
+                   om.MVector(0, 0.25, 0), om.MVector(0, 0.5, 0), om.MVector(0, 1, 0))
 
 import sys
 sys.path.append('/home/prthlein/private/code/prmaya/test/plugins')
@@ -15,8 +15,8 @@ reload(test_prMovePointsCmd)
 test_prMovePointsCmd.SETTINGS['plugin_path'] = r'/home/prthlein/private/code/prmaya/prmaya/plugins/prMovePointsCmd.py'
 test_prMovePointsCmd.SETTINGS['file'] = r'/home/prthlein/private/code/prmaya/test/plugins/test_prMovePointsCmd.ma'
 test_prMovePointsCmd.run()
-mc.prMovePointsCmd('sphereShape', om.MSpace.kObject, [292, 294], om.MVector(0, 1.0, 0), om.MVector(0, 0.5, 0))
-
+mc.prMovePointsCmd('pSphereShape1', om.MSpace.kObject, [294, 297, 280],
+                   om.MVector(0, 0.25, 0), om.MVector(0, 0.5, 0), om.MVector(0, 1, 0))
 """
 
 
@@ -37,4 +37,4 @@ def run():
     mc.unloadPlugin(SETTINGS['plugin_name'])
     mc.loadPlugin(SETTINGS['plugin_path'])
     mc.file(SETTINGS['file'], open=True, force=True)
-    mc.prMovePointsCmd('sphereShape', om.MSpace.kObject, [296, 298], om.MVector(0, 1, 0), om.MVector(0, 0.5, 0))
+    mc.prMovePointsCmd('pSphereShape1', om.MSpace.kObject, [296, 298], om.MVector(0, 1, 0), om.MVector(0, 0.5, 0))

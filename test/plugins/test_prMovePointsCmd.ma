@@ -1,6 +1,6 @@
 //Maya ASCII 2018 scene
 //Name: test_prMovePointsCmd.ma
-//Last modified: Thu, Jan 16, 2020 11:09:25 PM
+//Last modified: Thu, Jan 16, 2020 11:27:32 PM
 //Codeset: 1252
 requires maya "2018";
 currentUnit -l centimeter -a degree -t film;
@@ -71,10 +71,10 @@ createNode camera -s -n "sideShape" -p "side";
 	setAttr ".man" -type "string" "side_mask";
 	setAttr ".hc" -type "string" "viewSet -s %camera";
 	setAttr ".o" yes;
-createNode transform -n "sphere";
-	rename -uid "AEF9F4E6-4A1E-F809-C1D8-D1A7EBDE6217";
-createNode mesh -n "sphereShape" -p "sphere";
-	rename -uid "6DD03BF9-44C4-3547-53E1-609CF514D322";
+createNode transform -n "pSphere1";
+	rename -uid "D2A8C5CF-4145-E4F9-AED6-A4865FA747F7";
+createNode mesh -n "pSphereShape1" -p "pSphere1";
+	rename -uid "71CBBDF0-484E-015A-7034-EF8D34AD2658";
 	setAttr -k off ".v";
 	setAttr ".vir" yes;
 	setAttr ".vif" yes;
@@ -1204,19 +1204,19 @@ createNode mesh -n "sphereShape" -p "sphere";
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode lightLinker -s -n "lightLinker1";
-	rename -uid "9452F5A6-4AF4-F18A-6A31-0A817EC1825A";
+	rename -uid "BB556AA7-4FCA-710D-1D2D-D78F1946E25B";
 	setAttr -s 2 ".lnk";
 	setAttr -s 2 ".slnk";
 createNode shapeEditorManager -n "shapeEditorManager";
-	rename -uid "2D7707E1-43DE-85B4-4558-2EB11240CC43";
+	rename -uid "7610079E-4DDE-E796-F051-B4B8B7D10153";
 createNode poseInterpolatorManager -n "poseInterpolatorManager";
-	rename -uid "54B58167-4F9A-62D8-0040-C791C8AC6BC4";
+	rename -uid "44D8E44E-4C92-27A8-7B9D-02846A60222A";
 createNode displayLayerManager -n "layerManager";
-	rename -uid "B5ABDCC3-426E-B999-CBC9-95898EA656A5";
+	rename -uid "FB6F9BBC-4DE1-2346-6172-53A0051BE9F6";
 createNode displayLayer -n "defaultLayer";
 	rename -uid "38285978-4160-80D0-9657-51A2114EC415";
 createNode renderLayerManager -n "renderLayerManager";
-	rename -uid "84F6CCD4-48C6-3922-E3D0-579EE6C360CA";
+	rename -uid "70B71CD1-4C4C-D02D-8D80-05A10EDF3E61";
 createNode renderLayer -n "defaultRenderLayer";
 	rename -uid "93A174AE-4AEC-E007-1618-D3BD3AEC6B9C";
 	setAttr ".g" yes;
@@ -1257,5 +1257,5 @@ relationship "shadowLink" ":lightLinker1" ":initialParticleSE.message" ":default
 connectAttr "layerManager.dli[0]" "defaultLayer.id";
 connectAttr "renderLayerManager.rlmi[0]" "defaultRenderLayer.rlid";
 connectAttr "defaultRenderLayer.msg" ":defaultRenderingList1.r" -na;
-connectAttr "sphereShape.iog" ":initialShadingGroup.dsm" -na;
+connectAttr "pSphereShape1.iog" ":initialShadingGroup.dsm" -na;
 // End of test_prMovePointsCmd.ma
