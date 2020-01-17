@@ -24,10 +24,10 @@ def movePoints(mesh, deltas, space=om.MSpace.kObject):
 
     :param mesh: mesh shape name
     :param deltas: {vertexId: MVector(), ...}
-    :param space: om.kSpace.kObject
+    :param space: maya.api.OpenMaya.kSpace
     :return:
     """
-    mc.prMovePointsCmd(mesh, space, deltas.keys(), deltas.values())
+    mc.prMovePointsCmd(mesh, space, deltas.keys(), *deltas.values())
 
 
 class PrMovePointsCmd(om.MPxCommand):
@@ -49,7 +49,6 @@ class PrMovePointsCmd(om.MPxCommand):
         self.vertexIterator = None
         self.deltas = None
         self.space = None
-        self.undo_positions = None
 
     def doIt(self, args):
         """
@@ -102,3 +101,4 @@ def uninitializePlugin(obj):
     except:
         sys.stderr.write("Failed to deregister command\n")
         raise
+
