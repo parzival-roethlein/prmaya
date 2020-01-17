@@ -25,8 +25,8 @@ FEATURES
 
 MOTIVATION
 - Replace DPK_paintDeform.mel, because:
-  - It permanently destroys a mesh that is in edit blendshape target mode
-  - It crashes maya when flooding the same vertex selection twice
+  - It permanently breaks meshes that are in edit blendshape target mode
+  - It crashes Maya when flooding the same vertex selection twice
   - It is slow (MEL)
 - Is useful in addition to the maya sculpt brushes because:
   - missing "average delta"
@@ -42,7 +42,12 @@ import maya.api.OpenMaya as om
 import pymel.core as pm
 import maya.mel as mm
 
-from prmaya.plugins.prMovePointsCmd import movePoints
+
+def reinitializeMaya(*args, **kwargs):
+    initializeMaya(*args, **kwargs)
+    mc.unloadPlugin('prMovePointsCmd.py')
+    initializeMaya(*args, **kwargs)
+    mm.eval('rehash;')
 
 
 def initializeMaya(prMovePointsCmdPath=None, prDeformPaintBrushPath=None):
@@ -144,6 +149,12 @@ def getMItMeshVertex(mesh):
     return om.MItMeshVertex(selection.getDagPath(0))
 
 
+def getMFnMesh(mesh):
+    selection = om.MSelectionList()
+    selection.add(mesh)
+    return om.MFnMesh(selection.getDagPath(0))
+
+
 def getEditBlendshapeMultiplier(mesh, cacheValue=None):
     """get a deformation multiplier that allows for the deformation to be the
     same, no matter what the edited target and envelope values are"""
@@ -170,19 +181,18 @@ def getEditBlendshapeMultiplier(mesh, cacheValue=None):
     return 1.0/(weight*envelope)
 
 
-def getVertexPositions(mesh, vertexIds, space=om.MSpace.kObject):
+def getVertexPositions(vertexIter, vertexIds, space=om.MSpace.kObject):
     """
     get vertex positions as MPointArray
-    :param mesh:
+    :param vertexIter:
     :param vertexIds:
     :param space:
     :return: MPointArray
     """
-    vertexIterator = getMItMeshVertex(mesh)
     vertexPositions = om.MPointArray()
     for vertexId in vertexIds:
-        vertexIterator.setIndex(vertexId)
-        vertexPositions.append(vertexIterator.position(space=space))
+        vertexIter.setIndex(vertexId)
+        vertexPositions.append(vertexIter.position(space=space))
     return vertexPositions
 
 
@@ -198,14 +208,17 @@ def copyPosition(driverMesh, drivenMesh, vertexIds, vertexWeights,
     :return:
     """
     deformMultiplier = getEditBlendshapeMultiplier(drivenMesh, deformMultiplier)
-    deltas = {}
+    driverIter = getMItMeshVertex(driverMesh)
+    drivenIter = getMItMeshVertex(drivenMesh)
+
+    deltas = []
     for vertexId, weight, driverPosition, drivenPosition in izip(
             vertexIds,
             vertexWeights,
-            getVertexPositions(driverMesh, vertexIds),
-            getVertexPositions(drivenMesh, vertexIds)):
-        deltas[vertexId] = (driverPosition - drivenPosition) * weight * deformMultiplier
-    movePoints(mesh=drivenMesh, deltas=deltas, space=space)
+            getVertexPositions(driverIter, vertexIds),
+            getVertexPositions(drivenIter, vertexIds)):
+        deltas.append((driverPosition - drivenPosition) * weight * deformMultiplier)
+    mc.prMovePointsCmd(drivenMesh, space, vertexIds, *deltas)
 
 
 def averageDeltas(driverMesh, drivenMesh, vertexIds, vertexWeights,
@@ -220,19 +233,20 @@ def averageDeltas(driverMesh, drivenMesh, vertexIds, vertexWeights,
     :return:
     """
     deformMultiplier = getEditBlendshapeMultiplier(drivenMesh, deformMultiplier)
-
+    driverIter = getMItMeshVertex(driverMesh)
     drivenIter = getMItMeshVertex(drivenMesh)
-    deltas = {}
+
+    deltas = []
     for vertexId, weight in izip(vertexIds, vertexWeights):
         drivenIter.setIndex(vertexId)
         allVertexIds = drivenIter.getConnectedVertices()
         allVertexIds.insert(vertexId, 0)
-        driverPositions = getVertexPositions(driverMesh, allVertexIds)
-        drivenPositions = getVertexPositions(drivenMesh, allVertexIds)
+        driverPositions = getVertexPositions(driverIter, allVertexIds)
+        drivenPositions = getVertexPositions(drivenIter, allVertexIds)
         averageDelta = om.MVector()
         for driverPos, drivenPos in izip(driverPositions[1:], drivenPositions[1:]):
             averageDelta += drivenPos - driverPos
         averageDelta *= 1.0/(len(allVertexIds)-1)
-        deltas[vertexId] = ((driverPositions[0] + averageDelta) - drivenPositions[0]) * weight * deformMultiplier
-    movePoints(mesh=drivenMesh, deltas=deltas, space=space)
+        deltas.append(((driverPositions[0] + averageDelta) - drivenPositions[0]) * weight * deformMultiplier)
+    mc.prMovePointsCmd(drivenMesh, space, vertexIds, *deltas)
 
