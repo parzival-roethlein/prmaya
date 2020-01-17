@@ -57,13 +57,13 @@ class PrMovePointsCmd(om.MPxCommand):
         :return:
         """
         mesh = args.asString(0)
-        selection = om.MSelectionList()
-        selection.add(mesh)
-        self.vertexIterator = om.MItMeshVertex(selection.getDagPath(0))
         self.space = args.asInt(1)
         vertexIds = args.asIntArray(2)
         if len(args)-3 != len(vertexIds):
             raise ValueError('vectorIds size: {0} does not match MVector count: {1}'.format(len(vertexIds), len(args)-3))
+        selection = om.MSelectionList()
+        selection.add(mesh)
+        self.vertexIterator = om.MItMeshVertex(selection.getDagPath(0))
         self.deltas = {vert: args.asVector(vec) for vert, vec in izip(vertexIds, xrange(3, len(args)))}
 
         self.redoIt()
