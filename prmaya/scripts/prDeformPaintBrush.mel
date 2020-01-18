@@ -83,9 +83,11 @@ global proc prDP_setValueCommand(int $slot, int $index, float $weight)
     global float $prDP_deltaMultiplier;
     global string $prDP_driver;
     global string $prDP_driven;
-    if($prDP_operation == 0)
-        python("prDeformPaint.averageDeltas('"+$prDP_driver+"', '"+$prDP_driven+"', ["+$index+"], ["+$weight+"], "+$prDP_deltaMultiplier+")");
-    else if($prDP_operation == 1)
+    if($prDP_operation == 0){
+        //python("prDeformPaint.averageDeltas('"+$prDP_driver+"', '"+$prDP_driven+"', ["+$index+"], ["+$weight+"], "+$prDP_deltaMultiplier+")");
+        prAverageDeltasCmd $prDP_driver $prDP_driven 0 {$index} {$weight} $prDP_deltaMultiplier;
+    }else if($prDP_operation == 1){
         python("prDeformPaint.copyPosition('"+$prDP_driver+"', '"+$prDP_driven+"', ["+$index+"], ["+$weight+"], "+$prDP_deltaMultiplier+")");
+    }
 }
 

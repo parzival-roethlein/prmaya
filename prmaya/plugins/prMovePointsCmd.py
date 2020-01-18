@@ -11,23 +11,8 @@ mc.prMovePointsCmd('pSphereShape1', om.MSpace.kObject, [294, 297, 280],
 """
 
 import sys
-from itertools import izip
 
-
-import maya.cmds as mc
 import maya.api.OpenMaya as om
-
-
-def movePoints(mesh, deltas, space=om.MSpace.kObject):
-    """
-    simplified interface to run PrMovePointsCmd
-
-    :param mesh: mesh shape name
-    :param deltas: {vertexId: MVector(), ...}
-    :param space: maya.api.OpenMaya.kSpace
-    :return:
-    """
-    mc.prMovePointsCmd(mesh, space, deltas.keys(), *deltas.values())
 
 
 class PrMovePointsCmd(om.MPxCommand):
@@ -35,20 +20,21 @@ class PrMovePointsCmd(om.MPxCommand):
     PLUGIN_NAME = 'prMovePointsCmd'
 
     def addDeltas(self, undoCall=False):
-        for vertexId, delta in self.deltas.iteritems():
+        for vertexId, vector in zip(self.vertexIds, self.vectors):
             self.vertexIterator.setIndex(vertexId)
-            position = self.vertexIterator.position(space=self.space)
+            position = self.vertexIterator.position(self.space)
             if undoCall:
-                position -= delta
+                position -= vector
             else:
-                position += delta
-            self.vertexIterator.setPosition(position, space=self.space)
+                position += vector
+            self.vertexIterator.setPosition(position, self.space)
 
     def __init__(self):
         om.MPxCommand.__init__(self)
-        self.vertexIterator = None
-        self.deltas = None
         self.space = None
+        self.vertexIterator = None
+        self.vertexIds = None
+        self.vectors = None
 
     def doIt(self, args):
         """
@@ -57,13 +43,14 @@ class PrMovePointsCmd(om.MPxCommand):
         """
         mesh = args.asString(0)
         self.space = args.asInt(1)
-        vertexIds = args.asIntArray(2)
-        if len(args)-3 != len(vertexIds):
-            raise ValueError('vectorIds size: {0} does not match MVector count: {1}'.format(len(vertexIds), len(args)-3))
+        self.vertexIds = args.asIntArray(2)
+        if len(args)-3 != len(self.vertexIds):
+            raise ValueError('vectorIds size: {0} does not match MVector count: {1}'.format(
+                             len(self.vertexIds), len(args)-3))
         selection = om.MSelectionList()
         selection.add(mesh)
         self.vertexIterator = om.MItMeshVertex(selection.getDagPath(0))
-        self.deltas = {vert: args.asVector(vec) for vert, vec in izip(vertexIds, xrange(3, len(args)))}
+        self.vectors = [args.asVector(i) for i in range(3, len(args))]
 
         self.redoIt()
 

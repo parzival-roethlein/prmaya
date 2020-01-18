@@ -46,11 +46,13 @@ import maya.mel as mm
 def reinitializeMaya(*args, **kwargs):
     initializeMaya(*args, **kwargs)
     mc.unloadPlugin('prMovePointsCmd.py')
-    initializeMaya(*args, **kwargs)
+    mm.eval('source prDeformPaintBrush;')
     mm.eval('rehash;')
+    initializeMaya(*args, **kwargs)
 
 
-def initializeMaya(prMovePointsCmdPath=None, prDeformPaintBrushPath=None):
+def initializeMaya(prMovePointsCmdPath=None, prAverageDeltasCmdPath=None,
+                   prDeformPaintBrushPath=None):
     """
     load the required plugin and mel script
 
@@ -66,6 +68,10 @@ def initializeMaya(prMovePointsCmdPath=None, prDeformPaintBrushPath=None):
     prMovePointsCmdPath = prMovePointsCmdPath or 'prMovePointsCmd.py'
     if not mc.pluginInfo(prMovePointsCmdPath, q=True, loaded=True):
         mc.loadPlugin(prMovePointsCmdPath)
+
+    prAverageDeltasCmdPath = prAverageDeltasCmdPath or 'prAverageDeltasCmd.py'
+    if not mc.pluginInfo(prAverageDeltasCmdPath, q=True, loaded=True):
+        mc.loadPlugin(prAverageDeltasCmdPath)
 
     if mm.eval('whatIs "$prDP_operation"') == 'Unknown':
         prDeformPaintBrushPath = prDeformPaintBrushPath or 'prDeformPaintBrush.mel'
