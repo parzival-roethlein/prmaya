@@ -10,12 +10,12 @@ import prDeformPaint
 prDeformPaint.Ui()
 
 INSTALLATION
-Your Maya environment has to be able to access:
+Your Maya environment has to be able to access the folders of:
 (MAYA_PLUG_IN_PATH:)
-prmaya/plugins/prMovePointsCmd.py
+.../prmaya/plugins/prMovePointsCmd.py
 (MAYA_SCRIPT_PATH:)
-prmaya/scripts/prDeformPaint.mel
-prmaya/scripts/prDeformPaint.py
+.../prmaya/scripts/prDeformPaint.mel
+.../prmaya/scripts/prDeformPaint.py
 
 FEATURES
 - average delta operation that including all deformation. This helps to preserve
