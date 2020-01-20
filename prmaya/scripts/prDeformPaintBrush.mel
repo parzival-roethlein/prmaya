@@ -4,54 +4,112 @@ https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
 in prDeformPaint.py
+
+BRUSH CODING INFO
+- setValueCommand only gathers the deformation data (vertexIds and weights)
+- duringStrokeCmd does the deformation (to be able to batch process multiple
+  vertices at once. It should increase performance, but also results in more
+  predictable deformation because all vertices move from the same (pre-stroke)
+  base position)
+- finalizeCmd does the deformation if there was no duringStrokeCmd evaluation
+  between setValueCommand and finalizeCmd. Examples:
+  - Brush Flood
+  - mouse press->release (without drag)
+
+MAYA DEBUG
+- setValueCommand triggers when "mouse down -> mouse up" or for every ~6 pixels
+  moved while dragging
+- setValueCommand does not trigger when: "mouse down -> moving one pixel ->
+  mouse up"
+- duringStrokeCmd triggers for every pixel moved during drag
+
+PERFORMANCE (flooding 4.3k vertices)
+# dpk = 12 (19 undo)
+# pr  = 17 (14 undo) deformation cmd for each vertex
+# pr  = 13 (15 undo) one deformation call for all vertices collected by setValueCmd
+# pr  = 7  (7 undo) when skipping zero length deltas (half)
+seems like the python api 2.0 MPxCommands are way too slow even when called just
+once for all vertices
 */
 
-global string $prDP_currentCtx;
 // from Ui
 global int $prDP_operation;
+global int $prDP_space;
 global string $prDP_driver;
 // for every stroke
 global string $prDP_driven = "";
 global float $prDP_deltaMultiplier = 1.0;
+// for every evaluation
+global int $prDP_vertexIds[];
+global float $prDP_vertexWeights[];
 
 
-// initialize paint tool
-global proc prDeformPaint_initialize()
-{
-	global string $prDP_currentCtx;
+global proc prDP_deformation(){
+    /*does the actual deformation*/
+    global int $prDP_vertexIds[];
+    int $vertexIdSize = size($prDP_vertexIds);
+    if($vertexIdSize == 0)
+        return;
+    print("\n"+$vertexIdSize);
+    global float $prDP_vertexWeights[];
+
+    global int $prDP_operation;
+    global int $prDP_space;
+    global string $prDP_driver;
+
+    global float $prDP_deltaMultiplier;
+    global string $prDP_driven;
+
+
+    if($prDP_operation == 0){
+        prAverageDeltasCmd $prDP_driver $prDP_driven $prDP_space $prDP_vertexIds $prDP_vertexWeights $prDP_deltaMultiplier;
+    }//else if($prDP_operation == 1){
+    //    python("prDeformPaint.copyPosition('"+$prDP_driver+"', '"+$prDP_driven+"', "+$prDP_vertexIds+", "+$prDP_vertexWeights+", "+$prDP_deltaMultiplier+")");
+    //}
+    clear($prDP_vertexIds);
+    clear($prDP_vertexWeights);
+}
+
+global proc prDeformPaint_initialize(){
+    /*start the brush*/
 	ScriptPaintTool;
-	artUserPaintCtx -e -tsc "prDeformPaint" `currentCtx`;
+	artUserPaintCtx -e -toolSetupCmd "prDP_toolSetupCmd" `currentCtx`;
 }
 
 
-// This procedure should be set as the "Tool Setup Cmd" in the 
-// Setup tab of the Maya Artisan Script Paint tool's tool settings
-// window. The tool context is supplied as an argument.
-global proc prDeformPaint(string $context)
-{
-    // initialize all the other commands in this scriptable paint tool context.
+global proc prDP_toolSetupCmd(string $toolContextName){
+    /*is called just after the Paint Scripts Tool is selected
+    initialize all the other commands in this scriptable paint tool context.*/
     artUserPaintCtx -e
+        -toolCleanupCmd ""
+
+        -getSurfaceCommand ""
+        -getArrayAttrCommand ""
+
         -initializeCmd "prDP_initializeCmd"
         -finalizeCmd "prDP_finalizeCmd"
-        -setValueCommand "prDP_setValueCommand"
-        -gvc ""
-        -gsc ""
-        -cc ""
-        -tcc ""
-        -gac ""
-        -duringStrokeCmd ""
-        $context;
-    global string $prDP_currentCtx;
-    $prDP_currentCtx = $context;
+        -setValueCommand "prDP_setValueCmd"
+        -getValueCommand ""
+
+        -chunkCommand ""
+        -duringStrokeCmd "prDP_duringStrokeCmd"
+        $toolContextName;
 }
 
-// This is the "Initialize Cmd". This procedure is called once
-// for every selected surface when an initial click is received
-// on any surface. The argument is the name of the surface. This
-// procedure returns a string which indicates to the scriptable
-// tool how to behave for the duration of the stroke.
-global proc string prDP_initializeCmd(string $name)
-{
+
+global proc string prDP_duringStrokeCmd(){
+    /* is called for every pixel of stroke dragging motion */
+    prDP_deformation();
+    return true;
+}
+
+
+global proc string prDP_initializeCmd(string $name){
+    /* is called once for every selected surface when an initial click is
+    received */
+    global string $prDP_driver;
+    if(!`objExists $prDP_driver`)
+        error("object does not exist: \""+$prDP_driver+"\"");
     global string $prDP_driven;
     $prDP_driven = $name;
     global float $prDP_deltaMultiplier;
@@ -59,35 +117,33 @@ global proc string prDP_initializeCmd(string $name)
     return "";
 }
 
-// This is the "Finalize Cmd". This procedure is called at the
-// end of the stroke. It is passed the surface ID, that was
-// generated by the "Initialize Cmd".
-global proc prDP_finalizeCmd(int $surfaceID)
-{
+
+global proc prDP_finalizeCmd(int $surfaceID){
+    /* is called at the end of the stroke */
+    prDP_deformation();
     global string $prDP_driven;
     $prDP_driven = "";
     global float $prDP_deltaMultiplier;
     $prDP_deltaMultiplier = 1.0;
 }
 
-// This is the "Set Value Cmd". It is called every time a value
-// on the surface is changed. A surface ID, a grid index
-// on the surface and the value associated with that grid index
-// is passed. There can be additional arguments depending on the
-// options generated by the return value of the "Initialize Cmd".
-// In this case the (x,y,z) surface position for this grid point
-// is also passed.
-global proc prDP_setValueCommand(int $slot, int $index, float $weight)
-{
-    global int $prDP_operation;
-    global float $prDP_deltaMultiplier;
-    global string $prDP_driver;
-    global string $prDP_driven;
-    if($prDP_operation == 0){
-        //python("prDeformPaint.averageDeltas('"+$prDP_driver+"', '"+$prDP_driven+"', ["+$index+"], ["+$weight+"], "+$prDP_deltaMultiplier+")");
-        prAverageDeltasCmd $prDP_driver $prDP_driven 0 {$index} {$weight} $prDP_deltaMultiplier;
-    }else if($prDP_operation == 1){
-        python("prDeformPaint.copyPosition('"+$prDP_driver+"', '"+$prDP_driven+"', ["+$index+"], ["+$weight+"], "+$prDP_deltaMultiplier+")");
+
+global proc prDP_setValueCmd(int $slot, int $vertexId, float $vertexWeight){
+    /* is called every time a value on the surface is changed */
+    global int $prDP_vertexIds[];
+    global float $prDP_vertexWeights[];
+    int $vertexIdSize = size($prDP_vertexIds);
+    // sometimes setValueCmd gets called multiple times for the same vertex,
+    // between duringStrokeCmd evaluations. in that case only the highest weight
+    // will get used. in my test with 4.3k vertices it did not cost performance
+    for($i=0; $i<$vertexIdSize; ++$i){
+        if($vertexId == $prDP_vertexIds[$i]){
+            if($vertexWeight > $prDP_vertexWeights[$i])
+                $prDP_vertexWeights[$i] = $vertexWeight;
+            return;
+        }
     }
+    $prDP_vertexIds[$vertexIdSize] = $vertexId;
+    $prDP_vertexWeights[$vertexIdSize] = $vertexWeight;
 }
 

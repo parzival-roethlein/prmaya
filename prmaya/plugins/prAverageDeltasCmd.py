@@ -17,7 +17,8 @@ class prAverageDeltasCmd(om.MPxCommand):
     PLUGIN_NAME = 'prAverageDeltasCmd'
 
     def addDeltas(self, undoCall=False):
-        for vertexId, delta in izip(self.vertexIds, self.deltas):
+        print('deltas: {}'.format(len(self.deltas)))
+        for vertexId, delta in self.deltas.iteritems():
             self.drivenIter.setIndex(vertexId)
             position = self.drivenIter.position(self.space)
             if undoCall:
@@ -29,7 +30,6 @@ class prAverageDeltasCmd(om.MPxCommand):
     def __init__(self):
         om.MPxCommand.__init__(self)
         self.drivenIter = None
-        self.vertexIds = None
         self.deltas = None
         self.space = None
 
@@ -40,39 +40,45 @@ class prAverageDeltasCmd(om.MPxCommand):
         """
         baseMesh = args.asString(0)
         drivenMesh = args.asString(1)
-        space = args.asInt(2)
-        self.space = space
-        self.vertexIds = args.asIntArray(3)
+        self.space = args.asInt(2)
+        vertexIds = args.asIntArray(3)
         vertexWeights = args.asDoubleArray(4)
         weight = args.asFloat(5)
-        if len(self.vertexIds) != len(vertexWeights):
+        if len(vertexIds) != len(vertexWeights):
             raise ValueError('len(vertexIds) != len(vertexWeights) // {0} != {1}'.format(
-                             len(self.vertexIds), len(vertexWeights)))
+                             len(vertexIds), len(vertexWeights)))
         selection = om.MSelectionList()
         selection.add(baseMesh)
         baseIter = om.MItMeshVertex(selection.getDagPath(0))
         selection.add(drivenMesh)
         self.drivenIter = om.MItMeshVertex(selection.getDagPath(1))
-        self.deltas = om.MVectorArray()
+        self.deltas = {}
+        baseDeltas = {}
 
         # calculate deformation delta
-        for vertexId, vertexWeight in izip(self.vertexIds, vertexWeights):
+        for vertexId, vertexWeight in izip(vertexIds, vertexWeights):
             self.drivenIter.setIndex(vertexId)
 
             # get average delta
             averageDelta = om.MVector()
             neighborVtxIds = self.drivenIter.getConnectedVertices()
             for neighborVtxId in neighborVtxIds:
-                baseIter.setIndex(neighborVtxId)
-                self.drivenIter.setIndex(neighborVtxId)
-                averageDelta += self.drivenIter.position(space) - baseIter.position(space)
+                if neighborVtxId not in baseDeltas:
+                    baseIter.setIndex(neighborVtxId)
+                    self.drivenIter.setIndex(neighborVtxId)
+                    baseDeltas[neighborVtxId] = (self.drivenIter.position(self.space) -
+                                                 baseIter.position(self.space))
+                averageDelta += baseDeltas[neighborVtxId]
+            if averageDelta.length() == 0.0:
+                continue
             averageDelta *= 1.0/len(neighborVtxIds)
 
             # final delta
             self.drivenIter.setIndex(vertexId)
             baseIter.setIndex(vertexId)
-            self.deltas.append(
-                (baseIter.position(space) + averageDelta - self.drivenIter.position(space)) * vertexWeight * weight
+            self.deltas[vertexId] = (
+                (baseIter.position(self.space) + averageDelta -
+                 self.drivenIter.position(self.space)) * vertexWeight * weight
             )
         self.redoIt()
 

@@ -4,6 +4,10 @@ https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
 modeling brushes for blendshape targets (similar to DPK_paintDeform.mel)
+- average delta operation that including all deformation. This helps to preserve
+  local surface shapes (staying "on model")
+- Same deformation strength no matter what the edited blendshape target weight
+  and envelope values are
 
 USAGE
 import prDeformPaint
@@ -16,12 +20,6 @@ Your Maya environment has to be able to access the folders of:
 (MAYA_SCRIPT_PATH:)
 .../prmaya/scripts/prDeformPaintBrush.mel
 .../prmaya/scripts/prDeformPaint.py
-
-FEATURES
-- average delta operation that including all deformation. This helps to preserve
-  local surface shapes (staying "on model")
-- Same deformation strength no matter what the blendshape envelope and target
-  weight is
 
 MOTIVATION
 - Replace DPK_paintDeform.mel, because:
