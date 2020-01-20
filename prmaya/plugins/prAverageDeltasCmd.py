@@ -18,10 +18,9 @@ class prAverageDeltasCmd(om.MPxCommand):
 
     def __init__(self):
         om.MPxCommand.__init__(self)
-        self.space = None
         self.drivenIter = None
-        self.deformationDeltas = None
-        self.deformationPositions = None
+        self.deltas = None
+        self.space = None
 
     def doIt(self, args):
         """
@@ -36,16 +35,15 @@ class prAverageDeltasCmd(om.MPxCommand):
         weight = args.asFloat(5)
         if len(vertexIds) != len(vertexWeights):
             raise ValueError('len(vertexIds) != len(vertexWeights) // {0} != {1}'.format(
-                             len(vertexIds), len(vertexWeights)))
+                len(vertexIds), len(vertexWeights)))
         selection = om.MSelectionList()
         selection.add(baseMesh)
         baseIter = om.MItMeshVertex(selection.getDagPath(0))
         selection.add(drivenMesh)
         self.drivenIter = om.MItMeshVertex(selection.getDagPath(1))
-        self.deformationDeltas = {}
-        self.deformationPositions = {}
+        self.deltas = {}
+        baseDeltas = {}
 
-        deltas = {}
         # calculate deformation delta
         for vertexId, vertexWeight in izip(vertexIds, vertexWeights):
             self.drivenIter.setIndex(vertexId)
@@ -54,41 +52,40 @@ class prAverageDeltasCmd(om.MPxCommand):
             averageDelta = om.MVector()
             neighborVtxIds = self.drivenIter.getConnectedVertices()
             for neighborVtxId in neighborVtxIds:
-                if neighborVtxId not in deltas:
+                if neighborVtxId not in baseDeltas:
                     baseIter.setIndex(neighborVtxId)
                     self.drivenIter.setIndex(neighborVtxId)
-                    deltas[neighborVtxId] = (self.drivenIter.position(self.space) -
-                                             baseIter.position(self.space))
-                averageDelta += deltas[neighborVtxId]
+                    baseDeltas[neighborVtxId] = (self.drivenIter.position(self.space) -
+                                                 baseIter.position(self.space))
+                averageDelta += baseDeltas[neighborVtxId]
             if averageDelta.length() == 0.0:
                 continue
             averageDelta *= 1.0 / len(neighborVtxIds)
 
             # final delta
-            baseIter.setIndex(vertexId)
             self.drivenIter.setIndex(vertexId)
-            drivenPosition = self.drivenIter.position(self.space)
-            delta = (baseIter.position(self.space) + averageDelta -
-                     drivenPosition) * vertexWeight * weight
-
-            position = drivenPosition + delta
-            self.drivenIter.setPosition(position, self.space)
-
-            # for undo
-            self.deformationDeltas[vertexId] = delta
-            # for redo
-            self.deformationPositions[vertexId] = position
+            baseIter.setIndex(vertexId)
+            self.deltas[vertexId] = (
+                    (baseIter.position(self.space) + averageDelta -
+                     self.drivenIter.position(self.space)) * vertexWeight * weight
+            )
+        self.redoIt()
 
     def redoIt(self):
-        for vertexId, position in self.deformationPositions.iteritems():
-            self.drivenIter.setIndex(vertexId)
-            self.drivenIter.setPosition(position, self.space)
+        self.addDeltas()
 
     def undoIt(self):
-        for vertexId, delta in self.deformationDeltas.iteritems():
+        self.addDeltas(undoCall=True)
+
+    def addDeltas(self, undoCall=False):
+        for vertexId, delta in self.deltas.iteritems():
             self.drivenIter.setIndex(vertexId)
-            self.drivenIter.setPosition(
-                    self.drivenIter.position(self.space) - delta, self.space)
+            position = self.drivenIter.position(self.space)
+            if undoCall:
+                position -= delta
+            else:
+                position += delta
+            self.drivenIter.setPosition(position, self.space)
 
     @staticmethod
     def creator():
