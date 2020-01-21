@@ -30,8 +30,10 @@ Your Maya environment has to be able to access the folders of:
 MOTIVATION
 - Replace DPK_paintDeform.mel, because:
   - It permanently breaks meshes that are in edit blendshape target mode
-  - It crashes Maya when flooding the same vertex selection twice
+  - It crashes Maya when flooding the same vertex selection twice (workaround is
+    re-enter tool between each flood)
   - It is slow (MEL)
+  - It is sometimes incredibly extra slow for no apparent reason (on linux)
 - Is useful in addition to the maya sculpt brushes because:
   - missing "average delta"
   - they are buggy (erase delta not really deleting deltas, ...)
@@ -103,7 +105,7 @@ class Ui(pm.uitypes.Window):
                 pm.button(l='Set target:', c=pm.Callback(self.setTarget))
                 # right click menu
                 # - load orig
-                # - create copy with current edit blendshape target disabled
+                # - create copy with current edit blendshape target disabled (->smooth/delete target)
                 # - create copy of current
                 self.target = pm.textField(en=False)
                 existingDriver = mm.eval('whatIs "$prDP_driver"')
@@ -192,10 +194,10 @@ def getMItMeshVertex(meshName):
     return om.MItMeshVertex(selection.getDagPath(0))
 
 
-def getVertexPositions(meshName, vertexIds, space=om.MSpace.kObject):
+def getVertexPositions(meshName, vertexIds=None, space=om.MSpace.kObject):
     """
     :param meshName: 'myMeshShape'
-    :param vertexIds: [..]
+    :param vertexIds: [2, 3, ...] or all if None
     :param space: om.MSpace...
     :return: MPointArray
     """
@@ -205,7 +207,7 @@ def getVertexPositions(meshName, vertexIds, space=om.MSpace.kObject):
     vertexPositions = om.MPointArray()
     for vertexId in vertexIds:
         vertexIter.setIndex(vertexId)
-        vertexPositions.append(vertexIter.position(space=space))
+        vertexPositions.append(vertexIter.position(space))
     return vertexPositions
 
 
@@ -260,9 +262,19 @@ def averageDeltas(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeigh
                 allVertexIds.append(neighbor)
 
     # get all positions and deltas of interest
-    driverPositions = getVertexPositions(driverMesh, allVertexIds, space)
-    drivenPositions = getVertexPositions(drivenMesh, allVertexIds, space)
-    allDeltas = {v: drn-drv for v, drv, drn in izip(allVertexIds, driverPositions, drivenPositions)}
+    driverPositions = om.MPointArray()
+    driverIter = getMItMeshVertex(driverMesh)
+    drivenPositions = om.MPointArray()
+    drivenIter = getMItMeshVertex(drivenMesh)
+    allDeltas = {}
+    for vertexId in allVertexIds:
+        driverIter.setIndex(vertexId)
+        drivenIter.setIndex(vertexId)
+        driverPosition = driverIter.position(space)
+        drivenPosition = drivenIter.position(space)
+        driverPositions.append(driverPosition)
+        drivenPositions.append(drivenPosition)
+        allDeltas[vertexId] = drivenPosition - driverPosition
 
     # calculate deformation deltas
     deltas = []
