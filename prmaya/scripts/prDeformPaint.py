@@ -100,7 +100,9 @@ class Ui(pm.uitypes.Window):
             with pm.horizontalLayout() as targetLayout:
                 pm.button(l='Set target:', c=pm.Callback(self.setTarget))
                 # right click menu
-                # load orig
+                # - load orig
+                # - create copy with current edit blendshape target disabled
+                # - create copy of current
                 self.target = pm.textField(en=False)
                 existingDriver = mm.eval('whatIs "$prDP_driver"')
                 if existingDriver != 'Unknown':
@@ -119,18 +121,27 @@ class Ui(pm.uitypes.Window):
                 self.operation.setSelect(1)
             operationLayout.redistribute()
 
+            with pm.frameLayout('settings', collapsable=True, collapse=True):
+                with pm.horizontalLayout() as settingsLayout:
+                    # right click menu with presets: 0.1, 0.01, 0.001, ...
+                    pm.text('minDeltaLength:')
+                    self.minDeltaLength = pm.floatField(
+                            precision=8, value=0.00001,
+                            changeCommand=pm.Callback(self.syncUiSettings))
+                settingsLayout.redistribute(0, 1)
+
             with pm.horizontalLayout() as toolLayout:
                 pm.button(label='Enter Tool', command=pm.Callback(self.enterTool))
                 pm.button(label='Close', command=pm.Callback(self.close))
             toolLayout.redistribute()
-
-        mainLayout.redistribute()
+        mainLayout.redistribute(0, 0, 0, 1)
         self.show()
         self.syncUiSettings()
 
     def syncUiSettings(self):
         mm.eval('$prDP_driver = "{}"'.format(self.target.getText()))
         mm.eval('$prDP_operation = {}'.format(self.operation.getSelect()-1))
+        mm.eval('$prDP_minDeltaLength = {}'.format(self.minDeltaLength.getValue()))
 
     def setTarget(self):
         selection = (pm.ls(sl=True, type=['transform', 'mesh']) or [''])[0]
@@ -147,21 +158,9 @@ class Ui(pm.uitypes.Window):
         pm.deleteUI(self._TITLE)
 
 
-def getMItMeshVertex(mesh):
-    selection = om.MSelectionList()
-    selection.add(mesh)
-    return om.MItMeshVertex(selection.getDagPath(0))
-
-
-def getMFnMesh(mesh):
-    selection = om.MSelectionList()
-    selection.add(mesh)
-    return om.MFnMesh(selection.getDagPath(0))
-
-
 def getEditBlendshapeMultiplier(mesh, cacheValue=None):
-    """get a deformation multiplier that allows for the deformation to be the
-    same, no matter what the edited target and envelope values are"""
+    """get a multiplier to normalize the deformation (same amount no matter what
+    the edited target and envelope values are)"""
     if cacheValue is not None:
         return cacheValue
     parent = mc.listRelatives(mesh, parent=True)
@@ -176,7 +175,7 @@ def getEditBlendshapeMultiplier(mesh, cacheValue=None):
     envelope = mc.getAttr('{}.envelope'.format(blendshape))
     targetIndex = mc.getAttr('{}.inputTarget[0].sculptTargetIndex'.format(blendshape))
     if targetIndex == -1:
-        return 1.0 / envelope
+        return 1.0
     weights = mc.getAttr('{}.weight'.format(blendshape))[0]
     weightIndices = mc.getAttr('{}.weight'.format(blendshape), multiIndices=True)
     weight = weights[weightIndices.index(targetIndex)]
@@ -185,14 +184,22 @@ def getEditBlendshapeMultiplier(mesh, cacheValue=None):
     return 1.0/(weight*envelope)
 
 
-def getVertexPositions(vertexIter, vertexIds, space=om.MSpace.kObject):
+def getMItMeshVertex(meshName):
+    selection = om.MSelectionList()
+    selection.add(meshName)
+    return om.MItMeshVertex(selection.getDagPath(0))
+
+
+def getVertexPositions(meshName, vertexIds, space=om.MSpace.kObject):
     """
-    get vertex positions as MPointArray
-    :param vertexIter:
-    :param vertexIds:
-    :param space:
+    :param meshName: 'myMeshShape'
+    :param vertexIds: [..]
+    :param space: om.MSpace...
     :return: MPointArray
     """
+    vertexIter = getMItMeshVertex(meshName)
+    if vertexIds is None:
+        vertexIds = range(len(vertexIter))
     vertexPositions = om.MPointArray()
     for vertexId in vertexIds:
         vertexIter.setIndex(vertexId)
@@ -200,57 +207,72 @@ def getVertexPositions(vertexIter, vertexIds, space=om.MSpace.kObject):
     return vertexPositions
 
 
-def copyPosition(driverMesh, drivenMesh, vertexIds, vertexWeights,
+def copyPosition(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeights,
                  deformMultiplier=None, space=om.MSpace.kObject):
     """
     :param driverMesh:
     :param drivenMesh:
+    :param minDeltaLength: float
     :param vertexIds: [0, 1, ...]
     :param vertexWeights: [1.0, 0.5, ...]
-    :param deformMultiplier:
-    :param space:
-    :return:
+    :param deformMultiplier: float or detect if None
+    :param space: om.MSpace...
+    :return: deformMultiplier
     """
     deformMultiplier = getEditBlendshapeMultiplier(drivenMesh, deformMultiplier)
-    driverIter = getMItMeshVertex(driverMesh)
-    drivenIter = getMItMeshVertex(drivenMesh)
 
     deltas = []
     for vertexId, weight, driverPosition, drivenPosition in izip(
             vertexIds,
             vertexWeights,
-            getVertexPositions(driverIter, vertexIds),
-            getVertexPositions(drivenIter, vertexIds)):
+            getVertexPositions(driverMesh, vertexIds),
+            getVertexPositions(drivenMesh, vertexIds)):
         deltas.append((driverPosition - drivenPosition) * weight * deformMultiplier)
-    mc.prMovePointsCmd(drivenMesh, space, vertexIds, *deltas)
+    mc.prMovePointsCmd(drivenMesh, space, minDeltaLength, vertexIds, *deltas)
+    return deformMultiplier
 
 
-def averageDeltas(driverMesh, drivenMesh, vertexIds, vertexWeights,
-                  deformMultiplier=None, space=om.MSpace.kObject):
+def averageDeltas(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeight,
+                  multiplier=None, space=om.MSpace.kObject):
     """
-    :param driverMesh:
-    :param drivenMesh:
+    :param driverMesh: 'driverMeshName'
+    :param drivenMesh: 'drivenMeshName'
+    :param minDeltaLength: float
     :param vertexIds: [0, 1, ...]
-    :param vertexWeights: [1.0, 0.5, ...]
-    :param deformMultiplier:
-    :param space:
+    :param vertexWeight: [1.0, 0.5, ...]
+    :param multiplier: float or detect if None
+    :param space: om.MSpace...
     :return:
     """
-    deformMultiplier = getEditBlendshapeMultiplier(drivenMesh, deformMultiplier)
-    driverIter = getMItMeshVertex(driverMesh)
-    drivenIter = getMItMeshVertex(drivenMesh)
+    deformMultiplier = getEditBlendshapeMultiplier(drivenMesh, multiplier)
 
-    deltas = []
-    for vertexId, weight in izip(vertexIds, vertexWeights):
+    # get all relevant vertex ids (add neighbors)
+    neighborIds = {}
+    drivenIter = getMItMeshVertex(drivenMesh)
+    allVertexIds = list(vertexIds)
+    for vertexId in vertexIds:
         drivenIter.setIndex(vertexId)
-        allVertexIds = drivenIter.getConnectedVertices()
-        allVertexIds.insert(vertexId, 0)
-        driverPositions = getVertexPositions(driverIter, allVertexIds)
-        drivenPositions = getVertexPositions(drivenIter, allVertexIds)
+        neighborIds[vertexId] = drivenIter.getConnectedVertices()
+        for neighbor in neighborIds[vertexId]:
+            if neighbor not in allVertexIds:
+                allVertexIds.append(neighbor)
+
+    # get all positions and deltas of interest
+    driverPositions = getVertexPositions(driverMesh, allVertexIds, space)
+    drivenPositions = getVertexPositions(drivenMesh, allVertexIds, space)
+    allDeltas = {v: drn-drv for v, drv, drn in izip(allVertexIds, driverPositions, drivenPositions)}
+
+    # calculate deformation deltas
+    deltas = []
+    for x, [vertexId, weight] in enumerate(izip(vertexIds, vertexWeight)):
         averageDelta = om.MVector()
-        for driverPos, drivenPos in izip(driverPositions[1:], drivenPositions[1:]):
-            averageDelta += drivenPos - driverPos
-        averageDelta *= 1.0/(len(allVertexIds)-1)
-        deltas.append(((driverPositions[0] + averageDelta) - drivenPositions[0]) * weight * deformMultiplier)
-    mc.prMovePointsCmd(drivenMesh, space, vertexIds, *deltas)
+        for neighborId in neighborIds[vertexId]:
+            averageDelta += allDeltas[neighborId]
+        averageDelta *= 1.0/len(neighborIds[vertexId])
+        deltas.append(
+            ((driverPositions[x] + averageDelta) - drivenPositions[x]) * weight * deformMultiplier
+        )
+
+    # do the deformation
+    mc.prMovePointsCmd(drivenMesh, space, minDeltaLength, vertexIds, *deltas)
 

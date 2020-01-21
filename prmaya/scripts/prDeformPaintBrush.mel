@@ -24,17 +24,20 @@ MAYA DEBUG
 - duringStrokeCmd triggers for every pixel moved during drag
 
 PERFORMANCE (flooding 4.3k vertices)
-# dpk = 12 (19 undo)
-# pr  = 17 (14 undo) deformation cmd for each vertex
-# pr  = 13 (15 undo) one deformation call for all vertices collected by setValueCmd
-# pr  = 8  (7 undo) when skipping zero length deltas (half)
-seems like the python api 2.0 MPxCommands are way too slow even when called just
-once for all vertices
+dpk= 12 (19 undo)
+pr = 17 (14 undo) deformation cmd for each vertex
+pr = 13 (15 undo) one deformation call for all vertices collected by setValueCmd
+pr =  8 (7 undo) when skipping points at orig (bad algorithm)
+pr =  3 (1 undo, 1 redo) when skipping zero length deltas (only deforming 132 verts)
+pr = 18 (16 undo, 16 redo) copy positions (all move)
+pr = 19 (15 undo, 15 redo) average deltas (all move)
+
 */
 
 // from Ui
 global int $prDP_operation;
 global int $prDP_space;
+global float $prDP_minDeltaLength = 0.00001;
 global string $prDP_driver;
 // for every stroke
 global string $prDP_driven = "";
@@ -44,39 +47,11 @@ global int $prDP_vertexIds[];
 global float $prDP_vertexWeights[];
 
 
-global proc prDP_deformation(){
-    /*does the actual deformation*/
-    global int $prDP_vertexIds[];
-    int $vertexIdSize = size($prDP_vertexIds);
-    if($vertexIdSize == 0)
-        return;
-    print("\n"+$vertexIdSize);
-    global float $prDP_vertexWeights[];
-
-    global int $prDP_operation;
-    global int $prDP_space;
-    global string $prDP_driver;
-
-    global float $prDP_deltaMultiplier;
-    global string $prDP_driven;
-
-
-    if($prDP_operation == 0){
-        //prAverageDeltasCmd $prDP_driver $prDP_driven $prDP_space $prDP_vertexIds $prDP_vertexWeights $prDP_deltaMultiplier;
-        python("prDeformPaint.averageDeltas('"+$prDP_driver+"', '"+$prDP_driven+"', ["+intArrayToString($prDP_vertexIds, ", ")+"], ["+floatArrayToString($prDP_vertexWeights, ", ")+"], "+$prDP_deltaMultiplier+")");
-    }//else if($prDP_operation == 1){
-    //    python("prDeformPaint.copyPosition('"+$prDP_driver+"', '"+$prDP_driven+"', "+$prDP_vertexIds+", "+$prDP_vertexWeights+", "+$prDP_deltaMultiplier+")");
-    //}
-    clear($prDP_vertexIds);
-    clear($prDP_vertexWeights);
-}
-
 global proc prDeformPaint_initialize(){
     /*start the brush*/
 	ScriptPaintTool;
 	artUserPaintCtx -e -toolSetupCmd "prDP_toolSetupCmd" `currentCtx`;
 }
-
 
 global proc prDP_toolSetupCmd(string $toolContextName){
     /*is called just after the Paint Scripts Tool is selected
@@ -97,13 +72,11 @@ global proc prDP_toolSetupCmd(string $toolContextName){
         $toolContextName;
 }
 
-
 global proc string prDP_duringStrokeCmd(){
     /* is called for every pixel of stroke dragging motion */
     prDP_deformation();
     return true;
 }
-
 
 global proc string prDP_initializeCmd(string $name){
     /* is called once for every selected surface when an initial click is
@@ -118,7 +91,6 @@ global proc string prDP_initializeCmd(string $name){
     return "";
 }
 
-
 global proc prDP_finalizeCmd(int $surfaceID){
     /* is called at the end of the stroke */
     prDP_deformation();
@@ -128,7 +100,6 @@ global proc prDP_finalizeCmd(int $surfaceID){
     $prDP_deltaMultiplier = 1.0;
 }
 
-
 global proc prDP_setValueCmd(int $slot, int $vertexId, float $vertexWeight){
     /* is called every time a value on the surface is changed */
     global int $prDP_vertexIds[];
@@ -136,7 +107,7 @@ global proc prDP_setValueCmd(int $slot, int $vertexId, float $vertexWeight){
     int $vertexIdSize = size($prDP_vertexIds);
     // sometimes setValueCmd gets called multiple times for the same vertex,
     // between duringStrokeCmd evaluations. in that case only the highest weight
-    // will get used. in my test with 4.3k vertices it did not cost performance
+    // will get used. in my test with 4.3k vertices this did not cost performance
     for($i=0; $i<$vertexIdSize; ++$i){
         if($vertexId == $prDP_vertexIds[$i]){
             if($vertexWeight > $prDP_vertexWeights[$i])
@@ -148,3 +119,28 @@ global proc prDP_setValueCmd(int $slot, int $vertexId, float $vertexWeight){
     $prDP_vertexWeights[$vertexIdSize] = $vertexWeight;
 }
 
+global proc prDP_deformation(){
+    /*builds and calls the deformation command*/
+    global int $prDP_vertexIds[];
+    int $vertexIdSize = size($prDP_vertexIds);
+    if($vertexIdSize == 0)
+        return;
+    global float $prDP_vertexWeights[];
+
+    global int $prDP_operation;
+    global int $prDP_space;
+    global float $prDP_minDeltaLength;
+    global string $prDP_driver;
+
+    global float $prDP_deltaMultiplier;
+    global string $prDP_driven;
+
+
+    if($prDP_operation == 0){
+        python("prDeformPaint.averageDeltas('"+$prDP_driver+"', '"+$prDP_driven+"', "+$prDP_minDeltaLength+", ["+intArrayToString($prDP_vertexIds, ", ")+"], ["+floatArrayToString($prDP_vertexWeights, ", ")+"], "+$prDP_deltaMultiplier+")");
+    }else if($prDP_operation == 1){
+        python("prDeformPaint.copyPosition('"+$prDP_driver+"', '"+$prDP_driven+"', "+$prDP_minDeltaLength+", ["+intArrayToString($prDP_vertexIds, ", ")+"], ["+floatArrayToString($prDP_vertexWeights, ", ")+"],"+$prDP_deltaMultiplier+")");
+    }
+    clear($prDP_vertexIds);
+    clear($prDP_vertexWeights);
+}
