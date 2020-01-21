@@ -258,12 +258,12 @@ class UI(pm.uitypes.Window):
         tabSets = Set.findSets()
         if tabSets:
             # loading feedback for user
-            print '\n######   start loading sets    ######'
+            print('\n######   start loading sets    ######')
             # load
             for x, eachSet in enumerate(tabSets):
                 self.set_new(eachSet)
             # loading feedback for user
-            print '######  finished loading sets  ######\n'
+            print('######  finished loading sets  ######\n')
 
     def set_sort(self):
         """ order tabs by index and name """
@@ -325,7 +325,7 @@ class UI(pm.uitypes.Window):
 
     def set_toShelf(self):
         """ save set to, so pressing shelf will create set """
-        print 'save to shelf'
+        print('save to shelf')
 
 
 class Set(pm.uitypes.FormLayout):  # scroll layout?
@@ -391,7 +391,7 @@ class Set(pm.uitypes.FormLayout):  # scroll layout?
     def __init__(self, name, parentUi, fromSet=None):
         """ initialize variables """
         if fromSet:
-            print ('- set: %s // %s' % (name, fromSet))
+            print('- set: %s // %s' % (name, fromSet))
         # parent init for _reverse,... variables
         super(Set, self).__init__()
 
@@ -684,7 +684,7 @@ class SetElement(pm.uitypes.FormLayout):
     def __init__(self, name, parentUi, fromSet=None):
         """ initialize variables """
         if fromSet:
-            print ('-- element: %s (%s)' % (name, self._TYPE))
+            print('-- element: %s (%s)' % (name, self._TYPE))
 
         # parent init for _reverse,... variables
         super(SetElement, self).__init__()
@@ -963,7 +963,7 @@ class Pose(SetElement):
             pm.setAttr(eachAttr, eachValue)
         except:
             self.parentUi.parentUi.createWarning('Invalid objects in pose: ')
-            print eachAttr
+            print(eachAttr)
 
     def cmd_setPose(self, percent=100):
         """ apply stored pose """
@@ -981,7 +981,7 @@ class Pose(SetElement):
 
     def cmd_printPose(self):
         """ print out attributes and vales of pose """
-        print self.set.attr(self._ATTR_POSEVALUES).get()
+        print(self.set.attr(self._ATTR_POSEVALUES).get())
 
     def cmd_selectNodes(self):
         """ select nodes that are part of pose """
@@ -1146,7 +1146,7 @@ class Selection(SetElement):
         # check
         if invalidList:
             self.parentUi.parentUi.createWarning('Invalid objects in selection:')
-            print invalidList
+            print(invalidList)
         # finish
         if not returnIndices:
             return returnList
@@ -1155,16 +1155,16 @@ class Selection(SetElement):
 
     def member_print(self):
         """ print list of: members, active members, inactive members """
-        print '--- members of selection "%s"' % self.getUiName()
+        print('--- members of selection "%s"' % self.getUiName())
         # all members
         allMembers = self.member_getSceneObjects()
-        print 'all      (%d): %s' % (len(allMembers), allMembers)
+        print('all      (%d): %s' % (len(allMembers), allMembers))
         # active
         activeMembers = self.member_getSceneObjects(1)
-        print 'active   (%d): %s' % (len(activeMembers), activeMembers)
+        print('active   (%d): %s' % (len(activeMembers), activeMembers))
         # inactive
         inactiveMembers = self.member_getSceneObjects(0)
-        print 'inactive (%d): %s' % (len(inactiveMembers), inactiveMembers)
+        print('inactive (%d): %s' % (len(inactiveMembers), inactiveMembers))
 
     def member_addSelected(self):
         """ add selected objects to selection members """
