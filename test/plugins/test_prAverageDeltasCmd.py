@@ -13,7 +13,11 @@ mc.file('/home/prthlein/private/code/prmaya/test/plugins/test_prAverageDeltasCmd
 
 mc.prAverageDeltasCmd('base', 'driven', om.MSpace.kObject, [213, 216], [1.0, 1.0], 0.5)
 
-
+# cpp
+mc.file(newFile=True, force=True)
+mc.unloadPlugin('prAverageDeltasCmd.mll')
+mc.loadPlugin(r'C:\Users\paz\documents\visual studio 2015\Projects\prAverageDeltasCmd\prAverageDeltasCmd\Release\prAverageDeltasCmd.mll')
+mc.prAverageDeltasCmd('base', 'driven', om.MSpace.kObject, [213, 216], [1.0, 1.0], 0.5)
 
 '''
 # maya.OpenMaya
