@@ -3,7 +3,7 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-in prmaya/scripts/prDeformPaint.py
+in ../prmaya/scripts/prDeformPaint.py
 
 BRUSH CODE SUMMARY
 - setValueCommand only gathers the deformation data (vertexIds and weights)
@@ -19,16 +19,20 @@ BRUSH CODE SUMMARY
 MAYA DEBUG
 - setValueCommand triggers when "mouse down -> mouse up" or for every ~6 pixels
   moved while dragging
-- setValueCommand does not trigger when: "mouse down -> moving one pixel ->
+- BUG: setValueCommand does not trigger when: "mouse down -> moving one pixel ->
   mouse up"
-- duringStrokeCmd triggers for every pixel moved during drag
+- duringStrokeCmd usually triggers for every pixel moved during drag (except
+  when maya is lagging because of calculations)
 
-PERFORMANCE (flooding 4.3k vertices)
-dpk= 12 (19 undo)
-pr = 18 (16 undo, 16 redo) copy positions (all move)
-pr = 19 (15 undo, 15 redo) average deltas (all move)
-pr =  3 (1 undo, 1 redo) when skipping zero length deltas (only 132 verts move)
-
+PERFORMANCE (flooding 4.3k vertices with edit blendshape target 0.5)
+132 verts affected:
+- prPy=  3 (0.5 undo, 0.5 redo)
+- dpk = 12 (15 undo, 3 redo)
+4.3k verts affected:
+- prPy=  18 (16 undo, 16 redo)
+- dpk = 120 (20 undo, 4 redo)
+Conclusion: om.MItMeshVertex.setPosition() is by far the slowest operation, it
+            takes 1 second for every ~270 vertices
 */
 
 // from Ui
