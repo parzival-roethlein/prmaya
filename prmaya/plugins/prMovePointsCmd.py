@@ -11,6 +11,7 @@ mc.prMovePointsCmd('pSphereShape1', om.MSpace.kObject, [294, 297, 280],
 """
 
 import sys
+from itertools import izip
 
 import maya.api.OpenMaya as om
 
@@ -19,39 +20,33 @@ class PrMovePointsCmd(om.MPxCommand):
 
     PLUGIN_NAME = 'prMovePointsCmd'
 
-    def addDeltas(self, undoCall=False):
-        for vertexId, vector in zip(self.vertexIds, self.vectors):
-            self.vertexIterator.setIndex(vertexId)
-            position = self.vertexIterator.position(self.space)
-            if undoCall:
-                position -= vector
-            else:
-                position += vector
-            self.vertexIterator.setPosition(position, self.space)
-
     def __init__(self):
         om.MPxCommand.__init__(self)
         self.space = None
         self.vertexIterator = None
         self.vertexIds = None
-        self.vectors = None
+        self.deltas = None
 
     def doIt(self, args):
         """
-        :param args: meshName, space, vertexIdList, vector_1, vector_2, ... vector_n
+        :param args: meshName, space, minDeltaLength (ignore if smaller),
+                     vertexIdList (n-length),
+                     vector_1, vector_2, ... vector_n
         :return:
         """
         mesh = args.asString(0)
         self.space = args.asInt(1)
-        self.vertexIds = args.asIntArray(2)
-        if len(args)-3 != len(self.vertexIds):
+        minDeltaLength = args.asDouble(2)
+        self.vertexIds = args.asIntArray(3)
+        if len(args)-4 != len(self.vertexIds):
             raise ValueError('vectorIds size: {0} does not match MVector count: {1}'.format(
-                             len(self.vertexIds), len(args)-3))
+                             len(self.vertexIds), len(args)-4))
         selection = om.MSelectionList()
         selection.add(mesh)
         self.vertexIterator = om.MItMeshVertex(selection.getDagPath(0))
-        self.vectors = [args.asVector(i) for i in range(3, len(args))]
-
+        vectors = [args.asVector(i) for i in range(4, len(args))]
+        self.deltas = {vtx: vec for vtx, vec in izip(self.vertexIds, vectors)
+                       if vec.length() > minDeltaLength}
         self.redoIt()
 
     def redoIt(self):
@@ -59,6 +54,16 @@ class PrMovePointsCmd(om.MPxCommand):
 
     def undoIt(self):
         self.addDeltas(undoCall=True)
+
+    def addDeltas(self, undoCall=False):
+        for vertexId, vector in self.deltas.iteritems():
+            self.vertexIterator.setIndex(vertexId)
+            position = self.vertexIterator.position(self.space)
+            if undoCall:
+                position -= vector
+            else:
+                position += vector
+            self.vertexIterator.setPosition(position, self.space)
 
     @staticmethod
     def creator():
