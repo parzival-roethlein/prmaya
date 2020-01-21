@@ -138,9 +138,9 @@ global proc prDP_deformation(){
 
 
     if($prDP_operation == 0){
-        python("prDeformPaint.averageDeltas('"+$prDP_driver+"', '"+$prDP_driven+"', "+$prDP_minDeltaLength+", ["+intArrayToString($prDP_vertexIds, ", ")+"], ["+floatArrayToString($prDP_vertexWeights, ", ")+"], "+$prDP_deltaMultiplier+")");
+        python("prDeformPaint.averageDeltas('"+$prDP_driver+"', '"+$prDP_driven+"', "+$prDP_minDeltaLength+", ["+intArrayToString($prDP_vertexIds, ", ")+"], ["+floatArrayToString($prDP_vertexWeights, ", ")+"], "+$prDP_deltaMultiplier+", "+$prDP_space+")");
     }else if($prDP_operation == 1){
-        python("prDeformPaint.copyPosition('"+$prDP_driver+"', '"+$prDP_driven+"', "+$prDP_minDeltaLength+", ["+intArrayToString($prDP_vertexIds, ", ")+"], ["+floatArrayToString($prDP_vertexWeights, ", ")+"],"+$prDP_deltaMultiplier+")");
+        python("prDeformPaint.copyPosition('"+$prDP_driver+"', '"+$prDP_driven+"', "+$prDP_minDeltaLength+", ["+intArrayToString($prDP_vertexIds, ", ")+"], ["+floatArrayToString($prDP_vertexWeights, ", ")+"], "+$prDP_deltaMultiplier+", "+$prDP_space+")");
     }
     clear($prDP_vertexIds);
     clear($prDP_vertexWeights);

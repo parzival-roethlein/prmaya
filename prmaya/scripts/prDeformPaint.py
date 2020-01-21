@@ -4,7 +4,7 @@ https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
 modeling brushes for blendshape targets (similar to DPK_paintDeform.mel)
-- average delta (any deformation).
+- average delta (any deformation)
     - preserve local surface details
     - stay "on model"
     - skin sliding
@@ -12,8 +12,11 @@ modeling brushes for blendshape targets (similar to DPK_paintDeform.mel)
 - copy position
     - delete some deformation
     - blend between different meshes
-Same deformation strength no matter what the edited blendshape target weight and
-envelope values are
+
+FEATURES
+- right click menus for "Set target" and "minDeltaLength" for extra options
+- Same deformation strength no matter what the edited blendshape target weight and
+  envelope values are
 
 USAGE
 import prDeformPaint
@@ -42,6 +45,7 @@ MOTIVATION
 """
 
 from itertools import izip
+from collections import defaultdict
 
 import maya.cmds as mc
 import maya.api.OpenMaya as om
@@ -50,6 +54,7 @@ import maya.mel as mm
 
 
 def reinitializeMaya(*args, **kwargs):
+    """reload plugin and mel script"""
     initializeMaya(*args, **kwargs)
     mc.unloadPlugin('prMovePointsCmd.py')
     mm.eval('source prDeformPaintBrush;')
@@ -96,7 +101,8 @@ class Ui(pm.uitypes.Window):
         self = pm.window(cls._TITLE, title=cls._TITLE)
         return pm.uitypes.Window.__new__(cls, self)
 
-    def __init__(self, minDeltaLengthDefault=0.00001):
+    def __init__(self, minDeltaLengthDefault=0.00001,
+                 spaceDefault=om.MSpace.kObject):
         """create UI elements (layouts, buttons) and show window"""
         if not self.isMayaInitialized:
             initializeMaya()
@@ -126,13 +132,29 @@ class Ui(pm.uitypes.Window):
             operationLayout.redistribute()
 
             with pm.frameLayout('settings', collapsable=True, collapse=True):
-                with pm.horizontalLayout() as settingsLayout:
-                    # right click menu with presets: 0.1, 0.01, 0.001, ...
-                    pm.text('minDeltaLength:')
-                    self.minDeltaLength = pm.floatField(
-                            precision=8, value=minDeltaLengthDefault,
-                            changeCommand=pm.Callback(self.syncUiSettings))
-                settingsLayout.redistribute(0, 1)
+                with pm.verticalLayout() as settingsLayout:
+                    with pm.horizontalLayout() as minDeltaLayout:
+                        pm.text('minDeltaLength:')
+                        self.minDeltaLength = pm.floatField(
+                                precision=8, value=minDeltaLengthDefault,
+                                changeCommand=pm.Callback(self.syncUiSettings))
+                        # right click menu with presets: 0.1, 0.01, 0.001, ...
+                    minDeltaLayout.redistribute(0, 1)
+
+                    with pm.formLayout() as spacesLayout:
+                        self.space = pm.optionMenu(
+                                label='space',
+                                changeCommand=pm.Callback(self.syncUiSettings))
+                        spaces = defaultdict(list)
+                        for attr in dir(om.MSpace):
+                            if attr.startswith('__'):
+                                continue
+                            spaces[getattr(om.MSpace, attr)].append(attr)
+                        self.space.addItems([str(v) for v in spaces.values()])
+                        self.space.setSelect(spaceDefault+1)
+
+                    spacesLayout.redistribute()
+                settingsLayout.redistribute()
 
             with pm.horizontalLayout() as toolLayout:
                 pm.button(label='Enter Tool', command=pm.Callback(self.enterTool))
@@ -146,6 +168,7 @@ class Ui(pm.uitypes.Window):
         mm.eval('$prDP_driver = "{}"'.format(self.target.getText()))
         mm.eval('$prDP_operation = {}'.format(self.operation.getSelect()-1))
         mm.eval('$prDP_minDeltaLength = {}'.format(self.minDeltaLength.getValue()))
+        mm.eval('$prDP_space = {}'.format(self.space.getSelect()-1))
 
     def setTarget(self):
         selection = (pm.ls(sl=True, type=['transform', 'mesh']) or [''])[0]
@@ -214,8 +237,8 @@ def getVertexPositions(meshName, vertexIds=None, space=om.MSpace.kObject):
 def copyPosition(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeights,
                  deformMultiplier=None, space=om.MSpace.kObject):
     """
-    :param driverMesh:
-    :param drivenMesh:
+    :param driverMesh: 'driverMeshName'
+    :param drivenMesh: 'drivenMeshName'
     :param minDeltaLength: float
     :param vertexIds: [0, 1, ...]
     :param vertexWeights: [1.0, 0.5, ...]
@@ -224,16 +247,14 @@ def copyPosition(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeight
     :return: deformMultiplier
     """
     deformMultiplier = getEditBlendshapeMultiplier(drivenMesh, deformMultiplier)
-
     deltas = []
     for vertexId, weight, driverPosition, drivenPosition in izip(
             vertexIds,
             vertexWeights,
-            getVertexPositions(driverMesh, vertexIds),
-            getVertexPositions(drivenMesh, vertexIds)):
+            getVertexPositions(driverMesh, vertexIds, space),
+            getVertexPositions(drivenMesh, vertexIds, space)):
         deltas.append((driverPosition - drivenPosition) * weight * deformMultiplier)
     mc.prMovePointsCmd(drivenMesh, space, minDeltaLength, vertexIds, *deltas)
-    return deformMultiplier
 
 
 def averageDeltas(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeight,
