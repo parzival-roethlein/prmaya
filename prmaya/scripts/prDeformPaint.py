@@ -4,10 +4,16 @@ https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
 modeling brushes for blendshape targets (similar to DPK_paintDeform.mel)
-- average delta operation that including all deformation. This helps to preserve
-  local surface shapes (staying "on model")
-- Same deformation strength no matter what the edited blendshape target weight
-  and envelope values are
+- average delta (any deformation).
+    - preserve local surface details
+    - stay "on model"
+    - skin sliding
+    - smooth/relax on compression/extension
+- copy position
+    - delete some deformation
+    - blend between different meshes
+Same deformation strength no matter what the edited blendshape target weight and
+envelope values are
 
 USAGE
 import prDeformPaint
@@ -49,7 +55,7 @@ def reinitializeMaya(*args, **kwargs):
     initializeMaya(*args, **kwargs)
 
 
-def initializeMaya(prMovePointsCmdPath=None, prAverageDeltasCmdPath=None,
+def initializeMaya(prMovePointsCmdPath=None,
                    prDeformPaintBrushPath=None):
     """
     load the required plugin and mel script
@@ -66,10 +72,6 @@ def initializeMaya(prMovePointsCmdPath=None, prAverageDeltasCmdPath=None,
     prMovePointsCmdPath = prMovePointsCmdPath or 'prMovePointsCmd.py'
     if not mc.pluginInfo(prMovePointsCmdPath, q=True, loaded=True):
         mc.loadPlugin(prMovePointsCmdPath)
-
-    prAverageDeltasCmdPath = prAverageDeltasCmdPath or 'prAverageDeltasCmd.py'
-    if not mc.pluginInfo(prAverageDeltasCmdPath, q=True, loaded=True):
-        mc.loadPlugin(prAverageDeltasCmdPath)
 
     if mm.eval('whatIs "$prDP_operation"') == 'Unknown':
         prDeformPaintBrushPath = prDeformPaintBrushPath or 'prDeformPaintBrush.mel'
@@ -92,7 +94,7 @@ class Ui(pm.uitypes.Window):
         self = pm.window(cls._TITLE, title=cls._TITLE)
         return pm.uitypes.Window.__new__(cls, self)
 
-    def __init__(self):
+    def __init__(self, minDeltaLengthDefault=0.00001):
         """create UI elements (layouts, buttons) and show window"""
         if not self.isMayaInitialized:
             initializeMaya()
@@ -126,7 +128,7 @@ class Ui(pm.uitypes.Window):
                     # right click menu with presets: 0.1, 0.01, 0.001, ...
                     pm.text('minDeltaLength:')
                     self.minDeltaLength = pm.floatField(
-                            precision=8, value=0.00001,
+                            precision=8, value=minDeltaLengthDefault,
                             changeCommand=pm.Callback(self.syncUiSettings))
                 settingsLayout.redistribute(0, 1)
 

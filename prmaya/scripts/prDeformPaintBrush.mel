@@ -3,16 +3,16 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-in prDeformPaint.py
+in prmaya/scripts/prDeformPaint.py
 
-BRUSH CODING INFO
+BRUSH CODE SUMMARY
 - setValueCommand only gathers the deformation data (vertexIds and weights)
 - duringStrokeCmd does the deformation (to be able to batch process multiple
-  vertices at once. It should increase performance, but also results in more
+  vertices at once. To increase performance, but also results in more
   predictable deformation because all vertices move from the same (pre-stroke)
   base position)
 - finalizeCmd does the deformation if there was no duringStrokeCmd evaluation
-  between setValueCommand and finalizeCmd. Examples:
+  between setValueCommand and finalizeCmd. That happens when:
   - Brush Flood
   - mouse press->release (without drag)
 
@@ -25,12 +25,9 @@ MAYA DEBUG
 
 PERFORMANCE (flooding 4.3k vertices)
 dpk= 12 (19 undo)
-pr = 17 (14 undo) deformation cmd for each vertex
-pr = 13 (15 undo) one deformation call for all vertices collected by setValueCmd
-pr =  8 (7 undo) when skipping points at orig (bad algorithm)
-pr =  3 (1 undo, 1 redo) when skipping zero length deltas (only deforming 132 verts)
 pr = 18 (16 undo, 16 redo) copy positions (all move)
 pr = 19 (15 undo, 15 redo) average deltas (all move)
+pr =  3 (1 undo, 1 redo) when skipping zero length deltas (only 132 verts move)
 
 */
 
