@@ -1,33 +1,39 @@
+#include <map>
+#include <iostream>
 
 #include <maya/MGlobal.h>
 #include <maya/MPxCommand.h>
 #include <maya/MFnPlugin.h>
 
-class MArgList;
+#include <maya/MGlobal.h>
+#include <maya/MArgList.h>
+#include <maya/MString.h>
+#include <maya/MVector.h>
+#include <maya/MItMeshVertex.h>
+#include <maya/MDagPath.h>
+#include <maya/MIntArray.h>
+
+typedef std::map<int, MVector> DeltaDict;
 
 class prAverageDeltasCmd : public MPxCommand
 {
-
 public:
 	prAverageDeltasCmd();
 	virtual		~prAverageDeltasCmd();
-
-	MStatus		doIt(const MArgList&);
+	MStatus		doIt(const MArgList& args);
 	MStatus		redoIt();
 	MStatus		undoIt();
 	bool		isUndoable() const;
-
 	static		void* creator();
-
 private:
-	// Store the data you will need to undo the command here
-	//
+	//MItMeshVertex drivenIter;
+	MDagPath drivenMDagPath;
+	DeltaDict deltas;
+	int space;
 };
 
 
-
-MStatus prAverageDeltasCmd::doIt( const MArgList& )
-//
+MStatus prAverageDeltasCmd::doIt(const MArgList& args)
 //	Description:
 //		implements the MEL prAverageDeltasCmd command.
 //
@@ -39,119 +45,75 @@ MStatus prAverageDeltasCmd::doIt( const MArgList& )
 //		MS::kFailure - command failed (returning this value will cause the
 //                     MEL script that is being run to terminate unless the
 //                     error is caught using a "catch" statement.
-//
 {
 	MStatus stat = MS::kSuccess;
 
+	MString baseMesh = args.asString(0, &stat);
+	CHECK_MSTATUS_AND_RETURN_IT(stat);
+	MGlobal::displayInfo(MString("baseMesh: ") + baseMesh);
 
-	// Typically, the doIt() method only collects the infomation required
-	// to do/undo the action and then stores it in class members.  The
-	// redo method is then called to do the actuall work.  This prevents
-	// code duplication.
-	//
+	MString drivenMesh = args.asString(1, &stat);
+	CHECK_MSTATUS_AND_RETURN_IT(stat);
+	MGlobal::displayInfo(MString("drivenMesh: ") + drivenMesh);
+	
+	int space = args.asInt(2, &stat);
+	CHECK_MSTATUS_AND_RETURN_IT(stat);
+	MGlobal::displayInfo(MString("space: ") + space);
+
+	unsigned int i = 3;
+	MIntArray vertexIds = args.asIntArray(i, &stat);
+	CHECK_MSTATUS_AND_RETURN_IT(stat);
+	MGlobal::displayInfo(MString("vertexIds.length(): ") + vertexIds.length());
+
+	i = 4;
+	MDoubleArray vertexWeights = args.asDoubleArray(i, &stat);
+	CHECK_MSTATUS_AND_RETURN_IT(stat);
+	MGlobal::displayInfo(MString("vertexWeights.length(): ") + vertexWeights.length());
+
+	double weight = args.asDouble(5, &stat);
+	CHECK_MSTATUS_AND_RETURN_IT(stat);
+	MGlobal::displayInfo(MString("weight: ") + weight);
+
 	return redoIt();
 }
 
 MStatus prAverageDeltasCmd::redoIt()
-//
-//	Description:
-//		implements redo for the MEL prAverageDeltasCmd command.
-//
-//		This method is called when the user has undone a command of this type
-//		and then redoes it.  No arguments are passed in as all of the necessary
-//		information is cached by the doIt method.
-//
 //	Return Value:
 //		MS::kSuccess - command succeeded
 //		MS::kFailure - redoIt failed.  this is a serious problem that will
 //                     likely cause the undo queue to be purged
-//
 {
 	// Since this class is derived off of MPxCommand, you can use the
 	// inherited methods to return values and set error messages
-	//
-	setResult( "prAverageDeltasCmd command executed!!!\n" );
+	setResult( "prAverageDeltasCmd command executed!!\n" );
 
 	return MS::kSuccess;
 }
 
 MStatus prAverageDeltasCmd::undoIt()
-//
-//	Description:
-//		implements undo for the MEL prAverageDeltasCmd command.
-//
-//		This method is called to undo a previous command of this type.  The
-//		system should be returned to the exact state that it was it previous
-//		to this command being executed.  That includes the selection state.
-//
 //	Return Value:
 //		MS::kSuccess - command succeeded
 //		MS::kFailure - redoIt failed.  this is a serious problem that will
 //                     likely cause the undo queue to be purged
-//
 {
 
 	// You can also display information to the command window via MGlobal
-	//
     MGlobal::displayInfo( "prAverageDeltasCmd command undone!\n" );
-
 	return MS::kSuccess;
 }
 
-void* prAverageDeltasCmd::creator()
-//
-//	Description:
-//		this method exists to give Maya a way to create new objects
-//      of this type.
-//
-//	Return Value:
-//		a new object of this type
-//
-{
-	return new prAverageDeltasCmd();
-}
+void* prAverageDeltasCmd::creator(){return new prAverageDeltasCmd();}
 
-prAverageDeltasCmd::prAverageDeltasCmd()
-//
-//	Description:
-//		prAverageDeltasCmd constructor
-//
-{}
+prAverageDeltasCmd::prAverageDeltasCmd(){}
 
-prAverageDeltasCmd::~prAverageDeltasCmd()
-//
-//	Description:
-//		prAverageDeltasCmd destructor
-//
-{
-}
+prAverageDeltasCmd::~prAverageDeltasCmd(){}
 
-bool prAverageDeltasCmd::isUndoable() const
-//
-//	Description:
-//		this method tells Maya this command is undoable.  It is added to the
-//		undo queue if it is.
-//
-//	Return Value:
-//		true if this command is undoable.
-//
-{
-	return true;
-}
+bool prAverageDeltasCmd::isUndoable() const{return true;}
 
 MStatus initializePlugin(MObject obj)
-//
-//	Description:
-//		this method is called when the plug-in is loaded into Maya.  It
-//		registers all of the services that this plug-in provides with
-//		Maya.
-//
-//	Arguments:
-//		obj - a handle to the plug-in object (use MFnPlugin to access it)
-//
 {
 	MStatus   status;
-	MFnPlugin plugin(obj, "", "2018", "Any");
+	MFnPlugin plugin(obj, "Parzival Roethlein", "0.0.1", "Any");
 
 	status = plugin.registerCommand("prAverageDeltasCmd", prAverageDeltasCmd::creator);
 	if (!status) {
@@ -163,14 +125,6 @@ MStatus initializePlugin(MObject obj)
 }
 
 MStatus uninitializePlugin(MObject obj)
-//
-//	Description:
-//		this method is called when the plug-in is unloaded from Maya. It
-//		deregisters all of the services that it was providing.
-//
-//	Arguments:
-//		obj - a handle to the plug-in object (use MFnPlugin to access it)
-//
 {
 	MStatus   status;
 	MFnPlugin plugin(obj);
