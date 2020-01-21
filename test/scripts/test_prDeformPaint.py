@@ -14,8 +14,3 @@ prDeformPaint.reinitializeMaya()
 #prDeformPaint.reinitializeMaya()
 
 
-# dpk = 12 (19 undo)
-# pr  = 17 (14 undo) deformation cmd for each vertex
-# pr  = 13 (15 undo) one deformation call for all vertices collected by setValueCmd
-# pr  = 14 (13 undo) without vertexId multi call check
-# pr  flood = 17sec (undo 14)

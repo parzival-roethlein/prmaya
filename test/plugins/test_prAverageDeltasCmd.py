@@ -11,5 +11,5 @@ mc.unloadPlugin('prAverageDeltasCmd.py')
 mc.loadPlugin('/home/prthlein/private/code/prmaya/prmaya/plugins/prAverageDeltasCmd.py')
 mc.file('/home/prthlein/private/code/prmaya/test/plugins/test_prAverageDeltasCmd.ma', open=True, force=True)
 
-mc.prAverageDeltasCmd('base', 'driven', om.MSpace.kObject, [213, 216], [1.0, 1.0], 1.0)
+mc.prAverageDeltasCmd('base', 'driven', om.MSpace.kObject, [213, 216], [1.0, 1.0], 0.5)
 

@@ -27,7 +27,7 @@ PERFORMANCE (flooding 4.3k vertices)
 # dpk = 12 (19 undo)
 # pr  = 17 (14 undo) deformation cmd for each vertex
 # pr  = 13 (15 undo) one deformation call for all vertices collected by setValueCmd
-# pr  = 7  (7 undo) when skipping zero length deltas (half)
+# pr  = 8  (7 undo) when skipping zero length deltas (half)
 seems like the python api 2.0 MPxCommands are way too slow even when called just
 once for all vertices
 */
@@ -62,7 +62,8 @@ global proc prDP_deformation(){
 
 
     if($prDP_operation == 0){
-        prAverageDeltasCmd $prDP_driver $prDP_driven $prDP_space $prDP_vertexIds $prDP_vertexWeights $prDP_deltaMultiplier;
+        //prAverageDeltasCmd $prDP_driver $prDP_driven $prDP_space $prDP_vertexIds $prDP_vertexWeights $prDP_deltaMultiplier;
+        python("prDeformPaint.averageDeltas('"+$prDP_driver+"', '"+$prDP_driven+"', ["+intArrayToString($prDP_vertexIds, ", ")+"], ["+floatArrayToString($prDP_vertexWeights, ", ")+"], "+$prDP_deltaMultiplier+")");
     }//else if($prDP_operation == 1){
     //    python("prDeformPaint.copyPosition('"+$prDP_driver+"', '"+$prDP_driven+"', "+$prDP_vertexIds+", "+$prDP_vertexWeights+", "+$prDP_deltaMultiplier+")");
     //}
