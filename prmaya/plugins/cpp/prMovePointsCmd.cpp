@@ -15,11 +15,11 @@
 
 typedef std::map<int, MVector> DeltaDict;
 
-class prAverageDeltasCmd : public MPxCommand
+class prMovePointsCmd : public MPxCommand
 {
 public:
-	prAverageDeltasCmd();
-	virtual		~prAverageDeltasCmd();
+	prMovePointsCmd();
+	virtual		~prMovePointsCmd();
 	MStatus		doIt(const MArgList& args);
 	MStatus		redoIt();
 	MStatus		undoIt();
@@ -33,9 +33,9 @@ private:
 };
 
 
-MStatus prAverageDeltasCmd::doIt(const MArgList& args)
+MStatus prMovePointsCmd::doIt(const MArgList& args)
 //	Description:
-//		implements the MEL prAverageDeltasCmd command.
+//		implements the MEL prMovePointsCmd command.
 //
 //	Arguments:
 //		args - the argument list that was passes to the command from MEL
@@ -77,7 +77,7 @@ MStatus prAverageDeltasCmd::doIt(const MArgList& args)
 	return redoIt();
 }
 
-MStatus prAverageDeltasCmd::redoIt()
+MStatus prMovePointsCmd::redoIt()
 //	Return Value:
 //		MS::kSuccess - command succeeded
 //		MS::kFailure - redoIt failed.  this is a serious problem that will
@@ -85,12 +85,12 @@ MStatus prAverageDeltasCmd::redoIt()
 {
 	// Since this class is derived off of MPxCommand, you can use the
 	// inherited methods to return values and set error messages
-	setResult( "prAverageDeltasCmd command executed!!\n" );
+	setResult( "prMovePointsCmd command executed!!\n" );
 
 	return MS::kSuccess;
 }
 
-MStatus prAverageDeltasCmd::undoIt()
+MStatus prMovePointsCmd::undoIt()
 //	Return Value:
 //		MS::kSuccess - command succeeded
 //		MS::kFailure - redoIt failed.  this is a serious problem that will
@@ -98,24 +98,24 @@ MStatus prAverageDeltasCmd::undoIt()
 {
 
 	// You can also display information to the command window via MGlobal
-    MGlobal::displayInfo( "prAverageDeltasCmd command undone!\n" );
+    MGlobal::displayInfo( "prMovePointsCmd command undone!\n" );
 	return MS::kSuccess;
 }
 
-void* prAverageDeltasCmd::creator(){return new prAverageDeltasCmd();}
+void* prMovePointsCmd::creator(){return new prMovePointsCmd();}
 
-prAverageDeltasCmd::prAverageDeltasCmd(){}
+prMovePointsCmd::prMovePointsCmd(){}
 
-prAverageDeltasCmd::~prAverageDeltasCmd(){}
+prMovePointsCmd::~prMovePointsCmd(){}
 
-bool prAverageDeltasCmd::isUndoable() const{return true;}
+bool prMovePointsCmd::isUndoable() const{return true;}
 
 MStatus initializePlugin(MObject obj)
 {
 	MStatus   status;
 	MFnPlugin plugin(obj, "Parzival Roethlein", "0.0.1", "Any");
 
-	status = plugin.registerCommand("prAverageDeltasCmd", prAverageDeltasCmd::creator);
+	status = plugin.registerCommand("prMovePointsCmd", prMovePointsCmd::creator);
 	if (!status) {
 		status.perror("registerCommand");
 		return status;
@@ -129,7 +129,7 @@ MStatus uninitializePlugin(MObject obj)
 	MStatus   status;
 	MFnPlugin plugin(obj);
 
-	status = plugin.deregisterCommand("prAverageDeltasCmd");
+	status = plugin.deregisterCommand("prMovePointsCmd");
 	if (!status) {
 		status.perror("deregisterCommand");
 		return status;

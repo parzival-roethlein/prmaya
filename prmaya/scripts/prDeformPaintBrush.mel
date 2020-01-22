@@ -24,15 +24,25 @@ MAYA DEBUG
 - duringStrokeCmd usually triggers for every pixel moved during drag (except
   when maya is lagging because of calculations)
 
-PERFORMANCE (flooding 4.3k vertices with edit blendshape target 0.5)
-132 verts affected:
+PERFORMANCE TEST
+(flooding 4.3k vertices with edit blendshape target 0.5)
+
+@home
+4.3k verts affected:
+- prPy=  4 (3 undo, 3 redo)
+- dpk = 44 (3 undo, 2 redo)
+
+@work
+132 verts (skip non zero deltas):
 - prPy=  3 (0.5 undo, 0.5 redo)
 - dpk = 12 (15 undo, 3 redo)
-4.3k verts affected:
+4.3k verts:
 - prPy=  18 (16 undo, 16 redo)
 - dpk = 120 (20 undo, 4 redo)
-Conclusion: om.MItMeshVertex.setPosition() is by far the slowest operation, it
-            takes 1 second for every ~270 vertices
+
+om.MItMeshVertex.setPosition() is by far the slowest operation, it takes 1 sec
+- for every ~270 vertices @work,
+- for every ~1000 vertices @home
 */
 
 // from Ui
