@@ -1,6 +1,6 @@
 import maya.cmds as mc
 import prDeformPaint;reload(prDeformPaint)
-prDeformPaint.Ui()
+ui = prDeformPaint.Ui()
 
 testFile = '/home/prthlein/private/code/prmaya/test/scripts/test_prDeformPaint.ma'
 
@@ -13,4 +13,5 @@ prDeformPaint.reinitializeMaya()
 #                             '/home/prthlein/private/code/prmaya/prmaya/scripts/prDeformPaintBrush.mel')
 #prDeformPaint.reinitializeMaya()
 
-
+mc.select('half')
+ui.enterTool()

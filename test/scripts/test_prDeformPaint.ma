@@ -1,6 +1,6 @@
 //Maya ASCII 2018ff08 scene
 //Name: test_prDeformPaint.ma
-//Last modified: Mon, Jan 20, 2020 12:43:49 PM
+//Last modified: Tue, Jan 21, 2020 05:18:38 PM
 //Codeset: UTF-8
 requires maya "2018ff08";
 requires "stereoCamera" "10.0";
@@ -15,13 +15,13 @@ fileInfo "modified-in" "Montreal";
 createNode transform -s -n "persp";
 	rename -uid "C04AC900-0004-2863-5E22-1A25000002AF";
 	setAttr ".v" no;
-	setAttr ".t" -type "double3" 166.80011475198231 75.660482365509395 13.876406935753714 ;
-	setAttr ".r" -type "double3" -23.705266384380291 88.199999999998795 2.025137102577086e-13 ;
+	setAttr ".t" -type "double3" 196.50599916458523 91.251555600397708 19.843927896658695 ;
+	setAttr ".r" -type "double3" -24.305266384380875 80.199999999998909 9.3430586925135754e-15 ;
 createNode camera -s -n "perspShape" -p "persp";
 	rename -uid "C04AC900-0004-2863-5E22-1A25000002B0";
 	setAttr -k off ".v" no;
 	setAttr ".fl" 34.999999999999993;
-	setAttr ".coi" 213.7029543490365;
+	setAttr ".coi" 249.36752767689904;
 	setAttr ".imn" -type "string" "persp";
 	setAttr ".den" -type "string" "persp_depth";
 	setAttr ".man" -type "string" "persp_mask";
@@ -51655,7 +51655,7 @@ createNode mesh -n "fullShapeOrig" -p "full";
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode transform -n "double";
 	rename -uid "98B81900-0004-303A-5E22-41BB0000076E";
-	setAttr ".t" -type "double3" 0 0 -60 ;
+	setAttr ".t" -type "double3" 0 0 -90 ;
 createNode mesh -n "doubleShape" -p "double";
 	rename -uid "98B81900-0004-303A-5E22-41BB0000076F";
 	setAttr -k off ".v";
@@ -64023,22 +64023,22 @@ createNode mesh -n "doubleShapeOrig" -p "double";
 	setAttr ".pd[0]" -type "dataPolyComponent" Index_Data UV 0 ;
 	setAttr ".hfd" -type "dataPolyComponent" Index_Data Face 0 ;
 createNode lightLinker -s -n "lightLinker1";
-	rename -uid "9DAD0900-0000-25E7-5E25-E6C300000444";
+	rename -uid "7D541900-0001-C22E-5E27-78B7000004DC";
 	setAttr -s 2 ".lnk";
 	setAttr -s 2 ".slnk";
 createNode shapeEditorManager -n "shapeEditorManager";
-	rename -uid "9DAD0900-0000-25E7-5E25-E6C300000445";
+	rename -uid "7D541900-0001-C22E-5E27-78B7000004DD";
 	setAttr ".bsdt[0].bscd" -type "Int32Array" 3 0 1 2 ;
 	setAttr -s 3 ".bspr";
 	setAttr -s 3 ".obsv";
 createNode poseInterpolatorManager -n "poseInterpolatorManager";
-	rename -uid "9DAD0900-0000-25E7-5E25-E6C300000446";
+	rename -uid "7D541900-0001-C22E-5E27-78B7000004DE";
 createNode displayLayerManager -n "layerManager";
-	rename -uid "9DAD0900-0000-25E7-5E25-E6C300000447";
+	rename -uid "7D541900-0001-C22E-5E27-78B7000004DF";
 createNode displayLayer -n "defaultLayer";
 	rename -uid "C04AC900-0004-2863-5E22-1A25000002BB";
 createNode renderLayerManager -n "renderLayerManager";
-	rename -uid "9DAD0900-0000-25E7-5E25-E6C300000449";
+	rename -uid "7D541900-0001-C22E-5E27-78B7000004E1";
 createNode renderLayer -n "defaultRenderLayer";
 	rename -uid "C04AC900-0004-2863-5E22-1A25000002BD";
 	setAttr ".g" yes;
