@@ -14,7 +14,7 @@ modeling brushes for blendshape targets (similar to DPK_paintDeform.mel)
     - blend between different meshes
 
 FEATURES
-- right click menus for "Set target" and "minDeltaLength" for extra options
+- right click "Set target", "minDeltaLength", "space" for popup menu
 - Same deformation strength no matter what the edited blendshape target weight and
   envelope values are
 
@@ -131,31 +131,48 @@ class Ui(pm.uitypes.Window):
                 self.operation.setSelect(1)
             operationLayout.redistribute()
 
-            with pm.frameLayout('settings', collapsable=True, collapse=True):
-                with pm.verticalLayout() as settingsLayout:
-                    with pm.horizontalLayout() as minDeltaLayout:
-                        pm.text('minDeltaLength:')
-                        self.minDeltaLength = pm.floatField(
-                                precision=8, value=minDeltaLengthDefault,
-                                changeCommand=pm.Callback(self.syncUiSettings))
-                        # right click menu with presets: 0.1, 0.01, 0.001, ...
-                    minDeltaLayout.redistribute(0, 1)
+            pm.frameLayout('settings', collapsable=True, collapse=True)
+            with pm.verticalLayout() as settingsLayout:
 
-                    with pm.formLayout() as spacesLayout:
-                        self.space = pm.optionMenu(
-                                label='space',
-                                changeCommand=pm.Callback(self.syncUiSettings))
-                        spaces = defaultdict(list)
-                        for attr in dir(om.MSpace):
-                            if attr.startswith('__'):
-                                continue
-                            spaces[getattr(om.MSpace, attr)].append(attr)
-                        self.space.addItems([str(v) for v in spaces.values()])
-                        self.space.setSelect(spaceDefault+1)
+                with pm.formLayout() as spacesLayout:
+                    self.space = pm.optionMenu(
+                            label='space:',
+                            changeCommand=pm.Callback(self.syncUiSettings))
+                    spaces = defaultdict(list)
+                    for attr in dir(om.MSpace):
+                        if attr.startswith('__'):
+                            continue
+                        spaces[getattr(om.MSpace, attr)].append(attr)
+                    self.space.addItems([str(v) for v in spaces.values()])
+                    self.space.setSelect(spaceDefault+1)
+                spacesLayout.redistribute()
+                pm.popupMenu(parent=spacesLayout, button=3)
+                pm.menuItem(label='(default:) {}'.format(spaces[spaceDefault]),
+                            c=pm.Callback(self.setSpace, spaceDefault))
 
-                    spacesLayout.redistribute()
-                settingsLayout.redistribute()
+                with pm.horizontalLayout() as minDeltaLayout:
+                    pm.text('minDeltaLength:')
+                    self.minDeltaLength = pm.floatField(
+                            precision=8, value=minDeltaLengthDefault,
+                            changeCommand=pm.Callback(self.syncUiSettings))
+                minDeltaLayout.redistribute(0, 1)
+                pm.popupMenu(parent=minDeltaLayout, button=3)
+                pm.menuItem(
+                    label='(default:) {}'.format(str(minDeltaLengthDefault)),
+                    c=pm.Callback(self.setMinDeltaLength, minDeltaLengthDefault)
+                )
+                pm.menuItem(divider=1)
+                value = 0.1
+                for x in range(8):
+                    label = '{:.8f}'.format(value)
+                    label = label[:label.rfind('1') + 1]
+                    if value < 0.0001:
+                        label = '{} ({})'.format(label, value)
+                    pm.menuItem(label=label,
+                                c=pm.Callback(self.setMinDeltaLength, value))
+                    value *= 0.1
 
+            settingsLayout.redistribute()
             with pm.horizontalLayout() as toolLayout:
                 pm.button(label='Enter Tool', command=pm.Callback(self.enterTool))
                 pm.button(label='Close', command=pm.Callback(self.close))
@@ -165,16 +182,27 @@ class Ui(pm.uitypes.Window):
         self.syncUiSettings()
 
     def syncUiSettings(self):
+        print('sync')
         mm.eval('$prDP_driver = "{}"'.format(self.target.getText()))
         mm.eval('$prDP_operation = {}'.format(self.operation.getSelect()-1))
-        mm.eval('$prDP_minDeltaLength = {}'.format(self.minDeltaLength.getValue()))
         mm.eval('$prDP_space = {}'.format(self.space.getSelect()-1))
+        mm.eval('$prDP_minDeltaLength = {}'.format(self.minDeltaLength.getValue()))
 
     def setTarget(self):
         selection = (pm.ls(sl=True, type=['transform', 'mesh']) or [''])[0]
         if pm.ls(selection, type='transform'):
             selection = (selection.getChildren() or [''])[0]
         self.target.setText(selection)
+        self.syncUiSettings()
+
+    def setSpace(self, value):
+        """because setSelect does not trigger the changeCommand"""
+        self.space.setSelect(value+1)
+        self.syncUiSettings()
+
+    def setMinDeltaLength(self, value):
+        """because pm.popupMenu does not have a changeCommand flag"""
+        self.minDeltaLength.setValue(value)
         self.syncUiSettings()
 
     def enterTool(self):
