@@ -24,8 +24,8 @@ class PrMovePointsCmd(om.MPxCommand):
         om.MPxCommand.__init__(self)
         self.space = None
         self.vertexIterator = None
-        self.vertexIds = None
-        self.deltas = None
+        self.vertexIds = []
+        self.deltas = []
 
     def doIt(self, args):
         """
@@ -37,16 +37,19 @@ class PrMovePointsCmd(om.MPxCommand):
         mesh = args.asString(0)
         self.space = args.asInt(1)
         minDeltaLength = args.asDouble(2)
-        self.vertexIds = args.asIntArray(3)
-        if len(args)-4 != len(self.vertexIds):
+        vertexIds = args.asIntArray(3)
+        if len(args)-4 != len(vertexIds):
             raise ValueError('vectorIds size: {0} does not match MVector count: {1}'.format(
-                             len(self.vertexIds), len(args)-4))
+                             len(vertexIds), len(args)-4))
         selection = om.MSelectionList()
         selection.add(mesh)
         self.vertexIterator = om.MItMeshVertex(selection.getDagPath(0))
-        vectors = [args.asVector(i) for i in range(4, len(args))]
-        self.deltas = {vtx: vec for vtx, vec in izip(self.vertexIds, vectors)
-                       if vec.length() > minDeltaLength}
+        for vertexId, deltaArgPosition in izip(vertexIds, range(4, len(args))):
+            delta = args.asVector(deltaArgPosition)
+            if delta.length() < minDeltaLength:
+                continue
+            self.vertexIds.append(vertexId)
+            self.deltas.append(delta)
         self.redoIt()
 
     def redoIt(self):
@@ -56,7 +59,7 @@ class PrMovePointsCmd(om.MPxCommand):
         self.addDeltas(undoCall=True)
 
     def addDeltas(self, undoCall=False):
-        for vertexId, vector in self.deltas.iteritems():
+        for vertexId, vector in izip(self.vertexIds, self.deltas):
             self.vertexIterator.setIndex(vertexId)
             position = self.vertexIterator.position(self.space)
             if undoCall:
