@@ -8,6 +8,7 @@ mc.file(renameToSave=True)
 
 import prDeformPaint;reload(prDeformPaint)
 ui = prDeformPaint.Ui()
+mc.select('orig')
 ui.enterTool()
 mc.select('half')
 

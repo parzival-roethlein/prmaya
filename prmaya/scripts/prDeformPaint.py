@@ -46,8 +46,8 @@ MOTIVATION
   - they do not support viewport "isolate selected" mesh components
 
 TODO
-- delete target operation
-- smooth blendshape target operation
+- new operation: delete target
+- new operation: smooth target
 - ui option to reduce height when collapsing settings framelayout
 
 TODO (maybe)
@@ -120,7 +120,7 @@ class Ui(pm.uitypes.Window):
         initializeMaya()
         with pm.verticalLayout() as mainLayout:
             with pm.horizontalLayout() as targetLayout:
-                pm.button(l='Set target:', c=pm.Callback(self.setTarget))
+                pm.button(l='Set target:', c=pm.Callback(self.setTarget, 'selection'))
                 # right click menu
                 # - load shape
                 # - load intermediate/orig
@@ -135,11 +135,12 @@ class Ui(pm.uitypes.Window):
             with pm.verticalLayout() as operationLayout:
                 self.operation1 = pm.radioButtonGrp(
                         label='Operation:',
-                        labelArray2=['Average deltas', 'Copy'],
+                        labelArray2=['Average difference', 'Average vertex'],
                         numberOfRadioButtons=2,
                         columnWidth3=[60, 110, 110],
                         columnAlign3=['left', 'left', 'left'],
                         changeCommand=pm.Callback(self.syncUiSettings))
+                self.operation1.setSelect(defaultOperation + 1)
                 self.operation2 = pm.radioButtonGrp(
                     label='',
                     shareCollection=self.operation1,
@@ -148,7 +149,14 @@ class Ui(pm.uitypes.Window):
                     columnWidth3=[60, 110, 110],
                     columnAlign3=['left', 'left', 'left'],
                     changeCommand=pm.Callback(self.syncUiSettings))
-                self.operation1.setSelect(defaultOperation+1)
+                self.operation3 = pm.radioButtonGrp(
+                    label='',
+                    shareCollection=self.operation1,
+                    labelArray2=['Copy', 'placeholder'],
+                    numberOfRadioButtons=2,
+                    columnWidth3=[60, 110, 110],
+                    columnAlign3=['left', 'left', 'left'],
+                    changeCommand=pm.Callback(self.syncUiSettings))
             operationLayout.redistribute()
 
             pm.frameLayout('settings', collapsable=True, collapse=True)
@@ -181,7 +189,7 @@ class Ui(pm.uitypes.Window):
                     label='(default:) {}'.format(str(minDeltaLengthDefault)),
                     c=pm.Callback(self.setMinDeltaLength, minDeltaLengthDefault)
                 )
-                pm.menuItem(divider=1)
+                pm.menuItem(divider=True)
                 value = 0.1
                 for x in range(8):
                     label = '{:.8f}'.format(value)
@@ -208,6 +216,7 @@ class Ui(pm.uitypes.Window):
     def syncUiSettings(self):
         print('syncUiSettings')
         mm.eval('$prDP_driver = "{}"'.format(self.target.getText()))
+        print('operation: {}'.format(self.getOperation()))
         mm.eval('$prDP_operation = {}'.format(self.getOperation()))
         mm.eval('$prDP_space = {}'.format(self.space.getSelect()-1))
         mm.eval('$prDP_minDeltaLength = {}'.format(self.minDeltaLength.getValue()))
@@ -219,20 +228,35 @@ class Ui(pm.uitypes.Window):
     def close(self):
         pm.deleteUI(self._TITLE)
 
-    def setTarget(self):
-        selection = (pm.ls(sl=True, type=['transform', 'mesh']) or [''])[0]
-        if pm.ls(selection, type='transform'):
-            selection = (selection.getChildren() or [''])[0]
-        self.target.setText(selection)
+    def setTarget(self, operation):
+        """
+
+        :param operation: 'selection', 'intermediate'
+        :return:
+        """
+        if operation is 'selection':
+            target = (mc.ls(sl=True, type=['transform', 'mesh']) or [''])[0]
+        elif operation is 'intermediate':
+            target = (mc.ls(sl=True, type=['transform', 'mesh']) or [''])[0]
+            if mc.ls(target, type='mesh'):
+                target = mc.listRelatives(target, parent=True)[0]
+            target = mc.listRelatives(target, children=True)
+
+        #if pm.ls(selection, type='transform'):
+        #    selection = (selection.getChildren() or [''])[0]
+        self.target.setText(target)
         self.syncUiSettings()
 
     def getOperation(self):
         firstRow = self.operation1.getSelect()
         if firstRow != 0:
-            return firstRow-1
+            return firstRow - 1
         secondRow = self.operation2.getSelect()
         if secondRow != 0:
-            return secondRow+1
+            return secondRow + 1
+        thirdRow = self.operation3.getSelect()
+        if thirdRow != 0:
+            return thirdRow + 3
         raise ValueError('Unknown operation')
 
     def setSpace(self, value):
@@ -273,6 +297,8 @@ def getEditBlendshapeMultiplier(mesh, cacheValue=None):
 
 
 def getMItMeshVertex(meshName):
+    if not mc.objExists(meshName):
+        raise ValueError('object does not exist: "{}"'.format(meshName))
     selection = om.MSelectionList()
     selection.add(meshName)
     return om.MItMeshVertex(selection.getDagPath(0))
@@ -298,6 +324,7 @@ def getVertexPositions(meshName, vertexIds=None, space=om.MSpace.kObject):
 def copyPosition(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeights,
                  deformMultiplier=None, space=om.MSpace.kObject):
     """
+    copy vertex position from driver to driven
     :param driverMesh: 'driverMeshName'
     :param drivenMesh: 'drivenMeshName'
     :param minDeltaLength: float
@@ -318,9 +345,11 @@ def copyPosition(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeight
     mc.prMovePointsCmd(drivenMesh, space, minDeltaLength, vertexIds, *deltas)
 
 
-def averageDeltas(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeights,
-                  multiplier=None, space=om.MSpace.kObject):
+def averageDifference(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeights,
+                      multiplier=None, space=om.MSpace.kObject):
     """
+    average the difference (deltas) between driverMesh and drivenMesh for each
+    vertex with it's neighbor vertex deltas
     :param driverMesh: 'driverMeshName'
     :param drivenMesh: 'drivenMeshName'
     :param minDeltaLength: float
@@ -364,9 +393,58 @@ def averageDeltas(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeigh
         averageDelta = om.MVector()
         for neighborId in neighborIds[vertexId]:
             averageDelta += allDeltas[neighborId]
-        averageDelta *= 1.0/len(neighborIds[vertexId])
+        averageDelta /= len(neighborIds[vertexId])
         deltas.append(
             ((driverPositions[x] + averageDelta) - drivenPositions[x]) * weight * deformMultiplier
+        )
+
+    # do the deformation
+    mc.prMovePointsCmd(drivenMesh, space, minDeltaLength, vertexIds, *deltas)
+
+
+def averageVertex(drivenMesh, minDeltaLength, vertexIds, vertexWeights,
+                  multiplier=None, space=om.MSpace.kObject):
+    """
+    average ("relax") a vertex, relative to its neighbors. this is independent
+    from the "Target" / driver mesh.
+    :param drivenMesh: 'drivenMeshName'
+    :param minDeltaLength: float
+    :param vertexIds: [0, 1, ...]
+    :param vertexWeights: [1.0, 0.5, ...]
+    :param multiplier: float or detect if None
+    :param space: om.MSpace...
+    :return:
+    """
+    deformMultiplier = getEditBlendshapeMultiplier(drivenMesh, multiplier)
+    drivenIter = getMItMeshVertex(drivenMesh)
+
+    # get all relevant vertex ids and neighbor vertex ids
+    allVertexIds = list(vertexIds)
+    allNeighborIds = []
+    for vertexId in vertexIds:
+        drivenIter.setIndex(vertexId)
+        neighborIds = drivenIter.getConnectedVertices()
+        allNeighborIds.append(neighborIds)
+        for neighbor in neighborIds:
+            if neighbor not in allVertexIds:
+                allVertexIds.append(neighbor)
+
+    # get all relevant positions (as vector for calculations)
+    allPositions = om.MVectorArray()
+    for vertexId in allVertexIds:
+        drivenIter.setIndex(vertexId)
+        allPositions.append(drivenIter.position(space))
+
+    # calculate deltas
+    deltas = []
+    for vertexId, vertexWeight in izip(vertexIds, vertexWeights):
+        drivenIter.setIndex(vertexId)
+        averagePosition = om.MVector()
+        for neighborId in allNeighborIds[allVertexIds.index(vertexId)]:
+            averagePosition += allPositions[allVertexIds.index(neighborId)]
+        averagePosition /= len(neighborIds)
+        deltas.append(
+            (averagePosition - allPositions[allVertexIds.index(vertexId)]) * vertexWeight * deformMultiplier
         )
 
     # do the deformation
@@ -376,6 +454,8 @@ def averageDeltas(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeigh
 def closestPointOrVertex(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeights,
                          multiplier=None, space=om.MSpace.kObject, closestVertex=False):
     """
+    move the drivenMesh vertex to the closestPoint or closestVertex on the
+    driverMesh
     :param driverMesh: 'driverMeshName'
     :param drivenMesh: 'drivenMeshName'
     :param minDeltaLength: float
