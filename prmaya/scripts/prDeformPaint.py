@@ -14,7 +14,9 @@ modeling brushes for blendshape targets (similar to DPK_paintDeform.mel)
     - blend between different meshes
 
 FEATURES
-- right click "Set target", "minDeltaLength", "space" for popup menu
+- right click popup menus for "Set target", "minDeltaLength", "space"
+- minDeltaLenght: ignores deformation vectors shorter than this value
+- space: object and worldspace are the most common
 - Same deformation strength no matter what the edited blendshape target weight and
   envelope values are
 
@@ -33,10 +35,10 @@ Your Maya environment has to be able to access the folders of:
 MOTIVATION
 - Replace DPK_paintDeform.mel, because:
   - It permanently breaks meshes that are in edit blendshape target mode
-  - It crashes Maya when flooding the same vertex selection twice (workaround is
-    re-enter tool between each flood)
+  - It crashes Maya when flooding twice in a row (workaround is re-enter tool
+    between each flood)
   - It is slow (MEL)
-  - It is sometimes incredibly extra slow for no apparent reason (on linux)
+  - It is sometimes extra slow for no apparent reason
 - Is useful in addition to the maya sculpt brushes because:
   - missing "average delta"
   - they are buggy (erase delta not really deleting deltas, ...)
@@ -101,7 +103,8 @@ class Ui(pm.uitypes.Window):
         self = pm.window(cls._TITLE, title=cls._TITLE)
         return pm.uitypes.Window.__new__(cls, self)
 
-    def __init__(self, minDeltaLengthDefault=0.00001,
+    def __init__(self, autoSetEmptyTarget=True,
+                 minDeltaLengthDefault=0.00001,
                  spaceDefault=om.MSpace.kObject):
         """create UI elements (layouts, buttons) and show window"""
         if not self.isMayaInitialized:
@@ -178,6 +181,10 @@ class Ui(pm.uitypes.Window):
                 pm.button(label='Close', command=pm.Callback(self.close))
             toolLayout.redistribute()
         mainLayout.redistribute(0, 0, 0, 1)
+
+        if autoSetEmptyTarget:
+            pass
+
         self.show()
         self.syncUiSettings()
 

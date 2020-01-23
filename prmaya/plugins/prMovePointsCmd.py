@@ -8,6 +8,46 @@ import maya.api.OpenMaya as om
 mc.polySphere(ch=False)
 mc.prMovePointsCmd('pSphereShape1', om.MSpace.kObject, [294, 297, 280],
                    om.MVector(0, 0.25, 0), om.MVector(0, 0.5, 0), om.MVector(0, 1, 0))
+
+
+
+
+
+import time
+
+start = time.time()
+
+selection = om.MSelectionList()
+selection.add('half')
+drivenIter = om.MItMeshVertex(selection.getDagPath(0))
+newPos = []
+for x in range(drivenIter.count()):
+    drivenIter.setIndex(x)
+    pos = drivenIter.position()
+    pos += om.MVector(0,10,0)
+    newPos.append(pos)
+    #drivenIter.setPosition(pos)
+
+iter2 = om.MItMeshVertex(selection.getDagPath(0))
+for x in range(iter2.count()):
+    iter2.setIndex(x)
+    pos = iter2.position()
+    newPos[x] += om.MVector(pos)
+
+iter3 = om.MItMeshVertex(selection.getDagPath(0))
+for x in range(iter3.count()):
+    iter3.setIndex(x)
+    pos = iter3.position()
+    newPos[x] += om.MVector(pos)*0.5
+
+poses = []
+for x in range(drivenIter.count()):
+    drivenIter.setIndex(x)
+    #drivenIter.setPosition(newPos[x]+om.MVector(0,1,0))
+
+end = time.time()
+print('time: {}'.format(end - start))
+
 """
 
 import sys
@@ -59,6 +99,7 @@ class PrMovePointsCmd(om.MPxCommand):
         self.addDeltas(undoCall=True)
 
     def addDeltas(self, undoCall=False):
+        print('deltas: {}'.format(len(self.vertexIds)))
         for vertexId, vector in izip(self.vertexIds, self.deltas):
             self.vertexIterator.setIndex(vertexId)
             position = self.vertexIterator.position(self.space)
