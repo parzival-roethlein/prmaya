@@ -10,7 +10,7 @@ mc.prMovePointsCmd('pSphereShape1', om.MSpace.kObject, [294, 297, 280],
                    om.MVector(0, 0.25, 0), om.MVector(0, 0.5, 0), om.MVector(0, 1, 0))
 
 
-
+# TODO: compare speed with MFnMesh.setPoint()
 
 
 import time
