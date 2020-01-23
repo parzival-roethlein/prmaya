@@ -3,12 +3,14 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-modeling brushes for blendshape targets (similar to DPK_paintDeform.mel)
-- average delta (any deformation)
+modeling brushes, mainly for blendshape targets (similar to DPK_paintDeform.mel)
+- Average vector: average the vertex vector (from target to current mesh)
+  with the neighboring vertex vectors, to:
     - preserve local surface details
     - stay "on model"
     - skin sliding
     - smooth/relax on compression/extension
+- average vertex: set the vertex position to the average position of its neighbors
 - copy position
     - delete some deformation
     - blend between different meshes
@@ -48,14 +50,13 @@ MOTIVATION
 TODO
 - new operation: delete target
 - new operation: smooth target
-- ui option to reduce height when collapsing settings framelayout
+- integrate prDP UI into a custom paint scripts tool settings window?!
 
 TODO (maybe)
-- auto closestPoint after each stroke:
-  - maya live target support
+- optional move to closestPoint after each deformation:
+  - support maya "live object"
   - custom closest point target
   - currently sculpted mesh as closestPoint ("preserve volume")
-- integrate prDP UI into a custom paint scripts tool settings window?!
 """
 
 from itertools import izip
@@ -89,7 +90,6 @@ def initializeMaya(prMovePointsCmdPath=None,
     :param prDeformPaintBrushPath: only required if it's not in a MAYA_SCRIPT_PATH
     :return:
     """
-
     prMovePointsCmdPath = prMovePointsCmdPath or 'prMovePointsCmd.py'
     if not mc.pluginInfo(prMovePointsCmdPath, q=True, loaded=True):
         mc.loadPlugin(prMovePointsCmdPath)
@@ -113,49 +113,51 @@ class Ui(pm.uitypes.Window):
         return pm.uitypes.Window.__new__(cls, self)
 
     def __init__(self, defaultOperation=0,
-                 autoSetEmptyTarget=True,
+                 setTargetFromSelection=True,
                  minDeltaLengthDefault=0.00001,
                  spaceDefault=om.MSpace.kObject):
-        """create UI elements (layouts, buttons) and show window"""
+        """
+
+        :param defaultOperation: int. 0=Average vector, 1=average vertex, ..
+        :param setTargetFromSelection:
+        :param minDeltaLengthDefault:
+        :param spaceDefault:
+        """
         initializeMaya()
         with pm.verticalLayout() as mainLayout:
             with pm.horizontalLayout() as targetLayout:
                 pm.button(l='Set target:', c=pm.Callback(self.setTarget, 'selection'))
-                # right click menu
-                # - load shape
-                # - load intermediate/orig
-                # - load copy of current ("as template" checkbox under settings)
                 self.target = pm.textField(en=False)
                 existingDriver = mm.eval('whatIs "$prDP_driver"')
                 if existingDriver != 'Unknown':
                     self.target.setText(mm.eval('$tempMelVar=$prDP_driver'))
-
             targetLayout.redistribute(0, 1)
+            pm.popupMenu(parent=targetLayout, button=3)
+            pm.menuItem(label='Set intermediate',
+                        c=pm.Callback(self.setTarget, 'intermediate'))
+            # - load copy of current ("as template" checkbox under settings)
 
             with pm.verticalLayout() as operationLayout:
                 self.operation1 = pm.radioButtonGrp(
-                        label='Operation:',
-                        labelArray2=['Average difference', 'Average vertex'],
+                        labelArray2=['Average vector', 'Average vertex'],
                         numberOfRadioButtons=2,
-                        columnWidth3=[60, 110, 110],
-                        columnAlign3=['left', 'left', 'left'],
+                        columnWidth2=[110, 110],
+                        columnAlign2=['left', 'left'],
                         changeCommand=pm.Callback(self.syncUiSettings))
                 self.operation1.setSelect(defaultOperation + 1)
                 self.operation2 = pm.radioButtonGrp(
-                    label='',
                     shareCollection=self.operation1,
-                    labelArray2=['Closest point', 'Closest Vertex'],
+                    labelArray2=['Closest point', 'Closest vertex'],
                     numberOfRadioButtons=2,
-                    columnWidth3=[60, 110, 110],
-                    columnAlign3=['left', 'left', 'left'],
+                    columnWidth2=[110, 110],
+                    columnAlign2=['left', 'left'],
                     changeCommand=pm.Callback(self.syncUiSettings))
                 self.operation3 = pm.radioButtonGrp(
-                    label='',
                     shareCollection=self.operation1,
-                    labelArray2=['Copy', 'placeholder'],
-                    numberOfRadioButtons=2,
-                    columnWidth3=[60, 110, 110],
-                    columnAlign3=['left', 'left', 'left'],
+                    label1='Copy vertex',
+                    numberOfRadioButtons=1,
+                    columnWidth=[1, 110],
+                    columnAlign=[1, 'left'],
                     changeCommand=pm.Callback(self.syncUiSettings))
             operationLayout.redistribute()
 
@@ -207,8 +209,8 @@ class Ui(pm.uitypes.Window):
             toolLayout.redistribute()
         mainLayout.redistribute(0, 0, 0, 1)
 
-        if autoSetEmptyTarget:
-            pass
+        if setTargetFromSelection and not self.target.getText():
+            self.setTarget(operation='selection')
 
         self.show()
         self.syncUiSettings()
@@ -216,7 +218,6 @@ class Ui(pm.uitypes.Window):
     def syncUiSettings(self):
         print('syncUiSettings')
         mm.eval('$prDP_driver = "{}"'.format(self.target.getText()))
-        print('operation: {}'.format(self.getOperation()))
         mm.eval('$prDP_operation = {}'.format(self.getOperation()))
         mm.eval('$prDP_space = {}'.format(self.space.getSelect()-1))
         mm.eval('$prDP_minDeltaLength = {}'.format(self.minDeltaLength.getValue()))
@@ -230,7 +231,6 @@ class Ui(pm.uitypes.Window):
 
     def setTarget(self, operation):
         """
-
         :param operation: 'selection', 'intermediate'
         :return:
         """
@@ -240,10 +240,11 @@ class Ui(pm.uitypes.Window):
             target = (mc.ls(sl=True, type=['transform', 'mesh']) or [''])[0]
             if mc.ls(target, type='mesh'):
                 target = mc.listRelatives(target, parent=True)[0]
-            target = mc.listRelatives(target, children=True)
+            children = mc.listRelatives(target, children=True)
+            target = (mc.ls(children, intermediateObjects=True) or [''])[-1]
+        else:
+            raise ValueError('Invalid operation: {}'.format(operation))
 
-        #if pm.ls(selection, type='transform'):
-        #    selection = (selection.getChildren() or [''])[0]
         self.target.setText(target)
         self.syncUiSettings()
 
@@ -271,8 +272,8 @@ class Ui(pm.uitypes.Window):
 
 
 def getEditBlendshapeMultiplier(mesh, cacheValue=None):
-    """get a multiplier to normalize the deformation (same amount no matter what
-    the edited target and envelope values are)"""
+    """get a multiplier to normalize the deformation (same deformation strength,
+    no matter what the edited target and envelope values are)"""
     if cacheValue is not None:
         return cacheValue
     parent = mc.listRelatives(mesh, parent=True)
@@ -321,7 +322,7 @@ def getVertexPositions(meshName, vertexIds=None, space=om.MSpace.kObject):
     return vertexPositions
 
 
-def copyPosition(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeights,
+def copyVertex(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeights,
                  deformMultiplier=None, space=om.MSpace.kObject):
     """
     copy vertex position from driver to driven
@@ -345,11 +346,11 @@ def copyPosition(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeight
     mc.prMovePointsCmd(drivenMesh, space, minDeltaLength, vertexIds, *deltas)
 
 
-def averageDifference(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeights,
+def averageVector(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeights,
                       multiplier=None, space=om.MSpace.kObject):
     """
-    average the difference (deltas) between driverMesh and drivenMesh for each
-    vertex with it's neighbor vertex deltas
+    average the difference vector (=delta) between the driverMesh and drivenMesh
+    vertices with their neighbors deltas
     :param driverMesh: 'driverMeshName'
     :param drivenMesh: 'drivenMeshName'
     :param minDeltaLength: float
@@ -405,8 +406,8 @@ def averageDifference(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexW
 def averageVertex(drivenMesh, minDeltaLength, vertexIds, vertexWeights,
                   multiplier=None, space=om.MSpace.kObject):
     """
-    average ("relax") a vertex, relative to its neighbors. this is independent
-    from the "Target" / driver mesh.
+    average ("relax") a vertex, relative to its neighbors.
+    this operation is not using the "target" / driver mesh.
     :param drivenMesh: 'drivenMeshName'
     :param minDeltaLength: float
     :param vertexIds: [0, 1, ...]
@@ -440,9 +441,10 @@ def averageVertex(drivenMesh, minDeltaLength, vertexIds, vertexWeights,
     for vertexId, vertexWeight in izip(vertexIds, vertexWeights):
         drivenIter.setIndex(vertexId)
         averagePosition = om.MVector()
-        for neighborId in allNeighborIds[allVertexIds.index(vertexId)]:
+        neighborsIds = allNeighborIds[allVertexIds.index(vertexId)]
+        for neighborId in neighborsIds:
             averagePosition += allPositions[allVertexIds.index(neighborId)]
-        averagePosition /= len(neighborIds)
+        averagePosition /= len(neighborsIds)
         deltas.append(
             (averagePosition - allPositions[allVertexIds.index(vertexId)]) * vertexWeight * deformMultiplier
         )
