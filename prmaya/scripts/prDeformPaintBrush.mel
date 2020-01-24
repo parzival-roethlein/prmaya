@@ -92,9 +92,10 @@ global proc string prDP_duringStrokeCmd(){
 global proc string prDP_initializeCmd(string $name){
     /* is called once for every selected surface when an initial click is
     received */
-    global string $prDP_driver;
-    if(!`objExists $prDP_driver`)
-        error("object does not exist: \""+$prDP_driver+"\"");
+    // disabled because "average vertex" does not require a driver
+    //global string $prDP_driver;
+    //if(!`objExists $prDP_driver`)
+    //    error("object does not exist: \""+$prDP_driver+"\"");
     global string $prDP_driven;
     $prDP_driven = $name;
     global float $prDP_deltaMultiplier;
@@ -148,13 +149,15 @@ global proc prDP_deformation(){
 
 
     if($prDP_operation == 0){
-        python("prDeformPaint.averageDeltas('"+$prDP_driver+"', '"+$prDP_driven+"', "+$prDP_minDeltaLength+", ["+intArrayToString($prDP_vertexIds, ", ")+"], ["+floatArrayToString($prDP_vertexWeights, ", ")+"], "+$prDP_deltaMultiplier+", "+$prDP_space+")");
+        python("prDeformPaint.smoothDelta('"+$prDP_driver+"', '"+$prDP_driven+"', "+$prDP_minDeltaLength+", ["+intArrayToString($prDP_vertexIds, ", ")+"], ["+floatArrayToString($prDP_vertexWeights, ", ")+"], "+$prDP_deltaMultiplier+", "+$prDP_space+")");
     }else if($prDP_operation == 1){
-        python("prDeformPaint.copyPosition('"+$prDP_driver+"', '"+$prDP_driven+"', "+$prDP_minDeltaLength+", ["+intArrayToString($prDP_vertexIds, ", ")+"], ["+floatArrayToString($prDP_vertexWeights, ", ")+"], "+$prDP_deltaMultiplier+", "+$prDP_space+")");
+        python("prDeformPaint.copyVertex('"+$prDP_driver+"', '"+$prDP_driven+"', "+$prDP_minDeltaLength+", ["+intArrayToString($prDP_vertexIds, ", ")+"], ["+floatArrayToString($prDP_vertexWeights, ", ")+"], "+$prDP_deltaMultiplier+", "+$prDP_space+")");
     }else if($prDP_operation == 2){
-        python("prDeformPaint.closestPointOrVertex('"+$prDP_driver+"', '"+$prDP_driven+"', "+$prDP_minDeltaLength+", ["+intArrayToString($prDP_vertexIds, ", ")+"], ["+floatArrayToString($prDP_vertexWeights, ", ")+"], "+$prDP_deltaMultiplier+", "+$prDP_space+")");
+        python("prDeformPaint.closestPoint('"+$prDP_driver+"', '"+$prDP_driven+"', "+$prDP_minDeltaLength+", ["+intArrayToString($prDP_vertexIds, ", ")+"], ["+floatArrayToString($prDP_vertexWeights, ", ")+"], "+$prDP_deltaMultiplier+", "+$prDP_space+")");
     }else if($prDP_operation == 3){
-        python("prDeformPaint.closestPointOrVertex('"+$prDP_driver+"', '"+$prDP_driven+"', "+$prDP_minDeltaLength+", ["+intArrayToString($prDP_vertexIds, ", ")+"], ["+floatArrayToString($prDP_vertexWeights, ", ")+"], "+$prDP_deltaMultiplier+", "+$prDP_space+", True)");
+        python("prDeformPaint.closestPoint('"+$prDP_driver+"', '"+$prDP_driven+"', "+$prDP_minDeltaLength+", ["+intArrayToString($prDP_vertexIds, ", ")+"], ["+floatArrayToString($prDP_vertexWeights, ", ")+"], "+$prDP_deltaMultiplier+", "+$prDP_space+", True)");
+    }else if($prDP_operation == 4){
+        python("prDeformPaint.averageVertex('"+$prDP_driven+"', "+$prDP_minDeltaLength+", ["+intArrayToString($prDP_vertexIds, ", ")+"], ["+floatArrayToString($prDP_vertexWeights, ", ")+"], "+$prDP_deltaMultiplier+", "+$prDP_space+")");
     }
     clear($prDP_vertexIds);
     clear($prDP_vertexWeights);
