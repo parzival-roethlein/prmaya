@@ -99,7 +99,6 @@ class PrMovePointsCmd(om.MPxCommand):
         self.addDeltas(undoCall=True)
 
     def addDeltas(self, undoCall=False):
-        print('deltas: {}'.format(len(self.vertexIds)))
         for vertexId, vector in izip(self.vertexIds, self.deltas):
             self.vertexIterator.setIndex(vertexId)
             position = self.vertexIterator.position(self.space)

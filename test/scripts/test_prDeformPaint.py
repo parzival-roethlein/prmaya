@@ -1,6 +1,6 @@
 import maya.cmds as mc
-#testFile = '/home/prthlein/private/code/prmaya/test/scripts/test_prDeformPaint.ma'
-testFile = r'C:\Users\paz\Documents\git\prmaya\test\scripts\test_prDeformPaint.ma'
+testFile = '/home/prthlein/private/code/prmaya/test/scripts/test_prDeformPaint.ma'
+#testFile = r'C:\Users\paz\Documents\git\prmaya\test\scripts\test_prDeformPaint.ma'
 mc.file(testFile, open=True, force=True)
 mc.file(rename=testFile.replace('.ma', 'TEMP.ma'))
 mc.file(renameToSave=True)

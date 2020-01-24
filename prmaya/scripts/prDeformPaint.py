@@ -4,23 +4,24 @@ https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
 modeling brushes, mainly for blendshape targets (similar to DPK_paintDeform.mel)
-- Smooth delta: average the vertex vector (from target to current mesh)
-  with the neighboring vertex vectors, to:
-    - preserve local surface details
-    - stay "on model"
-    - skin sliding
-    - smooth/relax on compression/extension
-- average vertex: set the vertex position to the average position of its neighbors
-- copy position
-    - delete some deformation
-    - blend between different meshes
-
-FEATURES
-- right click popup menus for "Set target", "minDeltaLength", "space"
-- minDeltaLenght: ignores deformation vectors shorter than this value
-- space: object and worldspace are the most common
-- Same deformation strength no matter what the edited blendshape target weight and
-  envelope values are
+Operations:
+  - Smooth delta: average the delta (vertex vector from target to painted mesh)
+    with it's neighboring deltas. Reasons to do so:
+      - preserve local surface details
+      - stay "on model"
+      - skin sliding
+      - smooth/relax on compression/extension
+  - copy vertex: move painted mesh vertex to the target vertex position
+  - Closest point: move the painted mesh vertex to the closest point on surface of
+    the target mesh
+  - Closest vertex: move the painted mesh vertex to the closest vertex of the
+    target mesh
+  - Average vertex: same as mayas "Average vertices", but as a brush
+Right click popup menus:
+  - "Target: [...]" area to help with common target use cases
+  - Operations area (Smooth delta, Copy vertex, ...) to toggle settings menuBar
+Same deformation strength no matter what the edited blendshape target weight and
+envelope values are
 
 USAGE
 import prDeformPaint
@@ -67,13 +68,240 @@ import pymel.core as pm
 import maya.mel as mm
 
 
-def reinitializeMaya(*args, **kwargs):
-    """reload plugin and mel script"""
-    initializeMaya(*args, **kwargs)
-    mc.unloadPlugin('prMovePointsCmd.py')
-    mm.eval('source prDeformPaintBrush;')
-    mm.eval('rehash;')
-    initializeMaya(*args, **kwargs)
+class Ui(pm.uitypes.Window):
+    _TITLE = 'prDeformPaintUi_001'
+
+    target = None
+    operation = None
+
+    def __new__(cls):
+        """ delete possible old window and create new instance """
+        if pm.window(cls._TITLE, exists=True):
+            pm.deleteUI(cls._TITLE)
+        self = pm.window(cls._TITLE, title=cls._TITLE)
+        return pm.uitypes.Window.__new__(cls, self)
+
+    def __init__(self, operation=0,
+                 setTargetFromSelection=True,
+                 menuBarVisible=True,
+                 space=om.MSpace.kObject,
+                 minDeltaLength=0.00001,
+                 templateDuplicate=True,
+                 visibleDuplicate=True):
+        """
+        :param operation: (int) 0=Smooth delta, 1=Copy vertex, 2=Closest point,
+        3=Closest vertex, 4=Average vertex
+        :param setTargetFromSelection: (bool) if there is no previous target
+        stored (=first time running the UI in the maya instance) use the current
+        selection
+        :param space: (int) om.MSpace.k___
+        :param menuBarVisible: (bool) settings menuBar visibility
+        :param minDeltaLength: (float) deltas shorter than this are ignored
+        :param templateDuplicate: (bool) duplicate.template=___
+        :param visibleDuplicate: (bool) duplicate.visibility=___
+        """
+        initializeMaya()
+        self.minDeltaLengthDefault = minDeltaLength
+        with pm.verticalLayout() as mainLayout:
+            with pm.menuBarLayout() as menuBar:
+                self.space = pm.menu(label='Space', tearOff=True)
+                pm.radioMenuItemCollection()
+                self.spaces = []
+                for name, value in self.getSpaceStrings(space):
+                    self.spaces.append(
+                        pm.menuItem(label=name, radioButton=value,
+                                    command=pm.Callback(self.syncMelVariablesWithUi))
+                    )
+
+                pm.menu(label='Settings')
+                self.templateDuplicate = pm.menuItem(
+                    label='template DUPLICATE',
+                    checkBox=templateDuplicate)
+                self.visibleDuplicate = pm.menuItem(
+                    label='visible DUPLICATE',
+                    checkBox=visibleDuplicate)
+                self.minDeltaLength = pm.menuItem(
+                    label='minDeltaLength: {}'.format(minDeltaLength),
+                    command=pm.Callback(self.setMinDeltaLengthDialog))
+                pm.menu(label='Help')
+                # pm.menuItem(label='TODO: demo video (vimeo)')
+                # pm.menuItem(label='TODO: latest installer (...)')
+                pm.menuItem(label='latest version (github)',
+                            command=pm.Callback(self.getLatestVersion))
+            menuBar.setMenuBarVisible(menuBarVisible)
+            with pm.horizontalLayout() as targetLayout:
+                pm.button(l='Target:', c=pm.Callback(self.setTargetFromSelection))
+                self.target = pm.textField(en=False)
+                variableTest = mm.eval('whatIs "$prDP_operation"')
+                if variableTest != 'Unknown':
+                    self.target.setText(mm.eval('$tempMelVar=$prDP_driver'))
+            targetLayout.redistribute(0, 1)
+            pm.popupMenu(parent=targetLayout, button=3)
+            pm.menuItem(label='intermediate of selection',
+                        c=pm.Callback(self.setTargetFromSelectionIntermediate))
+            pm.menuItem(label='DUPLICATE of selection',
+                        c=pm.Callback(self.setTargetFromDuplicateOfSelection))
+
+            with pm.verticalLayout() as operationLayout:
+                self.operation1 = pm.radioButtonGrp(
+                        labelArray2=['Smooth delta', 'Copy vertex'],
+                        numberOfRadioButtons=2,
+                        columnWidth2=[110, 110],
+                        columnAlign2=['left', 'left'],
+                        changeCommand=pm.Callback(self.syncMelVariablesWithUi))
+                self.operation1.setSelect(operation + 1)
+                self.operation2 = pm.radioButtonGrp(
+                    shareCollection=self.operation1,
+                    labelArray2=['Closest point', 'Closest vertex'],
+                    numberOfRadioButtons=2,
+                    columnWidth2=[110, 110],
+                    columnAlign2=['left', 'left'],
+                    changeCommand=pm.Callback(self.syncMelVariablesWithUi))
+                pm.separator()
+                self.operation3 = pm.radioButtonGrp(
+                    shareCollection=self.operation1,
+                    label1='Average vertex',
+                    numberOfRadioButtons=1,
+                    columnWidth=[1, 110],
+                    columnAlign=[1, 'left'],
+                    changeCommand=pm.Callback(self.syncMelVariablesWithUi))
+            operationLayout.redistribute(5, 5, 1, 5)
+
+            with pm.horizontalLayout() as toolLayout:
+                pm.button(label='Enter Tool', command=pm.Callback(self.enterTool))
+                pm.button(label='Close', command=pm.Callback(self.close))
+            toolLayout.redistribute()
+        mainLayout.redistribute(0, 0, 0, 1)
+
+        if setTargetFromSelection and not self.target.getText():
+            self.setTargetFromSelection()
+
+        self.show()
+        self.syncMelVariablesWithUi()
+
+    def syncMelVariablesWithUi(self):
+        mm.eval('$prDP_driver = "{}"'.format(self.getTarget()))
+        mm.eval('$prDP_operation = {}'.format(self.getOperation()))
+        mm.eval('$prDP_space = {}'.format(self.getSpace()))
+        mm.eval('$prDP_minDeltaLength = {}'.format(self.getMinDeltaLength()))
+
+    def enterTool(self):
+        mm.eval('prDeformPaint_initialize();')
+        self.syncMelVariablesWithUi()
+
+    def close(self):
+        pm.deleteUI(self._TITLE)
+
+    def getSpace(self):
+        for x, space in enumerate(self.spaces):
+            if pm.menuItem(space, q=True, radioButton=True):
+                return x
+        raise ValueError('Invalid space')
+
+    @staticmethod
+    def getSpaceStrings(defaultSpace):
+        spaceDict = defaultdict(list)
+        for attr in dir(om.MSpace):
+            if attr.startswith('__'):
+                continue
+            spaceDict[getattr(om.MSpace, attr)].append(attr)
+        spaces = []
+        for x, space in enumerate([str(s) for s in spaceDict.values()]):
+            space = space.replace("'", "").replace('[', '').replace(']', '')
+            spaceValue = False
+            if x == defaultSpace:
+                space += ' (default)'
+                spaceValue = True
+            spaces.append([space, spaceValue])
+        return spaces
+
+    def getTarget(self):
+        return self.target.getText()
+
+    def setTarget(self, mayaObject):
+        self.target.setText(mayaObject)
+        self.syncMelVariablesWithUi()
+
+    def setTargetFromSelection(self):
+        self.setTarget((mc.ls(sl=True, type=['transform', 'mesh']) or [''])[0])
+
+    def setTargetFromSelectionIntermediate(self):
+        target = (mc.ls(sl=True, type=['transform', 'mesh']) or [''])[0]
+        if mc.ls(target, type='mesh'):
+            target = mc.listRelatives(target, parent=True)[0]
+        if target:
+            children = mc.listRelatives(target, children=True)
+            target = (mc.ls(children, intermediateObjects=True) or [''])[-1]
+        self.setTarget(target)
+
+    def setTargetFromDuplicateOfSelection(self):
+        selection = (mc.ls(sl=True, type=['transform', 'mesh']) or [None])[0]
+        if not selection:
+            raise ValueError('Nothing selected to duplicate')
+        duplicate = mc.duplicate(selection)[0]
+        duplicate = mc.rename(duplicate, duplicate+'_prDP_DUPLICATE')
+        for attr in ['t', 'tx', 'ty', 'tz',
+                     'r', 'rx', 'ry', 'rz',
+                     's', 'sx', 'sy', 'sz',
+                     'v', 'template']:
+            fullAttr = '{}.{}'.format(duplicate, attr)
+            mc.setAttr(fullAttr, lock=False)
+            for attrInput in mc.listConnections(fullAttr, source=True,
+                                                destination=False, p=True) or []:
+                mc.disconnectAttr(attrInput, fullAttr)
+
+        if mc.listRelatives(duplicate, parent=True):
+            mc.parent(duplicate, world=True)
+        templateValue = pm.menuItem(self.templateDuplicate, q=True, checkBox=True)
+        mc.setAttr('{}.template'.format(duplicate), templateValue)
+        visibilityValue = pm.menuItem(self.visibleDuplicate, q=True, checkBox=True)
+        mc.setAttr('{}.visibility'.format(duplicate), visibilityValue)
+        self.setTarget(duplicate)
+        mc.select(selection)
+
+    def getOperation(self):
+        firstRow = self.operation1.getSelect()
+        if firstRow != 0:
+            return firstRow - 1
+        secondRow = self.operation2.getSelect()
+        if secondRow != 0:
+            return secondRow + 1
+        thirdRow = self.operation3.getSelect()
+        if thirdRow != 0:
+            return thirdRow + 3
+        raise ValueError('Unknown operation')
+
+    def setMinDeltaLengthDialog(self):
+        result = pm.promptDialog(
+            title='minDeltaLength',
+            message='Enter new minimum delta length value:\n'
+                    'default = "{0}"'.format(self.minDeltaLengthDefault),
+            button=['OK', 'Cancel'],
+            defaultButton='OK',
+            cancelButton='Cancel',
+            dismissString='Cancel',
+            text=self.getMinDeltaLength())
+        if result == 'OK':
+            self.setMinDeltaLength(pm.promptDialog(query=True, text=True))
+
+    def setMinDeltaLength(self, value):
+        try:
+            value = float(value)
+        except ValueError:
+            raise ValueError('Given length must be a number: "{}"'.format(value))
+        if value < 0.0:
+            raise ValueError('Given length must be greater or equal to 0.0')
+        self.minDeltaLength.setLabel('minDeltaLength: {}'.format(value))
+        self.syncMelVariablesWithUi()
+
+    def getMinDeltaLength(self):
+        label = self.minDeltaLength.getLabel()
+        value = float(label.replace('minDeltaLength: ', ''))
+        return value
+
+    @staticmethod
+    def getLatestVersion():
+        mc.launch(web="https://github.com/parzival-roethlein/prmaya")
 
 
 def initializeMaya(prMovePointsCmdPath=None,
@@ -98,209 +326,13 @@ def initializeMaya(prMovePointsCmdPath=None,
         mm.eval('source "{}";'.format(prDeformPaintBrushPath))
 
 
-class Ui(pm.uitypes.Window):
-    _TITLE = 'prDeformPaintUi_001'
-
-    target = None
-    operation = None
-
-    def __new__(cls):
-        """ delete possible old window and create new instance """
-        if pm.window(cls._TITLE, exists=True):
-            pm.deleteUI(cls._TITLE)
-        self = pm.window(cls._TITLE, title=cls._TITLE)
-        return pm.uitypes.Window.__new__(cls, self)
-
-    def __init__(self, defaultOperation=0,
-                 setBaseFromSelection=True,
-                 minDeltaLengthDefault=0.00001,
-                 spaceDefault=om.MSpace.kObject,
-                 duplicateTemplate=True,
-                 duplicateVisiblity=True):
-        """
-        :param defaultOperation: int. 0=Smooth delta, 1=average vertex, ..
-        :param setBaseFromSelection: set selection as base, if there was no
-                                     previous base stored
-        :param minDeltaLengthDefault: deltas shorter than this are ignored
-        :param spaceDefault:om.MSpace.k___
-        :param duplicateTemplate: set duplicate to template
-        :param duplicateVisiblity: hide duplicate
-        """
-        initializeMaya()
-        with pm.verticalLayout() as mainLayout:
-            with pm.horizontalLayout() as baseLayout:
-                pm.button(l='Base:', c=pm.Callback(self.setBaseFromSelection))
-                self.base = pm.textField(en=False)
-                variableTest = mm.eval('whatIs "$prDP_operation"')
-                if variableTest != 'Unknown':
-                    self.base.setText(mm.eval('$tempMelVar=$prDP_driver'))
-            baseLayout.redistribute(0, 1)
-            pm.popupMenu(parent=baseLayout, button=3)
-            pm.menuItem(label='Intermediate of selection',
-                        c=pm.Callback(self.setBaseFromSelectionIntermediate))
-            pm.menuItem(label='Duplicate of selected',
-                        c=pm.Callback(self.setBaseFromDuplicateOfSelection))
-
-            with pm.verticalLayout() as operationLayout:
-                self.operation1 = pm.radioButtonGrp(
-                        labelArray2=['Smooth delta', 'Copy vertex'],
-                        numberOfRadioButtons=2,
-                        columnWidth2=[110, 110],
-                        columnAlign2=['left', 'left'],
-                        changeCommand=pm.Callback(self.syncUiSettings))
-                self.operation1.setSelect(defaultOperation + 1)
-                self.operation2 = pm.radioButtonGrp(
-                    shareCollection=self.operation1,
-                    labelArray2=['Closest point', 'Closest vertex'],
-                    numberOfRadioButtons=2,
-                    columnWidth2=[110, 110],
-                    columnAlign2=['left', 'left'],
-                    changeCommand=pm.Callback(self.syncUiSettings))
-                pm.separator()
-                self.operation3 = pm.radioButtonGrp(
-                    shareCollection=self.operation1,
-                    label1='Average vertex',
-                    numberOfRadioButtons=1,
-                    columnWidth=[1, 110],
-                    columnAlign=[1, 'left'],
-                    changeCommand=pm.Callback(self.syncUiSettings))
-            operationLayout.redistribute(5, 5, 1, 5)
-
-            pm.frameLayout('settings', collapsable=True, collapse=True)
-            with pm.verticalLayout() as settingsLayout:
-
-                with pm.formLayout() as spacesLayout:
-                    self.space = pm.optionMenu(
-                            label='space:',
-                            changeCommand=pm.Callback(self.syncUiSettings))
-                    spaces = defaultdict(list)
-                    for attr in dir(om.MSpace):
-                        if attr.startswith('__'):
-                            continue
-                        spaces[getattr(om.MSpace, attr)].append(attr)
-                    self.space.addItems([str(v) for v in spaces.values()])
-                    self.space.setSelect(spaceDefault+1)
-                spacesLayout.redistribute()
-                pm.popupMenu(parent=spacesLayout, button=3)
-                pm.menuItem(label='(default:) {}'.format(spaces[spaceDefault]),
-                            c=pm.Callback(self.setSpace, spaceDefault))
-
-                with pm.horizontalLayout() as minDeltaLayout:
-                    pm.text('minDeltaLength:')
-                    self.minDeltaLength = pm.floatField(
-                            precision=8, value=minDeltaLengthDefault,
-                            changeCommand=pm.Callback(self.syncUiSettings))
-                minDeltaLayout.redistribute(0, 1)
-                pm.popupMenu(parent=minDeltaLayout, button=3)
-                pm.menuItem(
-                    label='(default:) {}'.format(str(minDeltaLengthDefault)),
-                    c=pm.Callback(self.setMinDeltaLength, minDeltaLengthDefault)
-                )
-                pm.menuItem(divider=True)
-                value = 0.1
-                for x in range(8):
-                    label = '{:.8f}'.format(value)
-                    label = label[:label.rfind('1') + 1]
-                    if value < 0.0001:
-                        label = '{} ({})'.format(label, value)
-                    pm.menuItem(label=label,
-                                c=pm.Callback(self.setMinDeltaLength, value))
-                    value *= 0.1
-
-                self.duplicateTemplate = pm.checkBoxGrp(
-                        label='duplicate.template:',
-                        value1=duplicateTemplate,
-                        columnWidth2=[100, 100], columnAlign2=['right', 'left'])
-                self.duplicateVisibility = pm.checkBoxGrp(
-                        label='duplicate.visibility:',
-                        value1=duplicateVisiblity,
-                        columnWidth2=[100, 100], columnAlign2=['right', 'left'])
-
-            settingsLayout.redistribute()
-            with pm.horizontalLayout() as toolLayout:
-                pm.button(label='Enter Tool', command=pm.Callback(self.enterTool))
-                pm.button(label='Close', command=pm.Callback(self.close))
-            toolLayout.redistribute()
-        mainLayout.redistribute(0, 0, 0, 1)
-
-        if setBaseFromSelection and not self.base.getText():
-            self.setBaseFromSelection()
-
-        self.show()
-        self.syncUiSettings()
-
-    def syncUiSettings(self):
-        print('syncUiSettings')
-        mm.eval('$prDP_driver = "{}"'.format(self.base.getText()))
-        mm.eval('$prDP_operation = {}'.format(self.getOperation()))
-        mm.eval('$prDP_space = {}'.format(self.space.getSelect()-1))
-        mm.eval('$prDP_minDeltaLength = {}'.format(self.minDeltaLength.getValue()))
-
-    def enterTool(self):
-        mm.eval('prDeformPaint_initialize();')
-        self.syncUiSettings()
-
-    def close(self):
-        pm.deleteUI(self._TITLE)
-
-    def setBase(self, mayaObject):
-        self.base.setText(mayaObject)
-        self.syncUiSettings()
-
-    def setBaseFromSelection(self):
-        self.setBase((mc.ls(sl=True, type=['transform', 'mesh']) or [''])[0])
-
-    def setBaseFromSelectionIntermediate(self):
-        base = (mc.ls(sl=True, type=['transform', 'mesh']) or [''])[0]
-        if mc.ls(base, type='mesh'):
-            base = mc.listRelatives(base, parent=True)[0]
-        children = mc.listRelatives(base, children=True)
-        self.setBase((mc.ls(children, intermediateObjects=True) or [''])[-1])
-
-    def setBaseFromDuplicateOfSelection(self):
-        selection = (mc.ls(sl=True, type=['transform', 'mesh']) or [None])[0]
-        if not selection:
-            raise ValueError('Nothing selected to duplicate')
-        duplicate = mc.duplicate(selection)[0]
-        duplicate = mc.rename(duplicate, duplicate+'_DELETE')
-        for attr in ['t', 'tx', 'ty', 'tz',
-                     'r', 'rx', 'ry', 'rz',
-                     's', 'sx', 'sy', 'sz',
-                     'v', 'template']:
-            fullAttr = '{}.{}'.format(duplicate, attr)
-            mc.setAttr(fullAttr, lock=False)
-            for attrInput in mc.listConnections(fullAttr, source=True,
-                                                destination=False, p=True) or []:
-                mc.disconnectAttr(attrInput, fullAttr)
-
-        if mc.listRelatives(duplicate, parent=True):
-            mc.parent(duplicate, world=True)
-        mc.setAttr('{}.template'.format(duplicate), self.duplicateTemplate.getValue1())
-        mc.setAttr('{}.visibility'.format(duplicate), self.duplicateVisibility.getValue1())
-        self.setBase(duplicate)
-        mc.select(selection)
-
-    def getOperation(self):
-        firstRow = self.operation1.getSelect()
-        if firstRow != 0:
-            return firstRow - 1
-        secondRow = self.operation2.getSelect()
-        if secondRow != 0:
-            return secondRow + 1
-        thirdRow = self.operation3.getSelect()
-        if thirdRow != 0:
-            return thirdRow + 3
-        raise ValueError('Unknown operation')
-
-    def setSpace(self, value):
-        """because setSelect does not trigger the changeCommand"""
-        self.space.setSelect(value+1)
-        self.syncUiSettings()
-
-    def setMinDeltaLength(self, value):
-        """because pm.popupMenu does not have a changeCommand flag"""
-        self.minDeltaLength.setValue(value)
-        self.syncUiSettings()
+def reinitializeMaya(*args, **kwargs):
+    """reload plugin and mel script"""
+    initializeMaya(*args, **kwargs)
+    mc.unloadPlugin('prMovePointsCmd.py')
+    mm.eval('source prDeformPaintBrush;')
+    mm.eval('rehash;')
+    initializeMaya(*args, **kwargs)
 
 
 def getBlendshapeFromMesh(mesh):
