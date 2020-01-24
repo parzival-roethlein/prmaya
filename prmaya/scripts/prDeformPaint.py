@@ -48,8 +48,7 @@ MOTIVATION
   - they do not support viewport "isolate selected" mesh components
 
 TODO
-- duplicates as template checkbox in settings or hidden
-- reorder operations, first the ones using target, then editing blendshape, then modeling
+- settings as menubar
 - merge UI into "tool settings" window with "paint scripts tool"
 
 TODO (maybe)
@@ -115,21 +114,25 @@ class Ui(pm.uitypes.Window):
     def __init__(self, defaultOperation=0,
                  setBaseFromSelection=True,
                  minDeltaLengthDefault=0.00001,
-                 spaceDefault=om.MSpace.kObject):
+                 spaceDefault=om.MSpace.kObject,
+                 duplicateTemplate=True,
+                 duplicateVisiblity=True):
         """
-
         :param defaultOperation: int. 0=Smooth delta, 1=average vertex, ..
-        :param setBaseFromSelection:
-        :param minDeltaLengthDefault:
-        :param spaceDefault:
+        :param setBaseFromSelection: set selection as base, if there was no
+                                     previous base stored
+        :param minDeltaLengthDefault: deltas shorter than this are ignored
+        :param spaceDefault:om.MSpace.k___
+        :param duplicateTemplate: set duplicate to template
+        :param duplicateVisiblity: hide duplicate
         """
         initializeMaya()
         with pm.verticalLayout() as mainLayout:
             with pm.horizontalLayout() as baseLayout:
                 pm.button(l='Base:', c=pm.Callback(self.setBaseFromSelection))
                 self.base = pm.textField(en=False)
-                existingDriver = mm.eval('whatIs "$prDP_driver"')
-                if existingDriver != 'Unknown':
+                variableTest = mm.eval('whatIs "$prDP_operation"')
+                if variableTest != 'Unknown':
                     self.base.setText(mm.eval('$tempMelVar=$prDP_driver'))
             baseLayout.redistribute(0, 1)
             pm.popupMenu(parent=baseLayout, button=3)
@@ -204,6 +207,15 @@ class Ui(pm.uitypes.Window):
                                 c=pm.Callback(self.setMinDeltaLength, value))
                     value *= 0.1
 
+                self.duplicateTemplate = pm.checkBoxGrp(
+                        label='duplicate.template:',
+                        value1=duplicateTemplate,
+                        columnWidth2=[100, 100], columnAlign2=['right', 'left'])
+                self.duplicateVisibility = pm.checkBoxGrp(
+                        label='duplicate.visibility:',
+                        value1=duplicateVisiblity,
+                        columnWidth2=[100, 100], columnAlign2=['right', 'left'])
+
             settingsLayout.redistribute()
             with pm.horizontalLayout() as toolLayout:
                 pm.button(label='Enter Tool', command=pm.Callback(self.enterTool))
@@ -212,7 +224,7 @@ class Ui(pm.uitypes.Window):
         mainLayout.redistribute(0, 0, 0, 1)
 
         if setBaseFromSelection and not self.base.getText():
-            self.setBase(operation='selection')
+            self.setBaseFromSelection()
 
         self.show()
         self.syncUiSettings()
@@ -251,10 +263,20 @@ class Ui(pm.uitypes.Window):
             raise ValueError('Nothing selected to duplicate')
         duplicate = mc.duplicate(selection)[0]
         duplicate = mc.rename(duplicate, duplicate+'_DELETE')
-        for attr in ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz']:
-            mc.setAttr('{}.{}'.format(duplicate, attr), lock=False)
+        for attr in ['t', 'tx', 'ty', 'tz',
+                     'r', 'rx', 'ry', 'rz',
+                     's', 'sx', 'sy', 'sz',
+                     'v', 'template']:
+            fullAttr = '{}.{}'.format(duplicate, attr)
+            mc.setAttr(fullAttr, lock=False)
+            for attrInput in mc.listConnections(fullAttr, source=True,
+                                                destination=False, p=True) or []:
+                mc.disconnectAttr(attrInput, fullAttr)
+
         if mc.listRelatives(duplicate, parent=True):
             mc.parent(duplicate, world=True)
+        mc.setAttr('{}.template'.format(duplicate), self.duplicateTemplate.getValue1())
+        mc.setAttr('{}.visibility'.format(duplicate), self.duplicateVisibility.getValue1())
         self.setBase(duplicate)
         mc.select(selection)
 
@@ -337,7 +359,7 @@ def getVertexPositions(meshName, vertexIds=None, space=om.MSpace.kObject):
     """
     :param meshName: 'myMeshShape'
     :param vertexIds: [2, 3, ...] or all if None
-    :param space: om.MSpace...
+    :param space: om.MSpace.k___
     :return: MPointArray
     """
     vertexIter = getMItMeshVertex(meshName)
@@ -360,7 +382,7 @@ def copyVertex(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeights,
     :param vertexIds: [0, 1, ...]
     :param vertexWeights: [1.0, 0.5, ...]
     :param multiplier: float or detect if None
-    :param space: om.MSpace...
+    :param space: om.MSpace.k___
     :return:
     """
     multiplier = getEditBlendshapeMultiplier(drivenMesh, multiplier)
@@ -385,7 +407,7 @@ def smoothDelta(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeights
     :param vertexIds: [0, 1, ...]
     :param vertexWeights: [1.0, 0.5, ...]
     :param multiplier: float or detect if None
-    :param space: om.MSpace...
+    :param space: om.MSpace.k___
     :return:
     """
     multiplier = getEditBlendshapeMultiplier(drivenMesh, multiplier)
@@ -441,7 +463,7 @@ def averageVertex(drivenMesh, minDeltaLength, vertexIds, vertexWeights,
     :param vertexIds: [0, 1, ...]
     :param vertexWeights: [1.0, 0.5, ...]
     :param multiplier: float or detect if None
-    :param space: om.MSpace...
+    :param space: om.MSpace.k___
     :return:
     """
     multiplier = getEditBlendshapeMultiplier(drivenMesh, multiplier)
@@ -492,7 +514,7 @@ def closestPoint(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeight
     :param vertexIds: [0, 1, ...]
     :param vertexWeights: [1.0, 0.5, ...]
     :param multiplier: float or detect if None
-    :param space: om.MSpace...
+    :param space: om.MSpace.k___
     :param closestVertex: bool
     :return:
     """
