@@ -144,7 +144,7 @@ def maya_useNewAPI():
 
 
 def initializePlugin(obj):
-    plugin = om.MFnPlugin(obj, "Parzival Roethlein", "0.0.1", "Any")
+    plugin = om.MFnPlugin(obj, "Parzival Roethlein", "1.0.0", "Any")
     try:
         plugin.registerCommand(PrMovePointsCmd.PLUGIN_NAME, PrMovePointsCmd.creator)
     except:
