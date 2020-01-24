@@ -9,47 +9,60 @@ mc.polySphere(ch=False)
 mc.prMovePointsCmd('pSphereShape1', om.MSpace.kObject, [294, 297, 280],
                    om.MVector(0, 0.25, 0), om.MVector(0, 0.5, 0), om.MVector(0, 1, 0))
 
+PERFORMANCE TEST (4.3k vertices)
+- MFnMesh getPoint(), setPoint()
+has similar calculation times as
+- MItMeshVertex setIndex(), position(), setPosition()
+MFnMesh (doIt) is slower (MFnMesh() initialization?!), but undo/redo is faster.
+Because doIt is the most important, i'm sticking with MItMeshVertex
 
-# TODO: compare speed with MFnMesh.setPoint()
+MFnMesh
+time: 15.26 // doIt
+time: 15.23 // doIt
+time: 14.69 // doIt
+time: 13.40 // doIt
+time: 15.21 // doIt
+time: 13.17 // doIt
+time: 15.07 // doIt = 14.58
+time: 13.20 // undo
+time: 12.29 // undo
+time: 14.02 // undo
+time: 13.48 // undo
+time: 13.24 // undo
+time: 13.77 // undo
+time: 12.61 // undo = 13.23
+time: 14.52 // redo
+time: 12.21 // redo
+time: 12.14 // redo
+time: 12.25 // redo
+time: 12.47 // redo
+time: 12.50 // redo
+time: 13.46 // redo = 12.79
 
-
-import time
-
-start = time.time()
-
-selection = om.MSelectionList()
-selection.add('half')
-drivenIter = om.MItMeshVertex(selection.getDagPath(0))
-newPos = []
-for x in range(drivenIter.count()):
-    drivenIter.setIndex(x)
-    pos = drivenIter.position()
-    pos += om.MVector(0,10,0)
-    newPos.append(pos)
-    #drivenIter.setPosition(pos)
-
-iter2 = om.MItMeshVertex(selection.getDagPath(0))
-for x in range(iter2.count()):
-    iter2.setIndex(x)
-    pos = iter2.position()
-    newPos[x] += om.MVector(pos)
-
-iter3 = om.MItMeshVertex(selection.getDagPath(0))
-for x in range(iter3.count()):
-    iter3.setIndex(x)
-    pos = iter3.position()
-    newPos[x] += om.MVector(pos)*0.5
-
-poses = []
-for x in range(drivenIter.count()):
-    drivenIter.setIndex(x)
-    #drivenIter.setPosition(newPos[x]+om.MVector(0,1,0))
-
-end = time.time()
-print('time: {}'.format(end - start))
-
+# MItMeshFaceVertex
+time: 13.91 // doIt
+time: 13.33 // doIt
+time: 13.21 // doIt
+time: 14.05 // doIt
+time: 14.13 // doIt
+time: 13.88 // doIt
+time: 13.53 // doIt = 13.72
+time: 14.18 // undo
+time: 13.72 // undo
+time: 13.59 // undo
+time: 13.76 // undo
+time: 14.29 // undo
+time: 13.80 // undo
+time: 14.01 // undo = 13.91
+time: 13.90 // redo
+time: 14.51 // redo
+time: 13.08 // redo
+time: 13.69 // redo
+time: 13.02 // redo
+time: 13.14 // redo
+time: 14.17 // redo = 13.64
 """
-
+# import time
 import sys
 from itertools import izip
 
@@ -84,12 +97,14 @@ class PrMovePointsCmd(om.MPxCommand):
         selection = om.MSelectionList()
         selection.add(mesh)
         self.vertexIterator = om.MItMeshVertex(selection.getDagPath(0))
+        # self.vertexIterator = om.MFnMesh(selection.getDagPath(0))
         for vertexId, deltaArgPosition in izip(vertexIds, range(4, len(args))):
             delta = args.asVector(deltaArgPosition)
             if delta.length() < minDeltaLength:
                 continue
             self.vertexIds.append(vertexId)
             self.deltas.append(delta)
+
         self.redoIt()
 
     def redoIt(self):
@@ -99,14 +114,22 @@ class PrMovePointsCmd(om.MPxCommand):
         self.addDeltas(undoCall=True)
 
     def addDeltas(self, undoCall=False):
+        # start = time.time()
+
         for vertexId, vector in izip(self.vertexIds, self.deltas):
             self.vertexIterator.setIndex(vertexId)
             position = self.vertexIterator.position(self.space)
+            # position = self.vertexIterator.getPoint(vertexId, self.space)
             if undoCall:
                 position -= vector
             else:
                 position += vector
             self.vertexIterator.setPosition(position, self.space)
+            # self.vertexIterator.setPoint(vertexId, position, self.space)
+        # if undoCall:
+        #     print('time: {:.2f} // undo'.format(time.time() - start))
+        # else:
+        #     print('time: {:.2f} // redo'.format(time.time() - start))
 
     @staticmethod
     def creator():
