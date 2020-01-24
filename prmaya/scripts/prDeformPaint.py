@@ -3,7 +3,7 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-modeling brushes, mainly for blendshape targets (similar to DPK_paintDeform.mel)
+Modeling brushes, mainly for blendshape targets (similar to DPK_paintDeform.mel)
 Operations:
   - Smooth delta: average the delta (vertex vector from target to painted mesh)
     with it's neighboring deltas. Reasons to do so:
@@ -64,7 +64,7 @@ import maya.mel as mm
 
 
 class Ui(pm.uitypes.Window):
-    _TITLE = 'prDeformPaintUi_100'
+    _TITLE = 'prDeformPaint_100'
 
     def __new__(cls):
         """ delete possible old window and create new instance """

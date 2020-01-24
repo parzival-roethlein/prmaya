@@ -3,6 +3,7 @@ Scripts, plugins and posts (tutorials, notes) for Autodesk Maya. Any feedback is
 * prmaya (folder structure similar to maya user folder) 
   * scripts (Used in production)
     * __AE...Template__: Improved default ones or for nodeTypes without one
+    * __prDeformPaint__: Modeling brushes, mainly for blendshape targets 
     * __prPanelCtx__: Custom panel settings while dragging timeline or manipulators 
     * __prObjectSetUi__
     * __prSelectionUi__: Demo: https://vimeo.com/37670989
@@ -10,6 +11,7 @@ Scripts, plugins and posts (tutorials, notes) for Autodesk Maya. Any feedback is
     * __prClosestPoint__: Deformer that moves points to closest: matrix (position) / mesh shape (or vertex) / nurbs-curve shape / nurbs-surface shape
     * __prDecomposeMatrix__: Array version of Mayas "decomposeMatrix" with added features.
     * __prKeepOut__: Array version of Mayas "keepOut" with changed/added features.
+    * __prMovePointsCmd__: Move mesh vertices (add vectors) with undo/redo support
     * __prPyMath__: The Python math module as Maya node.
     * __prRange__: Creates a list of scalars between two values with even spacing.
     * __prRemapValue__: Array version of Mayas "remapValue".

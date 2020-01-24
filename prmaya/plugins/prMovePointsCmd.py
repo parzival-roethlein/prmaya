@@ -1,13 +1,13 @@
 """
-move mesh vertices with the Maya API (MItMeshVertex) for speed
-made into MPxCommand for undo support
+Move mesh vertices (add vectors) with undo/redo support
 
 USAGE:
 import maya.cmds as mc
-import maya.api.OpenMaya as om
-mc.polySphere(ch=False)
-mc.prMovePointsCmd('pSphereShape1', om.MSpace.kObject, [294, 297, 280],
-                   om.MVector(0, 0.25, 0), om.MVector(0, 0.5, 0), om.MVector(0, 1, 0))
+mc.prMovePointsCmd('pSphereShape1',
+                   om.MSpace.kObject,
+                   [3, ..., 1],
+                   om.MVector(1, 0, 0), ..., om.MVector(0, 1, 0))
+
 
 PERFORMANCE TEST (4.3k vertices)
 - MFnMesh getPoint(), setPoint()
