@@ -4,7 +4,7 @@ https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
 modeling brushes, mainly for blendshape targets (similar to DPK_paintDeform.mel)
-- Average vector: average the vertex vector (from target to current mesh)
+- Smooth delta: average the vertex vector (from target to current mesh)
   with the neighboring vertex vectors, to:
     - preserve local surface details
     - stay "on model"
@@ -48,9 +48,9 @@ MOTIVATION
   - they do not support viewport "isolate selected" mesh components
 
 TODO
-- new operation: delete target
-- new operation: smooth target
-- integrate prDP UI into a custom paint scripts tool settings window?!
+- duplicates as template checkbox in settings or hidden
+- reorder operations, first the ones using target, then editing blendshape, then modeling
+- merge UI into "tool settings" window with "paint scripts tool"
 
 TODO (maybe)
 - optional move to closestPoint after each deformation:
@@ -113,33 +113,34 @@ class Ui(pm.uitypes.Window):
         return pm.uitypes.Window.__new__(cls, self)
 
     def __init__(self, defaultOperation=0,
-                 setTargetFromSelection=True,
+                 setBaseFromSelection=True,
                  minDeltaLengthDefault=0.00001,
                  spaceDefault=om.MSpace.kObject):
         """
 
-        :param defaultOperation: int. 0=Average vector, 1=average vertex, ..
-        :param setTargetFromSelection:
+        :param defaultOperation: int. 0=Smooth delta, 1=average vertex, ..
+        :param setBaseFromSelection:
         :param minDeltaLengthDefault:
         :param spaceDefault:
         """
         initializeMaya()
         with pm.verticalLayout() as mainLayout:
-            with pm.horizontalLayout() as targetLayout:
-                pm.button(l='Set target:', c=pm.Callback(self.setTarget, 'selection'))
-                self.target = pm.textField(en=False)
+            with pm.horizontalLayout() as baseLayout:
+                pm.button(l='Base:', c=pm.Callback(self.setBaseFromSelection))
+                self.base = pm.textField(en=False)
                 existingDriver = mm.eval('whatIs "$prDP_driver"')
                 if existingDriver != 'Unknown':
-                    self.target.setText(mm.eval('$tempMelVar=$prDP_driver'))
-            targetLayout.redistribute(0, 1)
-            pm.popupMenu(parent=targetLayout, button=3)
-            pm.menuItem(label='Set intermediate',
-                        c=pm.Callback(self.setTarget, 'intermediate'))
-            # - load copy of current ("as template" checkbox under settings)
+                    self.base.setText(mm.eval('$tempMelVar=$prDP_driver'))
+            baseLayout.redistribute(0, 1)
+            pm.popupMenu(parent=baseLayout, button=3)
+            pm.menuItem(label='Intermediate of selection',
+                        c=pm.Callback(self.setBaseFromSelectionIntermediate))
+            pm.menuItem(label='Duplicate of selected',
+                        c=pm.Callback(self.setBaseFromDuplicateOfSelection))
 
             with pm.verticalLayout() as operationLayout:
                 self.operation1 = pm.radioButtonGrp(
-                        labelArray2=['Average vector', 'Average vertex'],
+                        labelArray2=['Smooth delta', 'Copy vertex'],
                         numberOfRadioButtons=2,
                         columnWidth2=[110, 110],
                         columnAlign2=['left', 'left'],
@@ -152,14 +153,15 @@ class Ui(pm.uitypes.Window):
                     columnWidth2=[110, 110],
                     columnAlign2=['left', 'left'],
                     changeCommand=pm.Callback(self.syncUiSettings))
+                pm.separator()
                 self.operation3 = pm.radioButtonGrp(
                     shareCollection=self.operation1,
-                    label1='Copy vertex',
+                    label1='Average vertex',
                     numberOfRadioButtons=1,
                     columnWidth=[1, 110],
                     columnAlign=[1, 'left'],
                     changeCommand=pm.Callback(self.syncUiSettings))
-            operationLayout.redistribute()
+            operationLayout.redistribute(5, 5, 1, 5)
 
             pm.frameLayout('settings', collapsable=True, collapse=True)
             with pm.verticalLayout() as settingsLayout:
@@ -209,15 +211,15 @@ class Ui(pm.uitypes.Window):
             toolLayout.redistribute()
         mainLayout.redistribute(0, 0, 0, 1)
 
-        if setTargetFromSelection and not self.target.getText():
-            self.setTarget(operation='selection')
+        if setBaseFromSelection and not self.base.getText():
+            self.setBase(operation='selection')
 
         self.show()
         self.syncUiSettings()
 
     def syncUiSettings(self):
         print('syncUiSettings')
-        mm.eval('$prDP_driver = "{}"'.format(self.target.getText()))
+        mm.eval('$prDP_driver = "{}"'.format(self.base.getText()))
         mm.eval('$prDP_operation = {}'.format(self.getOperation()))
         mm.eval('$prDP_space = {}'.format(self.space.getSelect()-1))
         mm.eval('$prDP_minDeltaLength = {}'.format(self.minDeltaLength.getValue()))
@@ -229,24 +231,32 @@ class Ui(pm.uitypes.Window):
     def close(self):
         pm.deleteUI(self._TITLE)
 
-    def setTarget(self, operation):
-        """
-        :param operation: 'selection', 'intermediate'
-        :return:
-        """
-        if operation is 'selection':
-            target = (mc.ls(sl=True, type=['transform', 'mesh']) or [''])[0]
-        elif operation is 'intermediate':
-            target = (mc.ls(sl=True, type=['transform', 'mesh']) or [''])[0]
-            if mc.ls(target, type='mesh'):
-                target = mc.listRelatives(target, parent=True)[0]
-            children = mc.listRelatives(target, children=True)
-            target = (mc.ls(children, intermediateObjects=True) or [''])[-1]
-        else:
-            raise ValueError('Invalid operation: {}'.format(operation))
-
-        self.target.setText(target)
+    def setBase(self, mayaObject):
+        self.base.setText(mayaObject)
         self.syncUiSettings()
+
+    def setBaseFromSelection(self):
+        self.setBase((mc.ls(sl=True, type=['transform', 'mesh']) or [''])[0])
+
+    def setBaseFromSelectionIntermediate(self):
+        base = (mc.ls(sl=True, type=['transform', 'mesh']) or [''])[0]
+        if mc.ls(base, type='mesh'):
+            base = mc.listRelatives(base, parent=True)[0]
+        children = mc.listRelatives(base, children=True)
+        self.setBase((mc.ls(children, intermediateObjects=True) or [''])[-1])
+
+    def setBaseFromDuplicateOfSelection(self):
+        selection = (mc.ls(sl=True, type=['transform', 'mesh']) or [None])[0]
+        if not selection:
+            raise ValueError('Nothing selected to duplicate')
+        duplicate = mc.duplicate(selection)[0]
+        duplicate = mc.rename(duplicate, duplicate+'_DELETE')
+        for attr in ['tx', 'ty', 'tz', 'rx', 'ry', 'rz', 'sx', 'sy', 'sz']:
+            mc.setAttr('{}.{}'.format(duplicate, attr), lock=False)
+        if mc.listRelatives(duplicate, parent=True):
+            mc.parent(duplicate, world=True)
+        self.setBase(duplicate)
+        mc.select(selection)
 
     def getOperation(self):
         firstRow = self.operation1.getSelect()
@@ -271,29 +281,47 @@ class Ui(pm.uitypes.Window):
         self.syncUiSettings()
 
 
-def getEditBlendshapeMultiplier(mesh, cacheValue=None):
-    """get a multiplier to normalize the deformation (same deformation strength,
-    no matter what the edited target and envelope values are)"""
-    if cacheValue is not None:
-        return cacheValue
-    parent = mc.listRelatives(mesh, parent=True)
-    children = mc.listRelatives(parent, children=True)
+def getBlendshapeFromMesh(mesh):
+    """
+    :param mesh: mesh or transform (with mesh child)
+    :return:
+    """
+    if mc.ls(mesh, type='transform'):
+        transform = mesh
+    else:
+        transform = mc.listRelatives(mesh, parent=True)
+    children = mc.listRelatives(transform, children=True)
     orig = mc.ls(children, intermediateObjects=True)
     if not orig:
-        return 1.0
+        return None
     history = mc.listHistory(orig, future=True, groupLevels=True, pruneDagObjects=True)
-    blendshape = (mc.ls(history, type='blendShape') or [None])[0]
+    return (mc.ls(history, type='blendShape') or [None])[0]
+
+
+def getEditBlendshapeMultiplier(mesh, cacheValue=None):
+    """
+    get a multiplier to normalize the deformation (same deformation strength,
+    no matter what the edited target and envelope values are)
+    :param mesh: mesh or transform (with mesh child)
+    :param cacheValue:
+    :return:
+    """
+    if cacheValue is not None:
+        return cacheValue
+    blendshape = getBlendshapeFromMesh(mesh)
     if not blendshape:
         return 1.0
-    envelope = mc.getAttr('{}.envelope'.format(blendshape))
     targetIndex = mc.getAttr('{}.inputTarget[0].sculptTargetIndex'.format(blendshape))
     if targetIndex == -1:
         return 1.0
     weights = mc.getAttr('{}.weight'.format(blendshape))[0]
     weightIndices = mc.getAttr('{}.weight'.format(blendshape), multiIndices=True)
     weight = weights[weightIndices.index(targetIndex)]
-    if weight < 0.001:
+    if weight < 0.0001:
         raise ValueError('Edit blendshape weight is too small: {}'.format(weight))
+    envelope = mc.getAttr('{}.envelope'.format(blendshape))
+    if envelope < 0.0001:
+        raise ValueError('Envelope is too small: {}'.format(envelope))
     return 1.0/(weight*envelope)
 
 
@@ -323,7 +351,7 @@ def getVertexPositions(meshName, vertexIds=None, space=om.MSpace.kObject):
 
 
 def copyVertex(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeights,
-                 deformMultiplier=None, space=om.MSpace.kObject):
+               multiplier=None, space=om.MSpace.kObject):
     """
     copy vertex position from driver to driven
     :param driverMesh: 'driverMeshName'
@@ -331,23 +359,23 @@ def copyVertex(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeights,
     :param minDeltaLength: float
     :param vertexIds: [0, 1, ...]
     :param vertexWeights: [1.0, 0.5, ...]
-    :param deformMultiplier: float or detect if None
+    :param multiplier: float or detect if None
     :param space: om.MSpace...
-    :return: deformMultiplier
+    :return:
     """
-    deformMultiplier = getEditBlendshapeMultiplier(drivenMesh, deformMultiplier)
+    multiplier = getEditBlendshapeMultiplier(drivenMesh, multiplier)
     deltas = []
     for vertexId, weight, driverPosition, drivenPosition in izip(
             vertexIds,
             vertexWeights,
             getVertexPositions(driverMesh, vertexIds, space),
             getVertexPositions(drivenMesh, vertexIds, space)):
-        deltas.append((driverPosition - drivenPosition) * weight * deformMultiplier)
+        deltas.append((driverPosition - drivenPosition) * weight * multiplier)
     mc.prMovePointsCmd(drivenMesh, space, minDeltaLength, vertexIds, *deltas)
 
 
-def averageVector(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeights,
-                      multiplier=None, space=om.MSpace.kObject):
+def smoothDelta(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeights,
+                multiplier=None, space=om.MSpace.kObject):
     """
     average the difference vector (=delta) between the driverMesh and drivenMesh
     vertices with their neighbors deltas
@@ -360,7 +388,7 @@ def averageVector(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeigh
     :param space: om.MSpace...
     :return:
     """
-    deformMultiplier = getEditBlendshapeMultiplier(drivenMesh, multiplier)
+    multiplier = getEditBlendshapeMultiplier(drivenMesh, multiplier)
 
     # get all relevant vertex ids (add neighbors)
     neighborIds = {}
@@ -396,7 +424,7 @@ def averageVector(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeigh
             averageDelta += allDeltas[neighborId]
         averageDelta /= len(neighborIds[vertexId])
         deltas.append(
-            ((driverPositions[x] + averageDelta) - drivenPositions[x]) * weight * deformMultiplier
+            ((driverPositions[x] + averageDelta) - drivenPositions[x]) * weight * multiplier
         )
 
     # do the deformation
@@ -416,7 +444,7 @@ def averageVertex(drivenMesh, minDeltaLength, vertexIds, vertexWeights,
     :param space: om.MSpace...
     :return:
     """
-    deformMultiplier = getEditBlendshapeMultiplier(drivenMesh, multiplier)
+    multiplier = getEditBlendshapeMultiplier(drivenMesh, multiplier)
     drivenIter = getMItMeshVertex(drivenMesh)
 
     # get all relevant vertex ids and neighbor vertex ids
@@ -446,15 +474,15 @@ def averageVertex(drivenMesh, minDeltaLength, vertexIds, vertexWeights,
             averagePosition += allPositions[allVertexIds.index(neighborId)]
         averagePosition /= len(neighborsIds)
         deltas.append(
-            (averagePosition - allPositions[allVertexIds.index(vertexId)]) * vertexWeight * deformMultiplier
+            (averagePosition - allPositions[allVertexIds.index(vertexId)]) * vertexWeight * multiplier
         )
 
     # do the deformation
     mc.prMovePointsCmd(drivenMesh, space, minDeltaLength, vertexIds, *deltas)
 
 
-def closestPointOrVertex(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeights,
-                         multiplier=None, space=om.MSpace.kObject, closestVertex=False):
+def closestPoint(driverMesh, drivenMesh, minDeltaLength, vertexIds, vertexWeights,
+                 multiplier=None, space=om.MSpace.kObject, closestVertex=False):
     """
     move the drivenMesh vertex to the closestPoint or closestVertex on the
     driverMesh
@@ -468,7 +496,7 @@ def closestPointOrVertex(driverMesh, drivenMesh, minDeltaLength, vertexIds, vert
     :param closestVertex: bool
     :return:
     """
-    deformMultiplier = getEditBlendshapeMultiplier(drivenMesh, multiplier)
+    multiplier = getEditBlendshapeMultiplier(drivenMesh, multiplier)
 
     drivenIter = getMItMeshVertex(drivenMesh)
     selection = om.MSelectionList()
@@ -488,7 +516,7 @@ def closestPointOrVertex(driverMesh, drivenMesh, minDeltaLength, vertexIds, vert
                 if shortestDistance is None or distance < shortestDistance:
                     shortestDistance = distance
                     targetPosition = polyVtxPosition
-        deltas.append((targetPosition - startPosition) * vertexWeight * deformMultiplier)
+        deltas.append((targetPosition - startPosition) * vertexWeight * multiplier)
 
     # do the deformation
     mc.prMovePointsCmd(drivenMesh, space, minDeltaLength, vertexIds, *deltas)
