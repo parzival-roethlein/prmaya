@@ -49,14 +49,9 @@ MOTIVATION
   - they do not support viewport "isolate selected" mesh components
 
 TODO
-- settings as menubar
 - merge UI into "tool settings" window with "paint scripts tool"
+  (+selection context for target, so not tool switch is required)
 
-TODO (maybe)
-- optional move to closestPoint after each deformation:
-  - support maya "live object"
-  - custom closest point target
-  - currently sculpted mesh as closestPoint ("preserve volume")
 """
 
 from itertools import izip
@@ -69,10 +64,7 @@ import maya.mel as mm
 
 
 class Ui(pm.uitypes.Window):
-    _TITLE = 'prDeformPaintUi_001'
-
-    target = None
-    operation = None
+    _TITLE = 'prDeformPaintUi_100'
 
     def __new__(cls):
         """ delete possible old window and create new instance """
