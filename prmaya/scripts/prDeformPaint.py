@@ -103,7 +103,7 @@ class Ui(pm.uitypes.Window):
         initializeMaya()
         self.minDeltaLengthDefault = minDeltaLength
         with pm.verticalLayout() as mainLayout:
-            with pm.menuBarLayout() as menuBar:
+            with pm.menuBarLayout() as self.menuBar:
                 self.space = pm.menu(label='Space', tearOff=True)
                 pm.radioMenuItemCollection()
                 self.spaces = []
@@ -128,7 +128,7 @@ class Ui(pm.uitypes.Window):
                 # pm.menuItem(label='TODO: latest installer (...)')
                 pm.menuItem(label='latest version (github)',
                             command=pm.Callback(self.getLatestVersion))
-            menuBar.setMenuBarVisible(menuBarVisible)
+            self.menuBar.setMenuBarVisible(menuBarVisible)
             with pm.horizontalLayout() as targetLayout:
                 pm.button(l='Target:', c=pm.Callback(self.setTargetFromSelection))
                 self.target = pm.textField(en=False)
@@ -167,6 +167,10 @@ class Ui(pm.uitypes.Window):
                     changeCommand=pm.Callback(self.syncMelVariablesWithUi))
             operationLayout.redistribute(5, 5, 1, 5)
 
+            pm.popupMenu(parent=operationLayout, button=3)
+            pm.menuItem(label='toggle menuBar',
+                        c=pm.Callback(self.toggleMenuBar))
+
             with pm.horizontalLayout() as toolLayout:
                 pm.button(label='Enter Tool', command=pm.Callback(self.enterTool))
                 pm.button(label='Close', command=pm.Callback(self.close))
@@ -191,6 +195,9 @@ class Ui(pm.uitypes.Window):
 
     def close(self):
         pm.deleteUI(self._TITLE)
+
+    def toggleMenuBar(self):
+        self.menuBar.setMenuBarVisible(not self.menuBar.getMenuBarVisible())
 
     def getSpace(self):
         for x, space in enumerate(self.spaces):
