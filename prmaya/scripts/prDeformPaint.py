@@ -49,6 +49,7 @@ MOTIVATION
   - they do not support viewport "isolate selected" mesh components
 
 TODO
+- save target with mc.fileInfo (maybe initialization has to be adjusted)
 - merge UI into "tool settings" window with "paint scripts tool"
   (+selection context for target, so not tool switch is required)
 
