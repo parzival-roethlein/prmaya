@@ -6,17 +6,18 @@ DESCRIPTION
 Modeling brushes, mainly for blendshape targets (similar to DPK_paintDeform.mel)
 Operations:
   - Smooth delta: average the delta (vertex vector from target to painted mesh)
-    with it's neighboring deltas. Reasons to do so:
+    with its neighbors. Reasons to do so:
       - preserve local surface details
       - stay "on model"
       - skin sliding
       - smooth/relax on compression/extension
-  - copy vertex: move painted mesh vertex to the target vertex position
-  - Closest point: move the painted mesh vertex to the closest point on surface of
-    the target mesh
+  - Copy vertex: move painted mesh vertex to the target vertex position
+  - Closest point: move the painted mesh vertex to the closest point on surface
+    of the target mesh
   - Closest vertex: move the painted mesh vertex to the closest vertex of the
     target mesh
-  - Average vertex: same as mayas "Average vertices", but as a brush
+  - Average vertex: move a vertex to the average position of its neighbors. It's
+    the same behavior as Mayas "Relax Tool" and "Average vertices"
 Right click popup menus:
   - "Target: [...]" area to help with common target use cases
   - Operations area (Smooth delta, Copy vertex, ...) to toggle settings menuBar
@@ -41,14 +42,15 @@ MOTIVATION
   - It crashes Maya when flooding twice in a row (workaround is re-enter tool
     between each flood)
   - It is slow (MEL)
-  - It is sometimes extra slow for no apparent reason
-- Is useful in addition to the maya sculpt brushes because:
-  - missing "average delta"
-  - they are buggy (erase delta not really deleting deltas, ...)
+- Is useful in addition to Mayas sculpt brushes because:
   - they do not support flooding vertex selection
   - they do not support viewport "isolate selected" mesh components
+  - they are buggy (erase delta not really deleting deltas, ...)
+  - missing "average delta" operation
+- New operations: Closest point, Closest vertex
 
 TODO
+- (maybe) from edge-neighbor-vertices to face-neighbor-vertices ?
 - save target with mc.fileInfo (maybe initialization has to be adjusted)
 - merge UI into "tool settings" window with "paint scripts tool"
   (+selection context for target, so not tool switch is required)
@@ -74,12 +76,9 @@ class Ui(pm.uitypes.Window):
         self = pm.window(cls._TITLE, title=cls._TITLE)
         return pm.uitypes.Window.__new__(cls, self)
 
-    def __init__(self, operation=0,
-                 setTargetFromSelection=True,
-                 menuBarVisible=True,
-                 space=om.MSpace.kObject,
-                 minDeltaLength=0.00001,
-                 templateDuplicate=True,
+    def __init__(self, operation=0, setTargetFromSelection=True,
+                 menuBarVisible=True, space=om.MSpace.kObject,
+                 minDeltaLength=0.00001, templateDuplicate=True,
                  visibleDuplicate=True):
         """
         :param operation: (int) 0=Smooth delta, 1=Copy vertex, 2=Closest point,
