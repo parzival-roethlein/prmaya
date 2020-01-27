@@ -5,6 +5,7 @@
 #include <maya/MPxCommand.h>
 #include <maya/MFnPlugin.h>
 
+#include <maya/MSelectionList.h>
 #include <maya/MGlobal.h>
 #include <maya/MArgList.h>
 #include <maya/MString.h>
@@ -13,7 +14,7 @@
 #include <maya/MDagPath.h>
 #include <maya/MIntArray.h>
 
-typedef std::map<int, MVector> DeltaDict;
+//typedef std::map<int, MVector> DeltaDict;
 
 class prMovePointsCmd : public MPxCommand
 {
@@ -27,89 +28,105 @@ public:
 	static		void* creator();
 private:
 	//MItMeshVertex drivenIter;
-	MDagPath drivenMDagPath;
-	DeltaDict deltas;
+	MDagPath meshDagPath;
 	int space;
+	MIntArray deltaVertexIds;
+	MVectorArray deltas;
+	
+	MStatus		addDeltas(bool undoCall = false);
 };
 
 
-MStatus prMovePointsCmd::doIt(const MArgList& args)
-//	Description:
-//		implements the MEL prMovePointsCmd command.
-//
-//	Arguments:
-//		args - the argument list that was passes to the command from MEL
-//
-//	Return Value:
-//		MS::kSuccess - command succeeded
-//		MS::kFailure - command failed (returning this value will cause the
-//                     MEL script that is being run to terminate unless the
-//                     error is caught using a "catch" statement.
-{
+MStatus prMovePointsCmd::doIt(const MArgList& args){
 	MStatus stat = MS::kSuccess;
 
-	MString baseMesh = args.asString(0, &stat);
+	MString mesh = args.asString(0, &stat);
 	CHECK_MSTATUS_AND_RETURN_IT(stat);
-	MGlobal::displayInfo(MString("baseMesh: ") + baseMesh);
+	MGlobal::displayInfo(MString("mesh: ") + mesh);
 
-	MString drivenMesh = args.asString(1, &stat);
-	CHECK_MSTATUS_AND_RETURN_IT(stat);
-	MGlobal::displayInfo(MString("drivenMesh: ") + drivenMesh);
-	
-	int space = args.asInt(2, &stat);
+	space = args.asInt(1, &stat);
 	CHECK_MSTATUS_AND_RETURN_IT(stat);
 	MGlobal::displayInfo(MString("space: ") + space);
 
+	double minDeltaLength = args.asDouble(2, &stat);
+	CHECK_MSTATUS_AND_RETURN_IT(stat);
+	MGlobal::displayInfo(MString("minDeltaLength: ") + minDeltaLength);
+	
 	unsigned int i = 3;
 	MIntArray vertexIds = args.asIntArray(i, &stat);
 	CHECK_MSTATUS_AND_RETURN_IT(stat);
 	MGlobal::displayInfo(MString("vertexIds.length(): ") + vertexIds.length());
+	if (args.length() - 4 != vertexIds.length()) {
+		MGlobal::displayError(MString("missmatching number of vertexIds and vectors (or an argument is missing)"));
+		return MS::kFailure;
+	}
 
-	i = 4;
-	MDoubleArray vertexWeights = args.asDoubleArray(i, &stat);
+	MSelectionList selection;
+	stat = selection.add(mesh);
 	CHECK_MSTATUS_AND_RETURN_IT(stat);
-	MGlobal::displayInfo(MString("vertexWeights.length(): ") + vertexWeights.length());
-
-	double weight = args.asDouble(5, &stat);
+	stat = selection.getDagPath(0, meshDagPath);
 	CHECK_MSTATUS_AND_RETURN_IT(stat);
-	MGlobal::displayInfo(MString("weight: ") + weight);
 
+	for (i = 4; i < args.length(); i++) {
+		MVector delta = args.asVector(i, 3, &stat);
+		CHECK_MSTATUS_AND_RETURN_IT(stat);
+		if (delta.length() < minDeltaLength)
+			continue;
+		deltaVertexIds.append(vertexIds[i - 4]);
+		deltas.append(delta);
+	}
+	MGlobal::displayInfo(MString("deltas.length(): ") + deltas.length());
 	return redoIt();
 }
 
-MStatus prMovePointsCmd::redoIt()
-//	Return Value:
-//		MS::kSuccess - command succeeded
-//		MS::kFailure - redoIt failed.  this is a serious problem that will
-//                     likely cause the undo queue to be purged
-{
-	// Since this class is derived off of MPxCommand, you can use the
-	// inherited methods to return values and set error messages
+MStatus prMovePointsCmd::redoIt(){
 	setResult( "prMovePointsCmd command executed!!\n" );
-
+	addDeltas();
 	return MS::kSuccess;
 }
 
 MStatus prMovePointsCmd::undoIt()
-//	Return Value:
-//		MS::kSuccess - command succeeded
-//		MS::kFailure - redoIt failed.  this is a serious problem that will
-//                     likely cause the undo queue to be purged
 {
-
-	// You can also display information to the command window via MGlobal
     MGlobal::displayInfo( "prMovePointsCmd command undone!\n" );
+	addDeltas(true);
 	return MS::kSuccess;
 }
 
+MStatus prMovePointsCmd::addDeltas(bool undoCall) {
+	MStatus stat;
+	MGlobal::displayInfo("1234add deltas: " + deltas.length());
+	
+	MItMeshVertex meshIter(meshDagPath);
+	int prevIndex;
+	for (unsigned int i = 0; i < deltas.length();i++)
+	{
+		MGlobal::displayInfo(MString("\ni: ")+i);
+		MGlobal::displayInfo(MString("deltaVertexIds[i] ") + deltaVertexIds[i]);
+		MGlobal::displayInfo(MString("prevIndex ") + prevIndex);
+		prevIndex = meshIter.setIndex(deltaVertexIds[i], prevIndex);
+		MPoint position = meshIter.position(MSpace::kObject);
+		if (undoCall) {
+			position -= deltas[i];
+		}
+		else {
+			position += deltas[i];
+		}
+		meshIter.setPosition(position, MSpace::kObject);
+
+		
+		
+	}
+	return MS::kSuccess;
+
+}
+
+
+
+
 void* prMovePointsCmd::creator(){return new prMovePointsCmd();}
-
 prMovePointsCmd::prMovePointsCmd(){}
-
 prMovePointsCmd::~prMovePointsCmd(){}
-
 bool prMovePointsCmd::isUndoable() const{return true;}
-
 MStatus initializePlugin(MObject obj)
 {
 	MStatus   status;
@@ -123,7 +140,6 @@ MStatus initializePlugin(MObject obj)
 
 	return status;
 }
-
 MStatus uninitializePlugin(MObject obj)
 {
 	MStatus   status;
