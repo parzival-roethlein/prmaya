@@ -316,9 +316,9 @@ def initializeMaya(prMovePointsCmdPath=None,
     :param prDeformPaintBrushPath: only required if it's not in a MAYA_SCRIPT_PATH
     :return:
     """
-    prMovePointsCmdPath = prMovePointsCmdPath or 'prMovePointsCmd.py'
-    if not mc.pluginInfo(prMovePointsCmdPath, q=True, loaded=True):
-        mc.loadPlugin(prMovePointsCmdPath)
+    #prMovePointsCmdPath = prMovePointsCmdPath or 'prMovePointsCmd.py'
+    #if not mc.pluginInfo(prMovePointsCmdPath, q=True, loaded=True):
+    #    mc.loadPlugin(prMovePointsCmdPath)
 
     if mm.eval('whatIs "$prDP_operation"') == 'Unknown':
         prDeformPaintBrushPath = prDeformPaintBrushPath or 'prDeformPaintBrush.mel'
@@ -328,7 +328,7 @@ def initializeMaya(prMovePointsCmdPath=None,
 def reinitializeMaya(*args, **kwargs):
     """reload plugin and mel script"""
     initializeMaya(*args, **kwargs)
-    mc.unloadPlugin('prMovePointsCmd.py')
+    #mc.unloadPlugin('prMovePointsCmd.py')
     mm.eval('source prDeformPaintBrush;')
     mm.eval('rehash;')
     initializeMaya(*args, **kwargs)
