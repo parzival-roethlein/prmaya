@@ -13,6 +13,7 @@
 #include <maya/MItMeshVertex.h>
 #include <maya/MDagPath.h>
 #include <maya/MIntArray.h>
+#include <maya/MFnMesh.h>
 
 //typedef std::map<int, MVector> DeltaDict;
 
@@ -42,22 +43,22 @@ MStatus prMovePointsCmd::doIt(const MArgList& args){
 
 	MString mesh = args.asString(0, &stat);
 	CHECK_MSTATUS_AND_RETURN_IT(stat);
-	MGlobal::displayInfo(MString("mesh: ") + mesh);
+	//MGlobal::displayInfo(MString("mesh: ") + mesh);
 
 	space = args.asInt(1, &stat);
 	CHECK_MSTATUS_AND_RETURN_IT(stat);
-	MGlobal::displayInfo(MString("space: ") + space);
+	//MGlobal::displayInfo(MString("space: ") + space);
 
 	double minDeltaLength = args.asDouble(2, &stat);
 	CHECK_MSTATUS_AND_RETURN_IT(stat);
-	MGlobal::displayInfo(MString("minDeltaLength: ") + minDeltaLength);
+	//MGlobal::displayInfo(MString("minDeltaLength: ") + minDeltaLength);
 	
 	unsigned int i = 3;
 	MIntArray vertexIds = args.asIntArray(i, &stat);
 	CHECK_MSTATUS_AND_RETURN_IT(stat);
-	MGlobal::displayInfo(MString("vertexIds.length(): ") + vertexIds.length());
+	//MGlobal::displayInfo(MString("vertexIds.length(): ") + vertexIds.length());
 	if (args.length() - 4 != vertexIds.length()) {
-		MGlobal::displayError(MString("missmatching number of vertexIds and vectors (or an argument is missing)"));
+		//MGlobal::displayError(MString("missmatching number of vertexIds and vectors (or an argument is missing)"));
 		return MS::kFailure;
 	}
 
@@ -75,7 +76,7 @@ MStatus prMovePointsCmd::doIt(const MArgList& args){
 		deltaVertexIds.append(vertexIds[i - 4]);
 		deltas.append(delta);
 	}
-	MGlobal::displayInfo(MString("deltas.length(): ") + deltas.length());
+	//MGlobal::displayInfo(MString("deltas.length(): ") + deltas.length());
 	return redoIt();
 }
 
@@ -94,24 +95,28 @@ MStatus prMovePointsCmd::undoIt()
 
 MStatus prMovePointsCmd::addDeltas(bool undoCall) {
 	MStatus stat;
-	MGlobal::displayInfo("1234add deltas: " + deltas.length());
+	//MGlobal::displayInfo("1234add deltas: " + deltas.length());
 	
-	MItMeshVertex meshIter(meshDagPath);
+	//MItMeshVertex meshIter(meshDagPath);
+	MFnMesh meshIter(meshDagPath);
 	int prevIndex;
+	MPoint position;
 	for (unsigned int i = 0; i < deltas.length();i++)
 	{
-		MGlobal::displayInfo(MString("\ni: ")+i);
-		MGlobal::displayInfo(MString("deltaVertexIds[i] ") + deltaVertexIds[i]);
-		MGlobal::displayInfo(MString("prevIndex ") + prevIndex);
-		prevIndex = meshIter.setIndex(deltaVertexIds[i], prevIndex);
-		MPoint position = meshIter.position(MSpace::kObject);
+		//MGlobal::displayInfo(MString("\ni: ")+i);
+		//MGlobal::displayInfo(MString("deltaVertexIds[i] ") + deltaVertexIds[i]);
+		//MGlobal::displayInfo(MString("prevIndex ") + prevIndex);
+		//prevIndex = meshIter.setIndex(deltaVertexIds[i], prevIndex);
+		//position  = meshIter.position(MSpace::kObject);
+		meshIter.getPoint(deltaVertexIds[i], position);
 		if (undoCall) {
 			position -= deltas[i];
 		}
 		else {
 			position += deltas[i];
 		}
-		meshIter.setPosition(position, MSpace::kObject);
+		//meshIter.setPosition(position, MSpace::kObject);
+		meshIter.setPoint(deltaVertexIds[i], position);
 
 		
 		
