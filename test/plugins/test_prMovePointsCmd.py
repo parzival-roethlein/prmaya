@@ -1,40 +1,40 @@
 """
+# target mesh in scene
+prMovePointsCmd.py  (MItMeshVertex) # 10.18
+prMovePointsCmd.mll (MFnMesh) # 10.19
 
-import sys
-sys.path.append('C:/Users/paz/Documents/git/prmaya/test/plugins')
-import test_prMovePointsCmd
-reload(test_prMovePointsCmd)
-test_prMovePointsCmd.run()
-mc.prMovePointsCmd('pSphereShape1', om.MSpace.kObject, [294, 297, 280],
-                   om.MVector(0, 0.25, 0), om.MVector(0, 0.5, 0), om.MVector(0, 1, 0))
-
-import sys
-sys.path.append('/home/prthlein/private/code/prmaya/test/plugins')
-import test_prMovePointsCmd
-reload(test_prMovePointsCmd)
-test_prMovePointsCmd.SETTINGS['plugin_path'] = r'/home/prthlein/private/code/prmaya/prmaya/plugins/prMovePointsCmd.py'
-test_prMovePointsCmd.SETTINGS['file'] = r'/home/prthlein/private/code/prmaya/test/plugins/test_prMovePointsCmd.ma'
-test_prMovePointsCmd.run()
-mc.prMovePointsCmd('pSphereShape1', om.MSpace.kObject, [294, 297, 280],
-                   om.MVector(0, 0.25, 0), om.MVector(0, 0.5, 0), om.MVector(0, 1, 0))
+# deleted target mesh
+prMovePointsCmd.py  (MItMeshVertex) # 6.63
+prMovePointsCmd.mll (MFnMesh) # 6.63
 """
-
-
-import maya.cmds as mc
+import time
 import maya.api.OpenMaya as om
-from prmaya.plugins import prMovePointsCmd
-reload(prMovePointsCmd)
+import maya.cmds as mc
+mc.file(newFile=True, force=True)
+mc.unloadPlugin('prMovePointsCmd')
+mc.loadPlugin(r'C:\Users\paz\Documents\git\prmaya\prmaya\plugins\prMovePointsCmd.py')
+#mc.loadPlugin(r'C:\Users\paz\documents\visual studio 2015\Projects\prMovePointsCmd\prMovePointsCmd\Release\prMovePointsCmd.mll')
+
+mesh = mc.polySphere(radius=10, ch=False, subdivisionsAxis=130, subdivisionsHeight=80)[0]
+target = mc.polySphere(radius=12, ch=False, subdivisionsAxis=130, subdivisionsHeight=80)[0]
+blendshape = mc.blendShape([target, mesh])[0]
+mc.delete(target)
+mc.setAttr(blendshape+'.'+target, 0.5)
+joint = mc.createNode('joint')
+mc.skinCluster(mesh, joint)
+mc.setAttr(joint+'.rx', 90)
+mc.sculptTarget(blendshape, e=True, target=0)
+
+vectorIds = range(0, mc.polyEvaluate(mesh, vertex=True), 2)
+vectors = [om.MVector(0, 0.5, 0) for x in vectorIds]
 
 
-SETTINGS = {'plugin_name': 'prMovePointsCmd.py',
-            'plugin_path': 'C:/Users/paz/Documents/git/prmaya/prmaya/plugins/prMovePointsCmd.py',
-            'file': 'C:/Users/paz/Documents/git/prmaya/test/plugins/test_prMovePointsCmd.ma',
-            }
 
+times = []
+for x in range(5):
+    start = time.time()
+    mc.prMovePointsCmd(mesh, om.MSpace.kLast, 0.00001, vectorIds, *vectors)
+    end = time.time()
+    times.append(end-start)
+print('time average: {}'.format(round(sum(times)/len(times), 2)))
 
-def run():
-    mc.file(newFile=True, force=True)
-    mc.unloadPlugin(SETTINGS['plugin_name'])
-    mc.loadPlugin(SETTINGS['plugin_path'])
-    mc.file(SETTINGS['file'], open=True, force=True)
-    mc.prMovePointsCmd('pSphereShape1', om.MSpace.kObject, [296, 298], om.MVector(0, 1, 0), om.MVector(0, 0.5, 0))

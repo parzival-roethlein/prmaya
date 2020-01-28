@@ -1,8 +1,8 @@
-//Maya ASCII 2018ff08 scene
+//Maya ASCII 2018 scene
 //Name: test_prDeformPaint.ma
 //Last modified: Tue, Jan 21, 2020 05:18:38 PM
 //Codeset: UTF-8
-requires maya "2018ff08";
+requires maya "2018";
 requires "stereoCamera" "10.0";
 currentUnit -l centimeter -a degree -t film;
 fileInfo "application" "maya";

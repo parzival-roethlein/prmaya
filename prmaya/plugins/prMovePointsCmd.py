@@ -16,51 +16,18 @@ has similar calculation times as
 MFnMesh (doIt) is slower (MFnMesh() initialization?!), but undo/redo is faster.
 Because doIt is the most important, i'm sticking with MItMeshVertex
 
-MFnMesh
-time: 15.26 // doIt
-time: 15.23 // doIt
-time: 14.69 // doIt
-time: 13.40 // doIt
-time: 15.21 // doIt
-time: 13.17 // doIt
-time: 15.07 // doIt = 14.58
-time: 13.20 // undo
-time: 12.29 // undo
-time: 14.02 // undo
-time: 13.48 // undo
-time: 13.24 // undo
-time: 13.77 // undo
-time: 12.61 // undo = 13.23
-time: 14.52 // redo
-time: 12.21 // redo
-time: 12.14 // redo
-time: 12.25 // redo
-time: 12.47 // redo
-time: 12.50 // redo
-time: 13.46 // redo = 12.79
+prMovePointsCmd.py MFnMesh (average of 6)
+doIt = 14.58
+undo = 13.23
+redo = 12.79
+prMovePointsCmd.py MItMeshFaceVertex (average of 6)
+doIt = 13.72
+undo = 13.91
+redo = 13.64
 
-# MItMeshFaceVertex
-time: 13.91 // doIt
-time: 13.33 // doIt
-time: 13.21 // doIt
-time: 14.05 // doIt
-time: 14.13 // doIt
-time: 13.88 // doIt
-time: 13.53 // doIt = 13.72
-time: 14.18 // undo
-time: 13.72 // undo
-time: 13.59 // undo
-time: 13.76 // undo
-time: 14.29 // undo
-time: 13.80 // undo
-time: 14.01 // undo = 13.91
-time: 13.90 // redo
-time: 14.51 // redo
-time: 13.08 // redo
-time: 13.69 // redo
-time: 13.02 // redo
-time: 13.14 // redo
-time: 14.17 // redo = 13.64
+
+
+
 """
 # import time
 import sys

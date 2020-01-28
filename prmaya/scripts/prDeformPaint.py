@@ -42,6 +42,8 @@ MOTIVATION
   - It crashes Maya when flooding twice in a row (workaround is re-enter tool
     between each flood)
   - It is slow (MEL)
+  - Partially unpredictable deformation when deforming multiple vertices,
+    because the deltas are calculated just in time, while vertices are moving
 - Is useful in addition to Mayas sculpt brushes because:
   - they do not support flooding vertex selection
   - they do not support viewport "isolate selected" mesh components
@@ -303,8 +305,8 @@ class Ui(pm.uitypes.Window):
         mc.launch(web="https://github.com/parzival-roethlein/prmaya")
 
 
-def initializeMaya(prMovePointsCmdPath=None,
-                   prDeformPaintBrushPath=None):
+def initializeMaya(prMovePointsCmdPath='prMovePointsCmd',
+                   prDeformPaintBrushPath='prDeformPaintBrush.mel'):
     """
     load the required plugin and mel script
 
@@ -316,21 +318,19 @@ def initializeMaya(prMovePointsCmdPath=None,
     :param prDeformPaintBrushPath: only required if it's not in a MAYA_SCRIPT_PATH
     :return:
     """
-    #prMovePointsCmdPath = prMovePointsCmdPath or 'prMovePointsCmd.py'
-    #if not mc.pluginInfo(prMovePointsCmdPath, q=True, loaded=True):
-    #    mc.loadPlugin(prMovePointsCmdPath)
+    if not mc.pluginInfo(prMovePointsCmdPath, q=True, loaded=True):
+        mc.loadPlugin(prMovePointsCmdPath)
 
     if mm.eval('whatIs "$prDP_operation"') == 'Unknown':
-        prDeformPaintBrushPath = prDeformPaintBrushPath or 'prDeformPaintBrush.mel'
         mm.eval('source "{}";'.format(prDeformPaintBrushPath))
 
 
 def reinitializeMaya(*args, **kwargs):
     """reload plugin and mel script"""
     initializeMaya(*args, **kwargs)
-    #mc.unloadPlugin('prMovePointsCmd.py')
-    mm.eval('source prDeformPaintBrush;')
+    mc.unloadPlugin('prMovePointsCmd')
     mm.eval('rehash;')
+    mm.eval('source prDeformPaintBrush;')
     initializeMaya(*args, **kwargs)
 
 
