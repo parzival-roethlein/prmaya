@@ -9,27 +9,20 @@ mc.prMovePointsCmd('pSphereShape1',
                    om.MVector(1, 0, 0), ..., om.MVector(0, 1, 0))
 
 
-PERFORMANCE TEST (4.3k vertices)
-- MFnMesh getPoint(), setPoint()
-has similar calculation times as
-- MItMeshVertex setIndex(), position(), setPosition()
-MFnMesh (doIt) is slower (MFnMesh() initialization?!), but undo/redo is faster.
-Because doIt is the most important, i'm sticking with MItMeshVertex
 
-prMovePointsCmd.py MFnMesh (average of 6)
+PERFORMANCE TEST
+1. MFnMesh getPoint(), setPoint()
 doIt = 14.58
 undo = 13.23
 redo = 12.79
-prMovePointsCmd.py MItMeshFaceVertex (average of 6)
+2. MItMeshVertex setIndex(), position(), setPosition()
 doIt = 13.72
 undo = 13.91
 redo = 13.64
-
-
-
-
+= MFnMesh (doIt) is slower (MFnMesh() initialization?!), but undo/redo is faster.
+  Because doIt is the most important, i'm sticking with MItMeshVertex
 """
-# import time
+
 import sys
 from itertools import izip
 
@@ -81,8 +74,6 @@ class PrMovePointsCmd(om.MPxCommand):
         self.addDeltas(undoCall=True)
 
     def addDeltas(self, undoCall=False):
-        # start = time.time()
-
         for vertexId, vector in izip(self.vertexIds, self.deltas):
             self.vertexIterator.setIndex(vertexId)
             position = self.vertexIterator.position(self.space)
@@ -93,10 +84,6 @@ class PrMovePointsCmd(om.MPxCommand):
                 position += vector
             self.vertexIterator.setPosition(position, self.space)
             # self.vertexIterator.setPoint(vertexId, position, self.space)
-        # if undoCall:
-        #     print('time: {:.2f} // undo'.format(time.time() - start))
-        # else:
-        #     print('time: {:.2f} // redo'.format(time.time() - start))
 
     @staticmethod
     def creator():

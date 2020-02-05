@@ -1,8 +1,13 @@
 """
+this was done to compare the performance with:
+- calculating the average deltas in a script and running prMovePointsCmd
 
-
-USAGE:
-
+import maya.cmds as mc
+mc.prAverageDeltasCmd('pSphereShape1',
+                      om.MSpace.kObject,
+                      [3, ..., 1],
+                      [1.0, ..., 0.5],
+                      1.0)
 """
 
 import sys

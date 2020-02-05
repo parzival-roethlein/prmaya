@@ -1,5 +1,12 @@
 """
+set mesh point positions
 
+USAGE:
+import maya.cmds as mc
+mc.prSetPointsCmd('pSphereShape1',
+                  om.MSpace.kObject,
+                  [3, ..., 1],
+                  om.MPoint(1, 0, 0), ..., om.MPoint(0, 1, 0))
 
 """
 
