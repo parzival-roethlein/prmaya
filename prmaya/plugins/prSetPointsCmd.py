@@ -6,7 +6,23 @@
 import sys
 from itertools import izip
 
+import maya.cmds as mc
+
 import maya.api.OpenMaya as om
+
+
+def setPoints(mesh, points, space=om.MSpace.kObject):
+    if isinstance(points, om.MPointArray):
+        vertexIds = range(0, len(points))
+    elif isinstance(points, list):
+        vertexIds = range(0, len(points))
+        points = [om.MPoint(p) for p in points]
+    elif isinstance(points, dict):
+        vertexIds = points.keys()
+        points = [om.MPoint(p) for p in points.values()]
+    else:
+        raise ValueError('Unknown points type: {}'.format(points))
+    mc.prSetPointsCmd(mesh, space, vertexIds, *points)
 
 
 class PrSetPointsCmd(om.MPxCommand):
