@@ -138,58 +138,56 @@ class prKeepOut(om.MPxNode):
         enabled = dataBlock.inputValue(self.enabled).asBool()
         offsetExtendsPositions = dataBlock.inputValue(self.offsetExtendsPositions).asBool()
         offset = dataBlock.inputValue(self.offset).asFloat()
-
         output_arrayHandle = dataBlock.outputArrayValue(self.output)
         output_builder = output_arrayHandle.builder()
 
+        # get ray data
         indices = []
-        position1_list = []
-        position2_list = []
-        inverseMatrices = {}
-        finalOffsets = []
         enablesExtra = []
+        inverseMatrices = []
 
         raySources = []
         rayDirections = []
+        hitPositions = []
+        hitDistances = []
+        offsetVectors = []
 
-        # get rays
         inputArrayHandle = dataBlock.inputArrayValue(self.input)
-        for i in range(len(inputArrayHandle)):
-            inputArrayHandle.jumpToPhysicalElement(i)
+        for x in range(len(inputArrayHandle)):
+            # get maya array input attributes
+            inputArrayHandle.jumpToPhysicalElement(x)
             inputTargetHandle = inputArrayHandle.inputValue()
             index = inputArrayHandle.elementLogicalIndex()
             indices.append(index)
             position1 = om.MFloatPoint(inputTargetHandle.child(self.position1).asFloat3())
-            position1_list.append(position1)
             position2 = om.MFloatPoint(inputTargetHandle.child(self.position2).asFloat3())
-            position2_list.append(position2)
-            finalOffset = offset + inputTargetHandle.child(self.offsetExtra).asFloat()
-            raySource = position1
-            rayDirection = position2 - position1
-            if offsetExtendsPositions and finalOffset:
-                offsetVector = rayDirection.normal() * finalOffset
-                if finalOffset > 0:
-                    rayDirection += offsetVector
-                elif finalOffset < 0:
-                    raySource += offsetVector
-            raySources.append(raySource)
-            rayDirections.append(rayDirection)
-            finalOffsets.append(finalOffset)
-            inverseMatrices[index] = inputTargetHandle.child(self.parentInverseMatrix).asFloatMatrix()
+            offset = offset + inputTargetHandle.child(self.offsetExtra).asFloat()
+            inverseMatrices.append(inputTargetHandle.child(self.parentInverseMatrix).asFloatMatrix())
             enablesExtra.append(inputTargetHandle.child(self.enabledExtra).asBool())
 
-        # find closest intersections
-        closestHits = {i: None for i in indices}
-        offsetVectors = {i: None for i in indices}
+            # calculate ray
+            rayDirection = position2 - position1
+            hitDistances.append(rayDirection.length())
+            offsetVectors.append(rayDirection.normal() * offset)
+            if offsetExtendsPositions and offset:
+                if offset > 0:
+                    rayDirection += offsetVectors[-1]
+                elif offset > 0:
+                    position1 += offsetVectors[-1]
+            raySources.append(position1)
+            rayDirections.append(rayDirection)
+            hitPositions.append(position2)
+
         if enabled:
+
+            # geometry loop
             inputGeometryArrayHandle = dataBlock.inputArrayValue(self.inputGeometry)
-            for i in range(len(inputGeometryArrayHandle)):
-                inputGeometryArrayHandle.jumpToPhysicalElement(i)
+            for physicalGeoIndex in range(len(inputGeometryArrayHandle)):
+                inputGeometryArrayHandle.jumpToPhysicalElement(physicalGeoIndex)
                 inputGeometryHandle = inputGeometryArrayHandle.inputValue()
                 targetData = inputGeometryHandle.data()
                 if targetData.isNull():
                     continue
-
                 targetType = inputGeometryHandle.type()
                 if targetType == om.MFnMeshData.kMesh:
                     meshFn = om.MFnMesh(targetData)
@@ -208,32 +206,25 @@ class prKeepOut(om.MPxNode):
                 else:
                     raise ValueError('unknown targetType: {}'.format(targetType))
 
-                for index, raySource, rayDirection, finalOffset, enabledExtra in zip(
-                        indices, raySources, rayDirections, finalOffsets, enablesExtra):
+                # ray loop
+                for x, (index, enabledExtra, raySource, rayDirection) in enumerate(zip(
+                        indices, enablesExtra, raySources, rayDirections)):
                     if not enabledExtra:
                         continue
                     hit = getClosestHit(raySource, rayDirection)
                     if hit is None:
                         continue
-                    if closestHits[index] is None or \
-                            (hit - raySource).length() < (closestHits[index] - raySource).length():
-                        closestHits[index] = hit
-                        if finalOffset:
-                            closestHitVector = raySource - hit
-                            if finalOffset > closestHitVector.length():
-                                offsetVectors[index] = closestHitVector
-                            else:
-                                offsetVectors[index] = closestHitVector.normal() * finalOffset
+                    hitDistance = (hit - raySource).length()
+                    if hitDistance < hitDistances[x]:
+                        hitPositions[x] = hit
+                        hitDistances[x] = hitDistance
 
         # set output
-        for index, hit in closestHits.iteritems():
+        for index, hitPosition, offsetVector, inverseMatrix in zip(
+                indices, hitPositions, offsetVectors, inverseMatrices):
             output_handle = output_builder.addElement(index)
-            if hit is None:
-                hit = position2_list[indices.index(index)]
-            elif offsetVectors[index]:
-                hit += offsetVectors[index]
-            hit *= inverseMatrices[index]
-            output_handle.set3Float(hit[0], hit[1], hit[2])
+            outputPosition = (hitPosition - offsetVector) * inverseMatrix
+            output_handle.set3Float(outputPosition[0], outputPosition[1], outputPosition[2])
 
         output_arrayHandle.set(output_builder)
         output_arrayHandle.setAllClean()
