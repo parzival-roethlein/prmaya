@@ -3,19 +3,20 @@ SOURCE
 https://github.com/parzival-roethlein/prmaya
 
 DESCRIPTION
-Array version of Mayas "keepOut" with changed/added features.
-improvements:
+Improved array version of Mayas "keepOut" node
+Array:
 - unlimited number of rays per node instead of just one
-- unlimited number of standard maya shapes as targets (mesh, nurbsSurface) instead of just one muscleSkin
-- offsetExtendsPositions: "smart" ray extension to prevent snapping when using offsets
-- parentInverseMatrix to adjust output to target space
-changes:
+- unlimited number of target shapes instead of just one
+Improvements:
+- uses standard maya shapes as targets (mesh, nurbsSurface) instead one muscleSkin
 - Intersection ray generated from two positions (start, end) instead of a position + vector
+- offsetExtendsPosition: extend position1 for ray calculations with negative offset
+- parentInverseMatrix to put the output translation into the driven transform space
 
 ATTRIBUTES
 prKeepOut.enabled
 prKeepOut.offset
-prKeepOut.offsetExtendsPositions
+prKeepOut.offsetExtendsPosition
 prKeepOut.inputGeometry[0]
 prKeepOut.input[0]
 prKeepOut.input[0].enabledExtra
@@ -36,7 +37,7 @@ https://pazrot3d.blogspot.com/2019/12/prkeepoutpy-making-of.html
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
-- way to fix nurbsSurface world space? (maya bug?)
+- way to fix nurbsSurface intersection world space? (maya bug? its always object space)
 - make enabled a blendable attribute
 - support primitives as inputGeometry
 - smooth collide
@@ -73,10 +74,10 @@ class prKeepOut(om.MPxNode):
         prKeepOut.addAttribute(prKeepOut.enabled)
         prKeepOut.attributeAffects(prKeepOut.enabled, prKeepOut.output)
 
-        prKeepOut.offsetExtendsPositions = numericAttr.create('offsetExtendsPositions', 'offsetExtendsPositions', om.MFnNumericData.kBoolean, True)
+        prKeepOut.offsetExtendsPosition = numericAttr.create('offsetExtendsPosition', 'offsetExtendsPosition', om.MFnNumericData.kBoolean, True)
         numericAttr.keyable = True
-        prKeepOut.addAttribute(prKeepOut.offsetExtendsPositions)
-        prKeepOut.attributeAffects(prKeepOut.offsetExtendsPositions, prKeepOut.output)
+        prKeepOut.addAttribute(prKeepOut.offsetExtendsPosition)
+        prKeepOut.attributeAffects(prKeepOut.offsetExtendsPosition, prKeepOut.output)
 
         prKeepOut.offset = numericAttr.create('offset', 'offset', om.MFnNumericData.kFloat, 0.0)
         numericAttr.keyable = True
@@ -136,7 +137,7 @@ class prKeepOut(om.MPxNode):
             return
 
         enabled = dataBlock.inputValue(self.enabled).asBool()
-        offsetExtendsPositions = dataBlock.inputValue(self.offsetExtendsPositions).asBool()
+        offsetExtendsPosition = dataBlock.inputValue(self.offsetExtendsPosition).asBool()
         offset = dataBlock.inputValue(self.offset).asFloat()
         output_arrayHandle = dataBlock.outputArrayValue(self.output)
         output_builder = output_arrayHandle.builder()
@@ -161,19 +162,19 @@ class prKeepOut(om.MPxNode):
             indices.append(index)
             position1 = om.MFloatPoint(inputTargetHandle.child(self.position1).asFloat3())
             position2 = om.MFloatPoint(inputTargetHandle.child(self.position2).asFloat3())
-            offset = offset + inputTargetHandle.child(self.offsetExtra).asFloat()
+            eachOffset = offset + inputTargetHandle.child(self.offsetExtra).asFloat()
             inverseMatrices.append(inputTargetHandle.child(self.parentInverseMatrix).asFloatMatrix())
             enablesExtra.append(inputTargetHandle.child(self.enabledExtra).asBool())
+            if not enabled or not enablesExtra[-1]:
+                eachOffset = 0
 
             # calculate ray
             rayDirection = position2 - position1
+            offsetVectors.append(rayDirection.normal() * eachOffset)
+            if offsetExtendsPosition and eachOffset < 0:
+                position1 += offsetVectors[-1]
+                rayDirection -= offsetVectors[-1]
             hitDistances.append(rayDirection.length())
-            offsetVectors.append(rayDirection.normal() * offset)
-            if offsetExtendsPositions and offset:
-                if offset > 0:
-                    rayDirection += offsetVectors[-1]
-                elif offset > 0:
-                    position1 += offsetVectors[-1]
             raySources.append(position1)
             rayDirections.append(rayDirection)
             hitPositions.append(position2)
@@ -264,7 +265,7 @@ def evalAETemplate():
             editorTemplate -beginLayout "prKeepOut Attributes" -collapse 0;
                 editorTemplate -label "enabled" -addControl "enabled";
                 editorTemplate -label "offset" -addControl "offset";
-                editorTemplate -label "offsetExtendsPositions" -addControl "offsetExtendsPositions";
+                editorTemplate -label "offsetExtendsPosition" -addControl "offsetExtendsPosition";
                 editorTemplate -label "input" -addControl "input";
                 editorTemplate -label "inputGeometry" -addControl "inputGeometry";
             editorTemplate -endLayout;
