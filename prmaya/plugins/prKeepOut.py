@@ -10,8 +10,8 @@ Array:
 Improvements:
 - uses standard maya shapes as targets (mesh, nurbsSurface) instead one muscleSkin
 - Intersection ray generated from two positions (start, end) instead of a position + vector
-- offsetExtendsPosition: extend position1 for ray calculations with negative offset
 - parentInverseMatrix to put the output translation into the driven transform space
+- offsetExtendsPosition: extend position1 for ray calculations with negative offset
 
 ATTRIBUTES
 prKeepOut.enabled
@@ -37,7 +37,7 @@ https://pazrot3d.blogspot.com/2019/12/prkeepoutpy-making-of.html
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
-- way to fix nurbsSurface intersection world space? (maya bug? its always object space)
+- nurbsSurface currently only works in objectSpace (maya bug?)
 - make enabled a blendable attribute
 - support primitives as inputGeometry
 - smooth collide
