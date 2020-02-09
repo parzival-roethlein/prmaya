@@ -74,15 +74,15 @@ class prKeepOut(om.MPxNode):
         prKeepOut.addAttribute(prKeepOut.enabled)
         prKeepOut.attributeAffects(prKeepOut.enabled, prKeepOut.output)
 
-        prKeepOut.offsetExtendsPosition = numericAttr.create('offsetExtendsPosition', 'offsetExtendsPosition', om.MFnNumericData.kBoolean, True)
-        numericAttr.keyable = True
-        prKeepOut.addAttribute(prKeepOut.offsetExtendsPosition)
-        prKeepOut.attributeAffects(prKeepOut.offsetExtendsPosition, prKeepOut.output)
-
         prKeepOut.offset = numericAttr.create('offset', 'offset', om.MFnNumericData.kFloat, 0.0)
         numericAttr.keyable = True
         prKeepOut.addAttribute(prKeepOut.offset)
         prKeepOut.attributeAffects(prKeepOut.offset, prKeepOut.output)
+
+        prKeepOut.offsetExtendsPosition = numericAttr.create('offsetExtendsPosition', 'offsetExtendsPosition', om.MFnNumericData.kBoolean, True)
+        numericAttr.keyable = True
+        prKeepOut.addAttribute(prKeepOut.offsetExtendsPosition)
+        prKeepOut.attributeAffects(prKeepOut.offsetExtendsPosition, prKeepOut.output)
 
         prKeepOut.inputGeometry = genericAttr.create('inputGeometry', 'inputGeometry')
         genericAttr.addDataType(om.MFnMeshData.kMesh)
