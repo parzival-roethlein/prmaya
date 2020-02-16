@@ -22,7 +22,7 @@ prPanelCtx.toggle(manipulators=False)
 
 # USAGE EXAMPLE: ANIMATION
 import prPanelCtx
-prPanelCtx.enable(manipulators=False, nurbsCurves=False, locators=False, controllers=False)
+prPanelCtx.enable(manipulators=False, nurbsCurves=False, locators=False, controllers=False, dimensions=False)
 
 # USAGE EXAMPLE: RIGGING / if you want different settings for manipulator and playback
 import prPanelCtx
@@ -37,7 +37,7 @@ prPanelCtx.enable(manipCtxKwargs={'manipulators': False}, playbackCtxKwargs={'nu
 - (could not find a event for this) timeline context to start on mousedown, not only after time changes
 - compare and maybe switch to MEvent version of manipScriptjob
 
-# TODO (impossible without custom Maya API plugin as far as I know)
+# TODO (not sure if its possible)
 - camera orbit ctx (orbitCtx, draggerContext, panZoomCtx)
 - manipCtx component selection support
 - channelBox attribute drag support: mc.draggerContext doesn't seem to trigger from channelBox drag
