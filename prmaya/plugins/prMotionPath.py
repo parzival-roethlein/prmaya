@@ -36,8 +36,7 @@ TODO
 - uValue aeTemplate buttons
 - prMotionPath.inputWorldMatrix (of curve), prMotionPath.inputInverseMatrix (for output[] space)
 - all motionPath features
-- maybe show output in aeTemplate (but has to be custom to prevent "Add New Item" button)
-- optional cleanup (icon, aeTemplate array attr, nodeBehavior attr)
+- polish (icon, aeTemplate array attr, nodeBehavior attr)
 """
 
 

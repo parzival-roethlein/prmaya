@@ -36,6 +36,11 @@ Your Maya environment has to be able to access the folders of:
 .../prmaya/scripts/prDeformPaintBrush.mel
 .../prmaya/scripts/prDeformPaint.py
 
+LINKS
+- Demo: TODO
+- Making-of:
+https://pazrot3d.blogspot.com/2020/01/prdeformpaintpy-making-of.html
+
 MOTIVATION
 - Replace DPK_paintDeform.mel, because:
   - It permanently breaks meshes that are in edit blendshape target mode
