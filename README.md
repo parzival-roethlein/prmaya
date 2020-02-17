@@ -4,7 +4,7 @@ Scripts, plugins and posts (tutorials, notes) for Autodesk Maya. Any feedback is
   * scripts (Used in production)
     * __AE...Template__: Improved default ones or for nodeTypes without one
     * __prDeformPaint__: Modeling brushes, mainly for blendshape targets 
-    * __prPanelCtx__: Custom panel settings while dragging timeline or manipulators 
+    * __prPanelCtx__: Custom panel settings while dragging timeline or manipulators. Demo: https://vimeo.com/pazrot/prPanelCtx
     * __prObjectSetUi__
     * __prSelectionUi__: Demo: https://vimeo.com/37670989
   * plugins (None tested in production, unsave IDs)

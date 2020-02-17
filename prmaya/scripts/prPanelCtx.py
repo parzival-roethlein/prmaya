@@ -1,5 +1,6 @@
 """
 # SOURCE
+https://gum.co/prPanelCtx
 https://github.com/parzival-roethlein/prmaya
 
 # DESCRIPTION
@@ -11,6 +12,12 @@ The purpose is to have a clear view of the deforming geometry.
 To customize the context you can use all flags of the MEL command "modelEditor".
 Technical: This script creates a scriptJob (SelectionChanged) and an
            OpenMaya.MConditionMessage (playingBack)
+
+# LINKS
+- Demo: https://vimeo.com/pazrot/prPanelCtx
+- Making-of: TODO
+- Donate: (This was written in my spare time. If you found it useful in Maya or for coding, consider supporting the author)
+https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 # INSTALLATION
 Copy this file ("prPanelCtx.py") into your ".../maya/scripts" folder.
