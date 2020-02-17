@@ -4,40 +4,54 @@ https://github.com/parzival-roethlein/prmaya
 
 # DESCRIPTION
 Temporarily sets (Panel > Show > types) while:
- - dragging the translate/rotate/scale tools
- - timeline dragging
- - timeline playback
-The purpose is to have a clear view of the deforming geometry
-Technical: Creates a scriptJob (SelectionChanged) and OpenMaya.MConditionMessage (playingBack)
+- dragging the translate/rotate/scale tools
+- timeline dragging
+- timeline playback
+The purpose is to have a clear view of the deforming geometry.
+To customize the context you can use all flags of the MEL command "modelEditor".
+Technical: This script creates a scriptJob (SelectionChanged) and an
+           OpenMaya.MConditionMessage (playingBack)
 
 # INSTALLATION
 Copy this file ("prPanelCtx.py") into your ".../maya/scripts" folder.
 
-# USAGE (It's recommended to run it in your userSetup file, so you don't have to think about it and treat it like a Maya setting)
-import prPanelCtx
-# AND EITHER
-prPanelCtx.enable(manipulators=False) # prPanelCtx.disable()
-# OR
-prPanelCtx.toggle(manipulators=False)
-
-# USAGE EXAMPLE: ANIMATION
+# USAGE
 import prPanelCtx
 prPanelCtx.enable(manipulators=False, nurbsCurves=False, locators=False, controllers=False, dimensions=False)
-
-# USAGE EXAMPLE: RIGGING / if you want different settings for manipulator and playback
+#prPanelCtx.disable()
+# Alternatively you can also use a toggle command (toggles between enable and disable)
 import prPanelCtx
-prPanelCtx.enable(manipCtxKwargs={'manipulators': False}, playbackCtxKwargs={'nurbsCurves': False, 'locators': False, 'controllers': False})
+prPanelCtx.toggle(manipulators=False, nurbsCurves=False, locators=False, controllers=False, dimensions=False)
 
+# USAGE EXAMPLE (this is how I use it)
+# - different settings for manipulator dragging and timeline changes
+# - run the prPanelCtx.enable(..) command in the userSetup.py file to have it enabled by default
+# - have the prPanelCtx.toggle(..) command on a shelf button to temporarily disable prPanelCtx
+# in userSetup.py:
+import prPanelCtx
+prPanelCtx.enable(manipCtxKwargs={'manipulators': False},
+                  playbackCtxKwargs={'nurbsCurves': False,
+                                     'locators': False,
+                                     'controllers': False,
+                                     'dimensions': False,
+                                     'deformers': False,
+                                     'selectionHiliteDisplay': False})
+# in Maya shelf button:
+import prPanelCtx
+prPanelCtx.toggle(manipCtxKwargs={'manipulators': False},
+                  playbackCtxKwargs={'nurbsCurves': False,
+                                     'locators': False,
+                                     'controllers': False,
+                                     'dimensions': False,
+                                     'deformers': False,
+                                     'selectionHiliteDisplay': False})
 
 # TODO
-- UI
-- shadingCtx (xray joints, default material, ...)
-- LightingCtx
-- switch scriptJob creation to onFileOpen and delete onFileClose? so playbackId does not get lost / multiple playback scriptjobs created
-- (could not find a event for this) timeline context to start on mousedown, not only after time changes
+- switch scriptJob creation to onFileOpen and delete onFileClose for cleanup?
 - compare and maybe switch to MEvent version of manipScriptjob
 
 # TODO (not sure if its possible)
+- timeline context should start on mousedown, not after first time change
 - camera orbit ctx (orbitCtx, draggerContext, panZoomCtx)
 - manipCtx component selection support
 - channelBox attribute drag support: mc.draggerContext doesn't seem to trigger from channelBox drag
