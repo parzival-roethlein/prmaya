@@ -57,6 +57,7 @@ MOTIVATION
 - New operations: Closest point, Closest vertex
 
 TODO
+- fix blendshapeMultiplier for inbetween shapes
 - (maybe) from edge-neighbor-vertices to face-neighbor-vertices ?
 - save target with mc.fileInfo (maybe initialization has to be adjusted)
 - merge UI into "tool settings" window with "paint scripts tool"
