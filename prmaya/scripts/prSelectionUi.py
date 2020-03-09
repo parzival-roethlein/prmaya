@@ -1,5 +1,6 @@
 """
 # SOURCE
+https://gum.co/prselectionui
 https://github.com/parzival-roethlein/prmaya
 
 # DESCRIPTION
@@ -14,10 +15,10 @@ python("import prSelectionUi;prSelectionUi.UI()");
 
 # LINKS
 - Demo video
-http://vimeo.com/37670989
+https://vimeo.com/pazrot/prselectionui
 - Background information on my blog
 http://pazrot3d.blogspot.com/2012/03/prselectionui.html
-- This was written in my spare time. If you use it at work or learned something from the code, consider a donation:
+- Donate: (This was written in my spare time. If you found it useful in Maya or for coding, consider supporting the author)
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 # FEATURES
