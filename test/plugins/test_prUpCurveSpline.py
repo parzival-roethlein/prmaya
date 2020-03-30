@@ -24,6 +24,9 @@ locators = ['locator1', 'locator2', 'locator3', 'locator4', 'locator5']
 node = mc.createNode('prUpCurveSpline', name='test_prUpCurveSpline')
 mc.connectAttr('curve1.worldSpace', node+'.curve', force=True)
 mc.connectAttr('curve2.worldSpace', node+'.upCurve', force=True)
+mc.connectAttr('start_locator.worldMatrix[0]', node+'.startOrientMatrix', force=True)
+mc.connectAttr('end_locator.worldMatrix[0]', node+'.endOrientMatrix', force=True)
+
 for x in range(5):
     mc.setAttr('{}.parameter[{}]'.format(node, x), x/4.0)
     decomp = mc.createNode('decomposeMatrix')
@@ -33,7 +36,6 @@ for x in range(5):
                    '{}.translate'.format(locators[x]))
     mc.connectAttr('{}.outputRotate'.format(decomp),
                    '{}.rotate'.format(locators[x]))
-
 
 def createTempFile():
     """create and reopen TEMP scene"""
@@ -46,3 +48,4 @@ def createTempFile():
 
 
 createTempFile()
+mc.setAttr('{}.parameter[0]'.format(node), 0)

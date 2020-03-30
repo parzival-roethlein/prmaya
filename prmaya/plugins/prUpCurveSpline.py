@@ -31,8 +31,9 @@ LINKS
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
-...
-
+- flip backVector if dotproduct > 0
+- enableStartOrientMatrix/enableEndOrientMatrix convert to float 0.0-1.0 used as slerp factor
+- shouldSave(..) overwrite for parameter[..] 0.0
 """
 
 
@@ -85,15 +86,6 @@ class prUpCurveSpline(om.MPxNode):
                                          prUpCurveSpline.outputMatrix)
 
         # SETTINGS
-        prUpCurveSpline.parameter = numericAttr.create('parameter', 'parameter',
-                                                       om.MFnNumericData.kFloat, 0.0)
-        numericAttr.keyable = True
-        numericAttr.array = True
-        numericAttr.usesArrayDataBuilder = True
-        prUpCurveSpline.addAttribute(prUpCurveSpline.parameter)
-        prUpCurveSpline.attributeAffects(prUpCurveSpline.parameter,
-                                         prUpCurveSpline.outputMatrix)
-
         prUpCurveSpline.parameterType = enumAttr.create('parameterType', 'parameterType', 0)
         enumAttr.addField('normalized parameter', 0)
         enumAttr.addField('parameter', 1)
@@ -144,6 +136,15 @@ class prUpCurveSpline(om.MPxNode):
         prUpCurveSpline.attributeAffects(prUpCurveSpline.enableEndOrientMatrix,
                                          prUpCurveSpline.outputMatrix)
 
+        prUpCurveSpline.parameter = numericAttr.create('parameter', 'parameter',
+                                                       om.MFnNumericData.kFloat, 0.0)
+        numericAttr.keyable = True
+        numericAttr.array = True
+        numericAttr.usesArrayDataBuilder = True
+        prUpCurveSpline.addAttribute(prUpCurveSpline.parameter)
+        prUpCurveSpline.attributeAffects(prUpCurveSpline.parameter,
+                                         prUpCurveSpline.outputMatrix)
+
     @staticmethod
     def creator():
         return prUpCurveSpline()
@@ -174,8 +175,6 @@ class prUpCurveSpline(om.MPxNode):
         curveFn = om.MFnNurbsCurve(curveData)
         upCurveFn = om.MFnNurbsCurve(upCurveData)
 
-        startOrientMatrix = dataBlock.inputValue(self.startOrientMatrix).asMatrix()
-        endOrientMatrix = dataBlock.inputValue(self.endOrientMatrix).asMatrix()
 
         # SETTINGS
         parameterType = dataBlock.inputValue(self.parameterType).asShort()
@@ -183,6 +182,8 @@ class prUpCurveSpline(om.MPxNode):
         upAxis = dataBlock.inputValue(self.upAxis).asShort()
         enableStartOrientMatrix = dataBlock.inputValue(self.enableStartOrientMatrix).asBool()
         enableEndOrientMatrix = dataBlock.inputValue(self.enableEndOrientMatrix).asBool()
+        startOrientMatrix = dataBlock.inputValue(self.startOrientMatrix).asMatrix()
+        endOrientMatrix = dataBlock.inputValue(self.endOrientMatrix).asMatrix()
 
         # GET PARAMETER POSITIONS
         indices = []
@@ -190,7 +191,11 @@ class prUpCurveSpline(om.MPxNode):
         upPositions = om.MPointArray()
 
         parameterArrayHandle = dataBlock.inputArrayValue(self.parameter)
-        for x in range(len(parameterArrayHandle)):
+        parameterLength = len(parameterArrayHandle)
+        if parameterLength < 3:
+            # required for basic test...
+            raise ValueError('At least 3 parameters must be given')
+        for x in range(parameterLength):
             parameterArrayHandle.jumpToPhysicalElement(x)
             indices.append(parameterArrayHandle.elementLogicalIndex())
             parameter = parameterArrayHandle.inputValue().asFloat()
@@ -204,24 +209,33 @@ class prUpCurveSpline(om.MPxNode):
         for x, (index, position, upPosition) in enumerate(
                 zip(indices, positions, upPositions)):
             outputMatrixHandle = outputMatrixBuilder.addElement(index)
-            matrix = om.MMatrix()
-            # vector
-            if x == 0:
-                aimVector = positions[x+1] - position
-            else:
-                aimVector = om.MVector(1, 0, 0)
-            upVector = upPosition - position  # angle 90 degrees to aimVector
 
-            # X
-            matrix[0] = aimVector[0]
-            matrix[1] = aimVector[1]
-            matrix[2] = aimVector[2]
-            # Y
-            matrix[4] = upVector[0]
-            matrix[5] = upVector[1]
-            matrix[6] = upVector[2]
-            # Z
-            # cross product
+            # get orientated matrix
+            if x == 0:
+                matrix = getAimMatrixFromPoints(startPoint=position,
+                                                aimPoint=positions[x + 1],
+                                                upPoint=upPosition)
+                if enableStartOrientMatrix:
+                    matrix = getOrientedMatrix(startMatrix=matrix,
+                                               targetMatrix=startOrientMatrix)
+            elif x == len(indices)-1:
+                matrix = getAimMatrixFromPoints(startPoint=position,
+                                                aimPoint=positions[x - 1],
+                                                upPoint=upPosition,
+                                                flipAim=True)
+                if enableEndOrientMatrix:
+                    matrix = getOrientedMatrix(startMatrix=matrix,
+                                               targetMatrix=endOrientMatrix)
+            else:
+                matrix = getAimMatrixFromPoints(startPoint=position,
+                                                aimPoint=positions[x + 1],
+                                                upPoint=upPosition)
+                aimBackMatrix = getAimMatrixFromPoints(startPoint=position,
+                                                       aimPoint=positions[x - 1],
+                                                       upPoint=upPosition,
+                                                       flipAim=True)
+                matrix = getOrientedMatrix(startMatrix=matrix,
+                                           targetMatrix=aimBackMatrix)
 
             # position
             matrix[12] = position[0]
@@ -279,3 +293,43 @@ def evalAETemplate():
         editorTemplate -suppress "output";
     };
     ''')
+
+
+def getAimMatrixFromPoints(startPoint, aimPoint, upPoint, flipAim=False):
+    # vectors
+    if flipAim:
+        aimVector = (startPoint - aimPoint).normalize()
+    else:
+        aimVector = (aimPoint - startPoint).normalize()
+    upVector = upPoint - startPoint
+    crossVector = (upVector ^ aimVector).normalize()
+    upVector = (aimVector ^ crossVector).normalize()
+
+    # matrix
+    matrix = om.MMatrix()
+    # X
+    matrix[0] = aimVector[0]
+    matrix[1] = aimVector[1]
+    matrix[2] = aimVector[2]
+    # Y
+    matrix[4] = upVector[0]
+    matrix[5] = upVector[1]
+    matrix[6] = upVector[2]
+    # Z
+    matrix[8] = crossVector[0]
+    matrix[9] = crossVector[1]
+    matrix[10] = crossVector[2]
+
+    return matrix
+
+
+def getOrientedMatrix(startMatrix, targetMatrix, factor=0.5):
+    startTransMatrix = om.MTransformationMatrix(startMatrix)
+    startQuaternion = startTransMatrix.rotation(asQuaternion=True)
+
+    targetTransMatrix = om.MTransformationMatrix(targetMatrix)
+    targetQuaternion = targetTransMatrix.rotation(asQuaternion=True)
+
+    resultQuaternion = om.MQuaternion.slerp(startQuaternion, targetQuaternion, factor)
+    startTransMatrix.setRotation(resultQuaternion)
+    return startTransMatrix.asMatrix()
