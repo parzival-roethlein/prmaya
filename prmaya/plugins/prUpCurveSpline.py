@@ -20,8 +20,8 @@ prUpCurveSpline.parameter[0]
 prUpCurveSpline.parameterType (parameter, parameter normalized, length, fractionMode)
 prUpCurveSpline.aimAxis (x, y, z, -x, -y, -z)
 prUpCurveSpline.upAxis (x, y, z, -x, -y, -z)
-prUpCurveSpline.enableStartOrientMatrix
-prUpCurveSpline.enableEndOrientMatrix
+prUpCurveSpline.startOrientMatrixWeight
+prUpCurveSpline.endOrientMatrixWeight
 prUpCurveSpline.outputMatrix[0]
 
 LINKS
@@ -31,14 +31,15 @@ LINKS
 https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7X4EJ8Z7NUSQW
 
 TODO
-- flip backVector if dotproduct > 0
-- enableStartOrientMatrix/enableEndOrientMatrix convert to float 0.0-1.0 used as slerp factor
-- shouldSave(..) overwrite for parameter[..] 0.0
+- axis functionality
+
+TODO LATER
+- performance comparison
+- test: automatically flip backVector if dotproduct > 0 ?
+- optimize
 """
 
-
 import sys
-
 import maya.api.OpenMaya as om
 
 
@@ -86,11 +87,11 @@ class prUpCurveSpline(om.MPxNode):
                                          prUpCurveSpline.outputMatrix)
 
         # SETTINGS
-        prUpCurveSpline.parameterType = enumAttr.create('parameterType', 'parameterType', 0)
-        enumAttr.addField('normalized parameter', 0)
-        enumAttr.addField('parameter', 1)
-        enumAttr.addField('fractionMode', 2)
-        enumAttr.addField('length', 3)
+        prUpCurveSpline.parameterType = enumAttr.create('parameterType', 'parameterType', 1)
+        enumAttr.addField('param', 0)
+        enumAttr.addField('param normalized', 1)
+        enumAttr.addField('length', 2)
+        enumAttr.addField('fractionMode', 3)
         enumAttr.keyable = True
         prUpCurveSpline.addAttribute(prUpCurveSpline.parameterType)
         prUpCurveSpline.attributeAffects(prUpCurveSpline.parameterType,
@@ -108,7 +109,7 @@ class prUpCurveSpline(om.MPxNode):
         prUpCurveSpline.attributeAffects(prUpCurveSpline.aimAxis,
                                          prUpCurveSpline.outputMatrix)
 
-        prUpCurveSpline.upAxis = enumAttr.create('upAxis', 'upAxis', 0)
+        prUpCurveSpline.upAxis = enumAttr.create('upAxis', 'upAxis', 1)
         enumAttr.addField('x', 0)
         enumAttr.addField('y', 1)
         enumAttr.addField('z', 2)
@@ -120,20 +121,24 @@ class prUpCurveSpline(om.MPxNode):
         prUpCurveSpline.attributeAffects(prUpCurveSpline.upAxis,
                                          prUpCurveSpline.outputMatrix)
 
-        prUpCurveSpline.enableStartOrientMatrix = numericAttr.create(
-            'enableStartOrientMatrix', 'enableStartOrientMatrix',
-            om.MFnNumericData.kBoolean, True)
+        prUpCurveSpline.startOrientMatrixWeight = numericAttr.create(
+            'startOrientMatrixWeight', 'startOrientMatrixWeight',
+            om.MFnNumericData.kFloat, 0.0)
         numericAttr.keyable = True
-        prUpCurveSpline.addAttribute(prUpCurveSpline.enableStartOrientMatrix)
-        prUpCurveSpline.attributeAffects(prUpCurveSpline.enableStartOrientMatrix,
+        numericAttr.setMin(0.0)
+        numericAttr.setMax(1.0)
+        prUpCurveSpline.addAttribute(prUpCurveSpline.startOrientMatrixWeight)
+        prUpCurveSpline.attributeAffects(prUpCurveSpline.startOrientMatrixWeight,
                                          prUpCurveSpline.outputMatrix)
 
-        prUpCurveSpline.enableEndOrientMatrix = numericAttr.create(
-            'enableEndOrientMatrix', 'enableEndOrientMatrix',
-            om.MFnNumericData.kBoolean, True)
+        prUpCurveSpline.endOrientMatrixWeight = numericAttr.create(
+            'endOrientMatrixWeight', 'endOrientMatrixWeight',
+            om.MFnNumericData.kFloat, 0.0)
         numericAttr.keyable = True
-        prUpCurveSpline.addAttribute(prUpCurveSpline.enableEndOrientMatrix)
-        prUpCurveSpline.attributeAffects(prUpCurveSpline.enableEndOrientMatrix,
+        numericAttr.setMin(0.0)
+        numericAttr.setMax(1.0)
+        prUpCurveSpline.addAttribute(prUpCurveSpline.endOrientMatrixWeight)
+        prUpCurveSpline.attributeAffects(prUpCurveSpline.endOrientMatrixWeight,
                                          prUpCurveSpline.outputMatrix)
 
         prUpCurveSpline.parameter = numericAttr.create('parameter', 'parameter',
@@ -151,6 +156,12 @@ class prUpCurveSpline(om.MPxNode):
 
     def __init__(self):
         om.MPxNode.__init__(self)
+
+    def shouldSave(self, plug):
+        """has to be overwritten, else parameter[..] with value 0.0 get lost"""
+        if plug in [self.parameter]:
+            return True
+        return om.MPxNode.shouldSave(self, plug)  # == None
 
     def displayWarning(self, error, index=None):
         nodeName = om.MFnDependencyNode(self.thisMObject()).name()
@@ -175,13 +186,15 @@ class prUpCurveSpline(om.MPxNode):
         curveFn = om.MFnNurbsCurve(curveData)
         upCurveFn = om.MFnNurbsCurve(upCurveData)
 
-
         # SETTINGS
         parameterType = dataBlock.inputValue(self.parameterType).asShort()
         aimAxis = dataBlock.inputValue(self.aimAxis).asShort()
         upAxis = dataBlock.inputValue(self.upAxis).asShort()
-        enableStartOrientMatrix = dataBlock.inputValue(self.enableStartOrientMatrix).asBool()
-        enableEndOrientMatrix = dataBlock.inputValue(self.enableEndOrientMatrix).asBool()
+        if aimAxis % 3 == upAxis % 3:
+            self.displayWarning(error='Skipped evaluation. aimAxis and upAxis have to be different axes')
+            return
+        startOrientMatrixWeight = dataBlock.inputValue(self.startOrientMatrixWeight).asFloat()
+        endOrientMatrixWeight = dataBlock.inputValue(self.endOrientMatrixWeight).asFloat()
         startOrientMatrix = dataBlock.inputValue(self.startOrientMatrix).asMatrix()
         endOrientMatrix = dataBlock.inputValue(self.endOrientMatrix).asMatrix()
 
@@ -190,18 +203,39 @@ class prUpCurveSpline(om.MPxNode):
         positions = om.MPointArray()
         upPositions = om.MPointArray()
 
+        if parameterType == 3:
+            curveLength = curveFn.length()
+            upCurveLength = upCurveFn.length()
         parameterArrayHandle = dataBlock.inputArrayValue(self.parameter)
         parameterLength = len(parameterArrayHandle)
         if parameterLength < 3:
-            # required for basic test...
-            raise ValueError('At least 3 parameters must be given')
+            self.displayWarning('Skipped evaluation. At least 3 parameters must be given')
+            return
         for x in range(parameterLength):
             parameterArrayHandle.jumpToPhysicalElement(x)
             indices.append(parameterArrayHandle.elementLogicalIndex())
             parameter = parameterArrayHandle.inputValue().asFloat()
 
-            positions.append(curveFn.getPointAtParam(parameter))
-            upPositions.append(upCurveFn.getPointAtParam(parameter))
+            if parameterType == 0:
+                position = curveFn.getPointAtParam(parameter)
+                upPosition = upCurveFn.getPointAtParam(parameter)
+            elif parameterType == 1:
+                minParam, maxParam = curveFn.knotDomain
+                # TODO: check if minParam can be non-zero
+                position = curveFn.getPointAtParam(parameter * maxParam)
+                upPosition = upCurveFn.getPointAtParam(parameter * maxParam)
+            elif parameterType == 2:
+                baseParameter = curveFn.findParamFromLength(parameter)
+                upParameter = upCurveFn.findParamFromLength(parameter)
+                position = curveFn.getPointAtParam(baseParameter)
+                upPosition = upCurveFn.getPointAtParam(upParameter)
+            elif parameterType == 3:
+                baseParameter = curveFn.findParamFromLength(parameter * curveLength)
+                upParameter = upCurveFn.findParamFromLength(parameter * upCurveLength)
+                position = curveFn.getPointAtParam(baseParameter)
+                upPosition = upCurveFn.getPointAtParam(upParameter)
+            positions.append(position)
+            upPositions.append(upPosition)
 
         # OUTPUT
         outputMatrixArrayHandle = dataBlock.outputArrayValue(self.outputMatrix)
@@ -215,17 +249,19 @@ class prUpCurveSpline(om.MPxNode):
                 matrix = getAimMatrixFromPoints(startPoint=position,
                                                 aimPoint=positions[x + 1],
                                                 upPoint=upPosition)
-                if enableStartOrientMatrix:
+                if startOrientMatrixWeight:
                     matrix = getOrientedMatrix(startMatrix=matrix,
-                                               targetMatrix=startOrientMatrix)
+                                               targetMatrix=startOrientMatrix,
+                                               factor=startOrientMatrixWeight)
             elif x == len(indices)-1:
                 matrix = getAimMatrixFromPoints(startPoint=position,
                                                 aimPoint=positions[x - 1],
                                                 upPoint=upPosition,
                                                 flipAim=True)
-                if enableEndOrientMatrix:
+                if endOrientMatrixWeight:
                     matrix = getOrientedMatrix(startMatrix=matrix,
-                                               targetMatrix=endOrientMatrix)
+                                               targetMatrix=endOrientMatrix,
+                                               factor=endOrientMatrixWeight)
             else:
                 matrix = getAimMatrixFromPoints(startPoint=position,
                                                 aimPoint=positions[x + 1],
@@ -284,8 +320,8 @@ def evalAETemplate():
                 editorTemplate -label "parameterType" -addControl "parameterType";
                 editorTemplate -label "aimAxis" -addControl "aimAxis";
                 editorTemplate -label "upAxis" -addControl "upAxis";
-                editorTemplate -label "enableStartOrientMatrix" -addControl "enableStartOrientMatrix";
-                editorTemplate -label "enableEndOrientMatrix" -addControl "enableEndOrientMatrix";
+                editorTemplate -label "startOrientMatrixWeight" -addControl "startOrientMatrixWeight";
+                editorTemplate -label "endOrientMatrixWeight" -addControl "endOrientMatrixWeight";
             editorTemplate -endLayout;
             AEdependNodeTemplate $nodeName;
             editorTemplate -addExtraControls;

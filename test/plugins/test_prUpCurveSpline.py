@@ -48,4 +48,3 @@ def createTempFile():
 
 
 createTempFile()
-mc.setAttr('{}.parameter[0]'.format(node), 0)
