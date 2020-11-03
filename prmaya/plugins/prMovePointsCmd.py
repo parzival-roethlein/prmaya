@@ -3,6 +3,7 @@ Move mesh vertices (add vectors) with undo/redo support
 
 USAGE:
 import maya.cmds as mc
+mc.loadPlugin('prMovePointsCmd')
 mc.prMovePointsCmd('pSphereShape1',
                    om.MSpace.kObject,
                    [3, ..., 1],
